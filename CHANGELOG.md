@@ -2,6 +2,14 @@
 
 All notable changes to the **Math Mayhem** project are documented in this file.
 
+## [0.3.0-phase3] — 2026-11-11
+### Added
+- Implemented deterministic symbolic and numerical mathematical verifier (`app/math_verifier.py`) via `SymPy`, enforcing that `10 ÷ 0` and `0 ÷ 0` evaluate strictly to `UNDEFINED` in ordinary arithmetic and requiring explicit disclaimers for fictional visual metaphors (`T3.1`).
+- Implemented high-contrast mathematical notation, interactive pedestal calculator prop, Cartesian function graph plotter (`f(x) = 10 / x`), and geometric right-triangle renderer (`app/math_renderer.py`) (`T3.2`).
+- Implemented Episode 001 (*Never Divide by Zero*) 10-second pilot builder, procedural 10s audio synthesizer (curious motif, pleasant beep, faster double beep, abrupt music cut, error buzzer), and `300`-frame @ `30fps` renderer (`app/episode001_pilot.py`) producing both `540x960` low-res preview and `1080x1920` full-res renders via RTX 5080 `h264_nvenc` (`T3.3`).
+- Added `/api/math/verify`, `/api/episodes/ep001/render-pilot`, and `/api/episodes/ep001/approve-pilot` endpoints and dashboard UI button (`T3.4`).
+- Added 5-test Phase 3 acceptance suite (`tests/test_math_animation.py`); all 24/24 project tests pass (`T3.5`).
+
 ## [0.2.0-phase2] — 2026-11-11
 ### Added
 - Implemented canonical stick-figure adventurer rig and pose/motion library (`app/character_rig.py`) enforcing messy short hair, short beard, blank-lens glasses (no pupils), no backpack, and silent rules (`T2.1`, `T2.2`).

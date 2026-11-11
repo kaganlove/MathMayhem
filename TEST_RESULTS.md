@@ -64,3 +64,19 @@
 | `tests/test_character_animation.py::test_character_consistency_across_movements_and_poses` | `T2.2`, `T2.3` | Evaluates 5 continuous movements (`walk`, `run`, `head_tilt_gesture`, `button_press_prop_interaction`, `freeze_reaction`) across multiple phases and verifies blank-lens white interior pixels (`(255, 255, 255)`), 6 hair spikes, no backpack, and invariant torso geometry (`165.0 px`). | ✅ **PASSED** |
 | `tests/test_character_animation.py::test_phase2_multi_scene_multi_movement_showcase_render` | `T2.3` | Renders `1080x1920 @ 30fps` showcase MP4 via RTX 5080 `h264_nvenc` across **2 scenes** (`scene_white_calculator`, `scene_chalkboard_lab`) and **5 movements** (`walk`, `head_tilt_gesture`, `button_press_prop_interaction`, `freeze_reaction`, `run`) with verified frame/pixel consistency. | ✅ **PASSED** |
 | `tests/test_character_animation.py::test_dashboard_character_endpoints` | `T2.4` | Verifies `/api/character/spec` and `/api/character/model-sheet` endpoints on the authenticated dashboard. | ✅ **PASSED** |
+
+---
+
+## Phase 3 — Mathematical Animation & Episode 001 Pilot Acceptance Suite (`T3.1` – `T3.5`)
+- **Date:** 2026-11-11
+- **Command:** `.\.venv\Scripts\python.exe -m pytest -v`
+- **Execution Time:** `25.79s` (All 24 Phase 1 + Phase 2 + Phase 3 tests)
+- **Summary:** ✅ **24 PASSED, 0 FAILED**
+
+| Test Case | Target Task | Acceptance Criteria Verified | Result |
+| :--- | :--- | :--- | :--- |
+| `tests/test_math_animation.py::test_math_verifier_arithmetic_algebra_and_division_by_zero_rules` | `T3.1` | Verifies `10 ÷ 2 = 5`, `10 ÷ 1 = 10`, algebraic `(x^2 - 1)/(x - 1) = x + 1`, trigonometric `sin(x)^2 + cos(x)^2 = 1`, and enforces that `10 ÷ 0 =` and `0 ÷ 0 =` evaluate strictly to `UNDEFINED` (rejecting any numerical result or untagged fictional metaphor with `SafetyPolicyViolationError`). | ✅ **PASSED** |
+| `tests/test_math_animation.py::test_math_renderer_calculator_graphs_and_geometry` | `T3.2` | Verifies rendering of the high-legibility calculator prop (`10 ÷ 0 = UNDEFINED`), Cartesian function graph plotter (`f(x) = 10 / x` with vertical asymptote at `x = 0`), and geometric right-triangle renderer. | ✅ **PASSED** |
+| `tests/test_math_animation.py::test_ep001_pilot_storyboard_and_audio_synchronization` | `T3.3` | Verifies the 5-scene storyboard (`0–2s`, `2–4s`, `4–6s`, `6–8s`, `8–10s`, frames `0..299`), `SymPy` storyboard verification, and 10.0s procedural WAV synthesis (`motif_rms > 0`, `beep1_rms`, `beep2_rms`, `music_cut_gap_rms == 0.0`, `error_tone_rms > 0.1`). | ✅ **PASSED** |
+| `tests/test_math_animation.py::test_episode001_opening_10s_pilot_frame_perfect_render` | `T3.3` | Renders low-res preview (`540x960`, `300 frames`, `30.0 fps`) and full-res pilot (`1080x1920`, `300 frames`, `30.0 fps`, `h264_nvenc`, `aac` audio) and verifies frame-perfect output + 5 character consistency keyframes + DB persistence. | ✅ **PASSED** |
+| `tests/test_math_animation.py::test_dashboard_math_and_ep001_approval_endpoints` | `T3.4` | Verifies `/api/math/verify`, `/api/episodes/ep001/render-pilot`, and `/api/episodes/ep001/approve-pilot` endpoints on the authenticated dashboard. | ✅ **PASSED** |

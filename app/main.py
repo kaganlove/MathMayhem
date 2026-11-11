@@ -21,8 +21,10 @@ from app.character_rig import (
 from app.character_scenes import render_phase2_character_showcase
 from app.config import Settings, get_settings
 from app.database import create_db_engine, init_db, make_session_factory
+from app.episode001_pilot import build_ep001_pilot_storyboard, render_episode001_opening_pilot
 from app.logging_config import setup_logging
-from app.models import AuditEvent, Episode, Job
+from app.math_verifier import verify_math_statement
+from app.models import AuditEvent, Episode, EpisodeVersion, Job, approve_episode_version
 from app.queue import PersistentJobQueue
 from app.render_smoke import detect_gpu_info, run_gpu_render_smoke_test
 from app.schemas import EpisodeCreateRequest, HealthStatusResponse, LoginRequest
@@ -240,6 +242,62 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
             "status": processed.status,
             "result": json.loads(processed.result_json or "{}"),
         }
+
+    @app.post("/api/math/verify")
+    async def api_verify_math(
+        payload: Dict[str, Any],
+        _owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        from dataclasses import asdict
+
+        check = verify_math_statement(
+            expression=str(payload.get("expression", "")),
+            expected_display=str(payload.get("expected_display", "")),
+            is_fictional_metaphor=bool(payload.get("is_fictional_metaphor", False)),
+            fictional_disclaimer=str(payload.get("fictional_disclaimer", "")),
+        )
+        return asdict(check)
+
+    @app.post("/api/episodes/ep001/render-pilot")
+    async def api_render_ep001_pilot(
+        mode: str = "preview",
+        _owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        res_tuple = (540, 960) if mode == "lowres" else (1080, 1920)
+        with session_factory() as session:
+            return render_episode001_opening_pilot(
+                resolution=res_tuple,
+                settings=cfg,
+                session=session,
+            )
+
+    @app.post("/api/episodes/ep001/approve-pilot")
+    async def api_approve_ep001_pilot(
+        owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        with session_factory() as session:
+            ep = session.query(Episode).filter_by(code="EP001").first()
+            if not ep:
+                raise HTTPException(status_code=404, detail="EP001 not found")
+            ver = session.query(EpisodeVersion).filter_by(episode_id=ep.id, version_number=1).first()
+            if not ver:
+                raise HTTPException(status_code=404, detail="EP001 v1 not found")
+            log_entry = approve_episode_version(
+                session,
+                ver,
+                approved_by=owner,
+                approval_mode="INDIVIDUAL",
+                notes="Owner approved Episode 001 opening 10s pilot",
+            )
+            ep.status = "PILOT_APPROVED"
+            session.commit()
+            return {
+                "episode_code": ep.code,
+                "version_id": ver.id,
+                "status": ver.status,
+                "video_sha256": ver.video_sha256,
+                "approval_log_id": log_entry.id,
+            }
 
     return app
 

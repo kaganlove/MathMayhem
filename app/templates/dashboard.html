@@ -96,11 +96,12 @@
   <header>
     <div class="brand">
       <h1>Math Mayhem</h1>
-      <span class="badge">PHASE 2 CHARACTER RIG</span>
+      <span class="badge">PHASE 3 MATH &amp; EP001 PILOT</span>
     </div>
-    <div style="display:flex; gap:0.5rem;">
+    <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
       <button id="smokeBtn" onclick="triggerSmokeTest()">Run RTX 5080 Smoke Render</button>
       <button id="charBtn" onclick="triggerCharShowcase()">Render Phase 2 Showcase</button>
+      <button id="ep001Btn" onclick="triggerEp001Pilot()">Render EP001 10s Pilot</button>
     </div>
   </header>
 
@@ -220,6 +221,29 @@
         const data = await res.json();
         if (res.ok) {
           out.textContent = 'Character Showcase passed: ' + data.result.scenes_rendered.join(', ') + ' | Movements: ' + data.result.movements_rendered.join(', ');
+          setTimeout(() => window.location.reload(), 900);
+        } else {
+          out.textContent = 'Error: ' + (data.detail || JSON.stringify(data));
+        }
+      } catch (e) {
+        out.textContent = 'Request failed: ' + e;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+    async function triggerEp001Pilot() {
+      const btn = document.getElementById('ep001Btn');
+      const out = document.getElementById('smokeResult');
+      btn.disabled = true;
+      out.textContent = 'Rendering Episode 001 ("Never Divide by Zero") 10s Pilot (300 frames @ 30fps)...';
+      try {
+        const res = await fetch('/api/episodes/ep001/render-pilot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          out.textContent = 'EP001 Pilot rendered: ' + data.width + 'x' + data.height + ', ' + data.frame_count + ' frames, math_verified=' + data.math_verification.all_verified;
           setTimeout(() => window.location.reload(), 900);
         } else {
           out.textContent = 'Error: ' + (data.detail || JSON.stringify(data));
