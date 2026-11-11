@@ -90,7 +90,33 @@
 
 ## DEC-007: Character Animation Quality Overhaul — Technology Comparison & Recommended Architecture
 - **Date:** 2026-11-11
-- **Status:** `APPROVED`
+- **Status:** `SUPERSEDED BY DEC-008`
+
+---
+
+## DEC-008: Fundamental Character Redesign & Cairo Vector + IK Animation Pipeline Overhaul
+- **Date:** 2026-11-11
+- **Status:** `PROPOSED (Awaiting Owner Selection of Visual Alternative A, B, or C)`
+- **Context:** Visual inspection of both v1 and v2 (`canonical_model_sheet_v2.png`) showed why incremental tweaks to `PIL.ImageDraw` wire stick figures are unacceptable:
+  1. `PIL.ImageDraw` only draws uniform-thickness geometric primitives; hair looked like straight needles, the beard looked like a spiked cog wheel, and hands/feet were hollow wireframe loops (`o` and `L`).
+  2. Poses relied on floating punctuation crutches (`?`, `!`, `+`, sweat triangles) instead of genuine facial/postural acting (eyebrow shapes, mouth/beard contour, shoulder elevation, spine S/C curves, and articulated hand gestures).
+  3. Motion manipulated limb angles independently via sine waves (`math.sin(theta)`) with no center-of-mass balance, no world-space foot pinning, and no multi-part overlapping follow-through.
+- **Evaluation of All 7 Candidate Technologies:**
+  1. **Blender Grease Pencil:** Expressive 3D/2D rigging, but requires a ~1.2GB GUI install and headless `bpy` script generation for 2D facial/limb acting is slow and brittle for autonomous AI agents.
+  2. **Godot 2D:** Strong real-time `Skeleton2D` + `AnimationTree` state machines, but headless video movie-maker export requires running a game-engine binary and custom GDScript scene compilation.
+  3. **Rive:** Industry-standard vector state machines, but relies on a proprietary cloud editor to author `.riv` files and paid export/runtime tiers.
+  4. **Synfig Studio:** Open-source vector tweening, but XML `.sif` files are designed for manual GUI timeline editing and render slowly via CLI.
+  5. **Manim:** Ideal for mathematical graphs, equations, and geometric transformations (retained for math layers), but not designed for character acting.
+  6. **Traditional Keyframe Animation Principles (Curve-Driven Keyframe + Breakdown + In-Between Engine):** Essential for comedic timing, anticipation, overshoot, and weight.
+  7. **AI-Assisted Motion Planning + Native Cairo (`pycairo 1.18.6`) & `resvg-py` Vector Engine (Selected Hybrid Architecture):**
+     - **Vector Graphics Engine:** Replaced `PIL.ImageDraw` with **Cairo (`pycairo`) + `resvg-py`** (installed and verified in `.venv`). Supports true variable-width tapered Bezier strokes, smooth C1/C2 spline limbs, contoured hair/beard silhouettes, articulated hands, and flat-planted boots.
+     - **Animation Engine:** Keyframe + Breakdown Pose-to-Pose System with **Analytic 2-Bone IK**, **World-Space Foot Pinning** (zero foot slip during stance), **Center-of-Mass (CoM) Balance Solver**, and **Delayed Overlapping Wave/Spring Channels** (hips lead -> spine follows -> shoulders follow -> head/hair settle last).
+     - **Math Layer:** Preserves `SymPy` verification + crisp mathematical props/graphs, composited via RTX 5080 `h264_nvenc`.
+- **Visual Redesign Alternatives Generated (`assets/character/character_design_alternatives.png`):**
+  - **Option A — Tapered Stick-Protagonist (1:4.2 ratio):** Tapered S-curve spine and variable-width limbs, rounded shoulder/hip joints, articulated hands, planted boots, tousled hair cap, contoured short beard, and blank rectangular glasses + expressive brows.
+  - **Option B — Contoured Torso Protagonist (1:4.2 ratio, Recommended):** Adds a subtle contoured capsule chest/pelvis torso silhouette so shoulder shrugs, weight shifts, and 3/4 turns read with unmistakable cartoon volume and appeal.
+  - **Option C — Compact Mobile-First Protagonist (1:3.4 ratio):** Larger head, glasses, and facial features relative to the body for maximum readability on vertical 9:16 phone screens.
+- **Cost:** $0 (100% open-source `pycairo` + `resvg-py` + `FFmpeg NVENC`).
 - **Context:** The initial Phase 2/3 stick-figure prototype (`app/character_rig.py`) proved the pipeline end-to-end, but its visual quality and motion are unacceptable for a commercial animated series:
   1. It used 1x-sampled `PIL.ImageDraw` primitives (`draw.line`, `draw.ellipse`, `draw.arc`), producing jagged, stiff, CAD-like geometry instead of fluid, variable-taper, anti-aliased cartoon line art.
   2. It lacked **Inverse Kinematics (IK)** and **world-space foot pinning**, causing feet to slide during walks and weight transfers.
