@@ -16,14 +16,35 @@
 
 ---
 
-## Phase 1 — Foundation Acceptance Test Suite (Planned for `T1.1` – `T1.9`)
+## Phase 1 — Foundation Acceptance Test Suite (`T1.1` – `T1.9`)
+- **Date:** 2026-11-11
+- **Command:** `.\.venv\Scripts\python.exe -m pytest -v` (with 30s per-test `faulthandler` watchdog fixture in `tests/conftest.py`)
+- **Execution Time:** `3.19s`
+- **Summary:** ✅ **14 PASSED, 0 FAILED**
 
-| Test Suite | Target Task | Acceptance Criteria Verified | Status |
+### Root-Cause Investigation & Fix Log for `test_dashboard_api.py` Hang
+1. **Symptom:** `tests/test_dashboard_api.py::test_dashboard_auth_and_endpoints` hung when running under Windows sandboxed `pytest`.
+2. **Diagnostic Evidence (`faulthandler.dump_traceback_later`):**
+   - **Blocking Operation #1:** `asyncio.ProactorEventLoop._make_self_pipe` called `socket._fallback_socketpair()` (`Lib\socket.py:295 in accept`), which attempts a TCP loopback connection (`127.0.0.1`). Inside the Windows process sandbox, non-whitelisted socket connects fail silently on the non-blocking client socket (`WinError 10013`), leaving `lsock.accept()` waiting indefinitely.
+   - **Blocking Operation #2:** Once the event loop initialized with a loopback-free self-pipe, FastAPI `def` (synchronous) route handlers and dependencies were dispatched by `anyio.to_thread.run_sync` (`anyio\_backends\_asyncio.py:975`), which signals completion back to the event loop thread via `loop.call_soon_threadsafe` -> `_write_to_self()` over the self-pipe.
+3. **Permanent Fix Applied:**
+   - Added a sandbox-aware `_LoopbackFreeProactorEventLoop` policy and an automatic 30-second per-test `faulthandler` watchdog timeout in [conftest.py](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/tests/conftest.py).
+   - Converted the FastAPI route handlers in [main.py](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/app/main.py) and `require_owner_auth` in [security.py](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/app/security.py) to `async def` so ASGI requests execute directly on the event loop without requiring cross-thread self-pipe wakeups.
+   - Also fixed `event.inspect(target)` -> `sqlalchemy.inspect(target)` in [models.py](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/app/models.py) uncovered once `test_database.py` ran after `test_dashboard_api.py`.
+
+| Test Case | Target Task | Acceptance Criteria Verified | Result |
 | :--- | :--- | :--- | :--- |
-| `tests/test_env.py` | `T1.1`, `T1.2` | Git repo initialized, directory tree exists, FFmpeg + NVENC detected, SymPy/NumPy/SciPy/Pillow importable. | ⏳ Pending Phase 1 start |
-| `tests/test_config_security.py` | `T1.3` | Config loads defaults safely; credential vault encrypts/decrypts secrets; tampering raises `InvalidToken`; rotating log file created. | ⏳ Pending Phase 1 start |
-| `tests/test_database.py` | `T1.4` | SQLite WAL mode active; Episode/Version/Asset/Job/Audit/Sponsor tables work; approved `EpisodeVersion` raises error on mutation attempt; unapproved asset without license is rejected. | ⏳ Pending Phase 1 start |
-| `tests/test_job_queue.py` | `T1.5` | Persistent job enqueue, idempotency deduplication, retry with backoff on transient failure, recovery of `RUNNING` jobs after simulated worker restart. | ⏳ Pending Phase 1 start |
-| `tests/test_render_smoke.py` | `T1.6` | Renders 60-frame (2.0s @ 30fps, 1080x1920) vertical test MP4 using RTX 5080 `h264_nvenc` + procedural WAV audio; `ffprobe` confirms `width=1080`, `height=1920`, `nb_frames=60`, `r_frame_rate=30/1`, and valid audio stream. | ⏳ Pending Phase 1 start |
-| `tests/test_dashboard_api.py` | `T1.7` | Unauthenticated requests to protected routes return `401/403`; authenticated requests load mobile-responsive dashboard (`200 OK`), health status, job queue, and trigger smoke test. | ⏳ Pending Phase 1 start |
-| `tests/test_backup.py` | `T1.8` | Creates timestamped atomic backup of SQLite DB + config manifest and restores to a temporary directory with 100% row parity. | ⏳ Pending Phase 1 start |
+| `tests/test_env.py::test_git_repository_initialized` | `T1.1` | `.git` directory exists and active branch is `main`. | ✅ **PASSED** |
+| `tests/test_env.py::test_required_project_directories_and_tracking_docs_exist` | `T1.1` | All required runtime directories (`app/`, `assets/`, `renders/`, `data/`, `backups/`, `logs/`, `scripts/`, `tests/`) and all 8 tracking/changelog markdown files exist and are non-empty. | ✅ **PASSED** |
+| `tests/test_env.py::test_ffmpeg_and_nvenc_available` | `T1.2` | FFmpeg v9.0.2 binary resolved and `h264_nvenc` / `hevc_nvenc` hardware encoders verified. | ✅ **PASSED** |
+| `tests/test_env.py::test_gpu_rtx_5080_detected` | `T1.2` | `nvidia-smi` telemetry confirms `NVIDIA GeForce RTX 5080` with `16,303 MiB` VRAM. | ✅ **PASSED** |
+| `tests/test_env.py::test_math_and_scientific_dependencies_importable` | `T1.2` | `sympy`, `numpy`, `scipy`, and `PIL` import cleanly; `SymPy` evaluates `10 / 0` as `zoo` (ComplexInfinity / undefined), never a finite number. | ✅ **PASSED** |
+| `tests/test_config_security.py::test_settings_bootstrap_and_safe_defaults` | `T1.3` | `.env` auto-bootstraps secure random `MM_ADMIN_TOKEN`, `MM_VAULT_KEY`, and `MM_SESSION_SECRET`; paid LLM calls default to `False` (`$0.00` budget). | ✅ **PASSED** |
+| `tests/test_config_security.py::test_credential_vault_encryption_and_tamper_detection` | `T1.3` | `CredentialVault` encrypts secrets on disk (no plaintext on disk) and raises `InvalidToken` if ciphertext is tampered with. | ✅ **PASSED** |
+| `tests/test_config_security.py::test_structured_json_logging` | `T1.3` | Rotating JSON logger writes structured JSON log lines with UTC timestamps and levels. | ✅ **PASSED** |
+| `tests/test_database.py::test_sqlite_wal_mode_and_episode_version_immutability` | `T1.4` | SQLite runs in `WAL` mode; unverified math blocks approval; unapproved version blocks publishing; `APPROVED` `EpisodeVersion` raises `ImmutableRecordError` on any update or delete attempt. | ✅ **PASSED** |
+| `tests/test_database.py::test_asset_provenance_and_sponsor_approval_guards` | `T1.4` | Assets without source/license/provenance or commercial/sponsored clearance raise `SafetyPolicyViolationError`; substantive `SponsorLead` cannot be marked `SENT` without owner approval. | ✅ **PASSED** |
+| `tests/test_job_queue.py::test_persistent_job_queue_idempotency_retry_and_recovery` | `T1.5` | Duplicate `idempotency_key` deduplicates; transient failures retry with backoff and succeed; stranded `RUNNING` jobs recover to `QUEUED` on restart. | ✅ **PASSED** |
+| `tests/test_render_smoke.py::test_gpu_nvenc_render_smoke_test_produces_valid_1080x1920_mp4` | `T1.6` | Renders 60-frame (`2.0s @ 30fps`, `1080x1920`) vertical MP4 via RTX 5080 `h264_nvenc` + procedural WAV motif (`aac` audio); verified via FFmpeg stream/frame inspection. | ✅ **PASSED** |
+| `tests/test_dashboard_api.py::test_dashboard_auth_and_endpoints` | `T1.7` | Unauthenticated requests return `401`; valid token login sets session cookie; mobile-responsive dashboard renders GPU/storage/queue telemetry; episode creation API logs audit events. | ✅ **PASSED** |
+| `tests/test_backup.py::test_atomic_backup_verify_and_restore_parity` | `T1.8` | Online `sqlite3.backup` creates timestamped zip with SHA-256 manifest, passes `PRAGMA integrity_check`, and restores with 100% row parity. | ✅ **PASSED** |
