@@ -143,3 +143,43 @@
   5. **Stage 4 — Cinematic Scene Composition & 10-Second Quality Demonstration (`T2R.5`):** Remove technical borders/banners; add cinematic 2D virtual camera (smooth pan/zoom/shake), ground contact shadows, and visual hierarchy; render the 5-scene **Animation Quality Demonstration** (`1080x1920`, `60 fps`, `10.0s`: Walking → Curiosity → Interaction with mysterious floating mathematical artifact → Surprise/Recoil/Stumble → Recovery & Glasses Adjustment).
   6. **Stage 5 — Technical QA Validators & Visual Review Gate (`T2R.6`):** Implement automated QA metrics for foot-slip distance (`< 1.0 px` while planted), joint-angle constraint bounds, frame-to-frame velocity continuity, character scale stability, and anti-aliasing quality; present the rendered demonstration MP4 and model sheet for owner visual approval.
 - **Cost:** $0.
+
+---
+
+## DEC-009: Reusable Physical Interaction Engine & Revised 16-Second Pilot Timeline
+- **Date:** 2026-11-11
+- **Status:** `PROPOSED & IMPLEMENTED FOR OWNER REVIEW`
+- **Context:**
+  - In the initial Episode 001 pilot, the calculator expressions (`10 ÷ 2 =`, `10 ÷ 1 =`, `10 ÷ 0 =`) were pre-populated rather than built token-by-token through physical hand-to-button contact, and 10 seconds (`300 frames`) was too compressed for 15 distinct readable button presses (`1`, `0`, `÷`, `2`, `=` / `1`, `0`, `÷`, `1`, `=` / `1`, `0`, `÷`, `0`, `=`) plus character walk-in and reactions.
+- **Decision:**
+  1. **General-Purpose Physical Interaction Engine (`app/interaction_engine.py`):**
+     - Every interactive scene object (`InteractiveObject`) defines object-local coordinates, local-to-world transforms (`local_to_world`, `world_to_local`), an outer collision bounding box (`collision_box_local`), and named `ContactTarget` regions (`local_pos`, `radius_px`, `depression_offset_local`).
+     - Supports all 6 required physical interaction types across future episodes:
+       1. `PRESS_BUTTON` (buttons, keypad keys, switches)
+       2. `PICK_UP` / `HOLD` / `MOVE_OBJECT` / `RELEASE_OBJECT` (attaching objects to hand effectors upon physical contact, moving in world space, releasing cleanly)
+       3. `OPEN_DOOR` / `CLOSE_DOOR` (contacting door handle and pivoting hinge state `0.0 <-> 1.0`)
+       4. `PUSH_OBJECT` / `PULL_OBJECT` (contacting side surface and translating object position while maintaining hand contact)
+       5. `TOUCH_MATH_SYMBOL` / `TOUCH_GEOMETRIC_SHAPE` (contact-gated highlighting/activation of mathematical entities)
+       6. Strict **Contact-Before-Activation Guard**: Object state changes and synchronized SFX fire *only* when `distance(hand_effector_world, target_world) <= target.radius_px`. Mutual exclusion prevents pressing one button while another button's input is registered.
+  2. **Upgraded 4x4 Calculator Keypad & 16.0-Second (`480 frames @ 30fps`) Timeline:**
+     - Upgraded the calculator prop to a 4-column × 4-row layout (`7 8 9 ÷`, `4 5 6 ×`, `1 2 3 −`, `C 0 + =`) with distinct color-coded operator keys and custom vector operator glyphs (`÷`, `×`, `−`, `+`, `=`).
+     - Recommended & implemented a **16.0-second (`480 frames @ 30fps`)** pilot timeline so all **15 individual button presses** (`1`, `0`, `÷`, `2`, `=` -> `5`; `1`, `0`, `÷`, `1`, `=` -> `10`; `1`, `0`, `÷`, `0`, `=` -> `UNDEFINED`) are physically contacted in order with natural compact inter-key hand arcs, visible button depression, tactile click SFX, and clear comedic reactions.
+- **Cost:** $0.
+
+---
+
+## DEC-010: Original Multi-Voice Musical Identity & Adaptive Audio System (`Option A`, `B`, `C`)
+- **Date:** 2026-11-11
+- **Status:** `AWAITING OWNER SELECTION OF MUSICAL THEME (OPTION A, B, OR C)`
+- **Context:**
+  - The initial pilot used a simple single-voice sine-wave arpeggio that lacked the personality, instrumentation, and comedic timing of a recognizable animated series theme.
+- **Evaluation of Music Production Approaches:**
+  1. *Paid Cloud AI Music APIs (Suno / Udio / ElevenLabs):* Require paid subscriptions and external API keys; excluded under zero-unapproved-spend rule (`$0.00`).
+  2. *Heavy Local Neural Audio Models (MusicGen):* Multi-GB downloads and cannot lock individual notes, tempo shifts, or sudden comedic pauses to exact video frame numbers.
+  3. *Multi-Voice Symbolic MIDI/Note Sequencer + Physical-Modeling Acoustic/Orchestral Synthesizer (`app/adaptive_audio.py`):* Generates 100% owner-original, commercially cleared multi-instrument compositions (modeled Clarinet/Woodwind, Pizzicato Strings, Kalimba/Marimba mallets, Plucked Guitar/Harpsichord, Upright Bass, and Brush/Woodblock percussion) with exact millisecond synchronization to scene events, adaptive variations (`EXPLORATION`, `SUSPENSE`, `CHAOS`, `RESOLUTION`), automatic comedic musical pauses, and automatic SFX ducking.
+- **Three Musical Candidates Generated for Owner Selection (`16.0s` each in `assets/audio/candidates/`):**
+  - **Option A (`candidate_a_orchestral_cartoon.wav`):** *Playful Orchestral Cartoon Comedy* — Mischievous woodwind/clarinet melody with grace notes, pizzicato strings, bouncy upright bass/tuba walking line, and xylophone/woodblock accents.
+  - **Option B (`candidate_b_electro_acoustic_adventure.wav`):** *Modern Electronic-Acoustic Adventure Comedy* — Upbeat marimba & plucked acoustic guitar hook with warm analog bell/brass lead, punchy bassline, and crisp brush-kit groove.
+  - **Option C (`candidate_c_quirky_minimalist_plucked.wav`):** *Quirky Minimalist Percussion & Plucked Instruments* — Clever puzzle-box motif with interlocking kalimba, pizzicato cello, and plucked lute/harpsichord over woodblocks, claves, and tuned percussion.
+- **Cost:** $0.
+

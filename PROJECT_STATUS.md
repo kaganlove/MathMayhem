@@ -1,8 +1,8 @@
 # Math Mayhem — Project Status
 
 **Last Updated:** 2026-11-11  
-**Current Phase:** Phase 2R — Character Redesign & Animation Pipeline Overhaul (`AWAITING OWNER VISUAL REVIEW OF 'THE MYSTERIOUS OBJECT' 10S QC ANIMATION`)  
-**Overall Health:** 🟢 Option C Cairo Protagonist Rig + 10s QC Animation (`qc_mysterious_object_10s.mp4`) Verified (`28/28` Tests Passing, `0.0 px` Foot Slip)
+**Current Phase:** Phase 3R — Animation Interaction & Audio Quality Upgrade (`AWAITING OWNER APPROVAL OF REVISED 16S ANIMATION & SELECTION OF MUSICAL THEME OPTION A, B, OR C`)  
+**Overall Health:** 🟢 Reusable Physical Interaction Engine + 15-Key Calculator Pilot (`16.0s`, `480 frames`) + 3 Musical Candidates Verified (`33/33` Tests Passing, `0.0 px` Foot Slip)
 
 ---
 
@@ -35,7 +35,11 @@
 ---
 
 ## Last Verified Checkpoint
-- **Checkpoint ID:** `CHK-005-EP001-OPTION-C-FINGERLESS`
-- **Timestamp:** 2026-11-11T16:11:00-06:00
-- **Completed:** Removed fingers/thumbs from Option C Cairo character rig (`app/cairo_character_rig.py`, `app/character_redesign_proposals.py`), regenerated all character sheets (`assets/character/*.png`) and *The Mysterious Object* QC video (`renders/previews/qc_mysterious_object_10s.mp4`), and rebuilt Episode 001 (*Never Divide by Zero*) 10s pilot (`app/episode001_pilot.py`, `renders/previews/ep001_pilot_10s_1080x1920.mp4`, `renders/previews/ep001_pilot_10s_540x960.mp4`, `renders/previews/ep001_pilot_contact_sheet.png`) using the fingerless Option C rig with `0.0 px` foot slip and 28/28 passing acceptance tests.
-- **Next Action:** **Stop and request owner visual review** of the rebuilt Episode 001 (*Never Divide by Zero*) before starting Phase 4 (AI Production Agents).
+- **Checkpoint ID:** `CHK-006-INTERACTION-AND-AUDIO-UPGRADE`
+- **Timestamp:** 2026-11-11T16:51:00-06:00
+- **Completed (Pending Owner Approval & Music Selection):**
+  1. Built general-purpose `PhysicalInteractionEngine` (`app/interaction_engine.py`) supporting button presses, object pickup/hold/move/release, door open/close, push/pull, and touching mathematical symbols/shapes with strict contact-before-activation enforcement.
+  2. Upgraded 4×4 calculator keypad (`app/math_renderer.py`) and rebuilt Episode 001 (`app/episode001_pilot.py`) on a **16.0-second (`480 frames @ 30fps`)** timeline where the fingerless Option C protagonist physically reaches and contacts all **15 buttons** (`1, 0, ÷, 2, =` -> `5`; `1, 0, ÷, 1, =` -> `10`; `1, 0, ÷, 0, =` -> `UNDEFINED`) with unobstructed head/torso clearance, shoulder protraction, and `0.0 px` foot slip.
+  3. Built `AdaptiveAudioEngine` (`app/adaptive_audio.py`) and generated **3 distinct 16-second original musical candidates** (`Option A: Orchestral Cartoon`, `Option B: Electro-Acoustic Adventure`, `Option C: Quirky Minimalist Plucked`) in `assets/audio/candidates/`.
+  4. Rendered both the **16s Interaction Debug Preview** (`renders/previews/ep001_interaction_debug_preview.mp4` + `ep001_interaction_debug_contact_sheet.png`) and the **16s Clean Production Pilot** (`renders/previews/ep001_pilot_16s_1080x1920.mp4` + `ep001_pilot_16s_contact_sheet.png`). All `33/33` automated tests pass (`tests/test_interaction_and_audio.py`).
+- **Next Action:** **Stop and await owner approval of the revised animation and owner selection of the musical theme (`Option A`, `Option B`, or `Option C`). Do NOT mark Phase 3R complete or proceed to Phase 4 until owner approval.**

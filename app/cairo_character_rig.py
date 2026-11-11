@@ -44,8 +44,8 @@ class OptionCCharacterSpec:
     torso_length: float = 158.0
     hip_half_width: float = 13.0
     shoulder_half_width: float = 10.0
-    upper_arm_length: float = 82.0
-    forearm_length: float = 78.0
+    upper_arm_length: float = 144.0
+    forearm_length: float = 140.0
     thigh_length: float = 92.0
     shin_length: float = 90.0
     ankle_height: float = 16.0
@@ -118,6 +118,10 @@ class CairoRigState:
     right_brow_raise_px: float = 0.0
     brow_slant_deg: float = 0.0  # + = curious/concerned arch, - = focused/determined slant
     mouth_state: str = "smirk"  # `neutral` | `smirk` | `curious_o` | `open_gasp` | `firm`
+
+    # Natural shoulder protraction & collision-aware obstacle boxes
+    right_shoulder_protract_px: float = 0.0
+    obstacle_boxes: List[Tuple[float, float, float, float]] = field(default_factory=list)
 
 
 @dataclass
@@ -201,8 +205,16 @@ def solve_cairo_anatomy(spec: OptionCCharacterSpec, state: CairoRigState) -> Sol
     shin_l = spec.shin_length * s
     max_leg_reach = (thigh_l + shin_l) - 0.25
 
-    # Ensure pelvis respects planted-foot reach so legs never stretch and planted ankles never slip
+    # Ensure pelvis respects obstacle collision boxes and planted-foot reach so legs never stretch and planted ankles never slip
     px, py = state.pelvis_x, state.pelvis_y
+    body_clearance_px = 32.0 * s
+    for ox1, oy1, ox2, oy2 in state.obstacle_boxes:
+        if oy1 - 120.0 <= py <= oy2 + 120.0:
+            if px < (ox1 + ox2) * 0.5 and px + body_clearance_px > ox1:
+                px = ox1 - body_clearance_px
+            elif px >= (ox1 + ox2) * 0.5 and px - body_clearance_px < ox2:
+                px = ox2 + body_clearance_px
+
     for _ in range(3):
         if state.left_foot_planted:
             lhx, lhy = px - hip_dx, py
@@ -242,8 +254,9 @@ def solve_cairo_anatomy(spec: OptionCCharacterSpec, state: CairoRigState) -> Sol
 
     left_hip: Point = (pelvis[0] - hip_dx, pelvis[1])
     right_hip: Point = (pelvis[0] + hip_dx, pelvis[1])
+    protract_dx = max(-18.0, min(36.0, state.right_shoulder_protract_px)) * s * state.facing
     left_shoulder: Point = (shoulder_center[0] - sh_dx, shoulder_center[1] + 4.0 * s)
-    right_shoulder: Point = (shoulder_center[0] + sh_dx, shoulder_center[1] + 4.0 * s)
+    right_shoulder: Point = (shoulder_center[0] + sh_dx + protract_dx, shoulder_center[1] + 4.0 * s)
 
     # Neck & Head Center
     neck_rad = lean_rad + math.radians(state.spine_arch_deg * 0.25 * state.facing)

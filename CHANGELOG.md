@@ -2,6 +2,18 @@
 
 All notable changes to the **Math Mayhem** project are documented in this file.
 
+## [0.5.0-phase3r-interaction-audio] — 2026-11-11
+### Added
+- Implemented reusable physical interaction engine (`app/interaction_engine.py`) supporting pressing buttons/switches, picking up/holding/moving/releasing objects, opening/closing doors, pushing/pulling objects, and touching mathematical symbols/shapes using object-local coordinates, collision bounds, contact points, and strict contact-before-activation checks (`T3R.1`).
+- Implemented multi-voice physical-modeling synthesizer and adaptive audio engine (`app/adaptive_audio.py`) supporting `EXPLORATION`, `SUSPENSE`, `CHAOS`, and `RESOLUTION` variations, comedic pauses, contact-synchronized SFX (`button_click`, chimes, division-by-zero alarm), sidechain ducking, and commercial provenance tracking (`T3R.4`).
+- Generated three distinct 16-second original musical theme candidates (`assets/audio/candidates/candidate_a_orchestral_cartoon.wav`, `candidate_b_electro_acoustic_adventure.wav`, `candidate_c_quirky_minimalist_plucked.wav`) for owner selection (`T3R.4`).
+- Added 5-test automated interaction and audio verification suite (`tests/test_interaction_and_audio.py`); all 33/33 project tests pass (`T3R.6`).
+
+### Changed
+- Upgraded calculator prop (`app/math_renderer.py`) to a 4×4 keypad (`7 8 9 ÷`, `4 5 6 ×`, `1 2 3 −`, `C 0 + =`) with custom vector operator glyphs and physical button depression offset (`T3R.2`).
+- Upgraded Option C Cairo character rig (`app/cairo_character_rig.py`) with shoulder protraction (`right_shoulder_protract_px`) and horizontal obstacle collision clearance (`obstacle_boxes`) (`T3R.3`).
+- Rebuilt Episode 001 (*Never Divide by Zero*) (`app/episode001_pilot.py`) on a recommended 16.0-second (`480 frames @ 30fps`) timeline driving all 15 physical calculator button presses (`1, 0, ÷, 2, =` -> `5`; `1, 0, ÷, 1, =` -> `10`; `1, 0, ÷, 0, =` -> `UNDEFINED`), producing both the 16s Interaction Debug Preview (`renders/previews/ep001_interaction_debug_preview.mp4`) and 16s Clean Production Render (`renders/previews/ep001_pilot_16s_1080x1920.mp4`) (`T3R.2`, `T3R.5`).
+
 ## [0.4.1-ep001-option-c] — 2026-11-11
 ### Changed
 - Removed fingers and thumb bumps from the Option C Cairo character rig (`app/cairo_character_rig.py`, `app/character_redesign_proposals.py`) so arms terminate in clean, seamless fingerless rounded ends.

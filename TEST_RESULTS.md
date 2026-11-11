@@ -106,3 +106,32 @@
 | `tests/test_animation_qc.py::test_mysterious_object_timeline_qa_invariants` | `T2R.4`, `T2R.5` | Evaluates all 300 frames of *The Mysterious Object* and verifies `0.0 px` planted foot slip, `0.0 px` limb/head length drift, and smooth pelvis/head velocity continuity. | ✅ **PASSED** |
 | `tests/test_animation_qc.py::test_option_c_sheets_and_qc_video_outputs_exist` | `T2R.2`–`T2R.5` | Verifies generation of `assets/character/character_design_alternatives.png`, `assets/character/protagonist_model_sheet.png`, `assets/character/protagonist_expression_pose_matrix.png`, `renders/previews/qc_mysterious_object_10s.mp4`, and `renders/previews/qc_mysterious_object_contact_sheet.png`. | ✅ **PASSED** |
 
+---
+
+## Phase 3R — Animation Interaction & Audio Quality Upgrade Acceptance Suite (`T3R.1` – `T3R.6`)
+- **Date:** 2026-11-11
+- **Command:** `.\.venv\Scripts\python.exe -m pytest -v`
+- **Execution Time:** `44.34s` (All 33 tests across Phase 1, Phase 2, Phase 3, Phase 2R, and Phase 3R)
+- **Summary:** ✅ **33 PASSED, 0 FAILED**
+
+### Programmatic QA Metrics for Revised 16-Second Episode 001 Pilot (`480 frames @ 30fps`, `1080x1920`)
+- **`frames_validated`:** `426` (all character-active frames `54..479`)
+- **`interaction_events_count`:** `15` (`["1", "0", "÷", "2", "=", "1", "0", "÷", "1", "=", "1", "0", "÷", "0", "="]`)
+- **`max_contact_distance_at_trigger_px`:** `4.0 px` (`<= 24.0 px` target radius — 100% contact-before-activation verified)
+- **`max_left_planted_foot_slip_px`:** `0.0 px`
+- **`max_right_planted_foot_slip_px`:** `0.0 px`
+- **`leg_length_spread_px`:** `0.0 px`
+- **`arm_length_spread_px`:** `0.0 px`
+- **`head_radius_spread_px`:** `0.0 px`
+- **`max_pelvis_velocity_px_per_frame`:** `10.75 px/frame`
+- **`max_head_velocity_px_per_frame`:** `10.79 px/frame`
+
+| Test Case | Target Task | Acceptance Criteria Verified | Result |
+| :--- | :--- | :--- | :--- |
+| `tests/test_interaction_and_audio.py::test_reusable_physical_interaction_engine_all_capabilities` | `T3R.1` | Verifies object-local coordinate transforms, `PICK_UP`, `MOVE_OBJECT`, `RELEASE_OBJECT`, `OPEN_DOOR`, `CLOSE_DOOR`, `PUSH_OBJECT`, `PULL_OBJECT`, `TOUCH_MATH_SYMBOL`, `TOUCH_GEOMETRIC_SHAPE`, and rejects activation (`SafetyPolicyViolationError`) if `contact_time_sec` is reached without physical hand contact. | ✅ **PASSED** |
+| `tests/test_interaction_and_audio.py::test_ep001_fifteen_calculator_presses_contact_and_math_states` | `T3R.2` | Simulates all 480 frames of Episode 001 (`16.0s @ 30fps`) and verifies all 15 calculator keys (`1, 0, ÷, 2, =` -> `5`; `1, 0, ÷, 1, =` -> `10`; `1, 0, ÷, 0, =` -> `UNDEFINED`) are pressed in exact order with physical contact (`<= 4.0 px`), key depression (`4.0 px`), and mutual exclusion. | ✅ **PASSED** |
+| `tests/test_interaction_and_audio.py::test_ep001_rig_motion_collision_foot_locking_and_continuity` | `T3R.3` | Verifies `0.0 px` planted foot slip, `0.0 px` leg/arm/head proportion drift, smooth pelvis/head velocity (`10.75` / `10.79 px/frame`), and horizontal collision clearance from `EP001_CALC_BOX`. | ✅ **PASSED** |
+| `tests/test_interaction_and_audio.py::test_three_music_candidates_and_adaptive_audio_synchronization` | `T3R.4` | Generates all 3 original 16s musical theme candidates (`Option A`, `Option B`, `Option C`), verifies acoustic distinctness, non-clipping levels, commercial provenance registration in SQLite `Asset`, adaptive states (`EXPLORATION`, `SUSPENSE`, `CHAOS`), musical pause window, and 18 synchronized SFX cues (`15` clicks + `3` result chimes/alarms). | ✅ **PASSED** |
+| `tests/test_interaction_and_audio.py::test_ep001_debug_preview_and_clean_16s_production_render` | `T3R.5`, `T3R.6` | Verifies output video integrity (`1080x1920`, `480 frames`, `30.0 fps`, `aac` audio) and contact sheets for both `renders/previews/ep001_interaction_debug_preview.mp4` and `renders/previews/ep001_pilot_16s_1080x1920.mp4`. | ✅ **PASSED** |
+
+
