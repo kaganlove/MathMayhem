@@ -161,42 +161,9 @@ def _draw_expressive_hand(
     ctx.translate(wrist[0], wrist[1])
     ctx.rotate(math.radians(angle_deg))
     ctx.scale(scale, scale)
-
-    # Palm + thumb silhouette
-    ctx.new_path()
-    if pose == "point":
-        # Extended index finger + curled palm
-        ctx.arc(0, 8, 12, 0, 2 * math.pi)
-        ctx.set_source_rgb(*fill_rgb)
-        ctx.fill_preserve()
-        _set_ink(ctx, outline_rgb, outline_w)
-        ctx.stroke()
-        # Index finger
-        ctx.new_path()
-        ctx.move_to(5, 2)
-        ctx.line_to(24, 6)
-        ctx.arc(24, 10, 4.5, -math.pi / 2, math.pi / 2)
-        ctx.line_to(4, 14)
-        ctx.close_path()
-        ctx.set_source_rgb(*fill_rgb)
-        ctx.fill_preserve()
-        _set_ink(ctx, outline_rgb, outline_w)
-        ctx.stroke()
-    else:
-        # Expressive rounded palm with distinct thumb bump
-        ctx.arc(0, 10, 13, 0, 2 * math.pi)
-        ctx.set_source_rgb(*fill_rgb)
-        ctx.fill_preserve()
-        _set_ink(ctx, outline_rgb, outline_w)
-        ctx.stroke()
-        # Thumb
-        ctx.new_path()
-        ctx.arc(10, 5, 6.5, -math.pi * 0.6, math.pi * 0.6)
-        ctx.set_source_rgb(*fill_rgb)
-        ctx.fill_preserve()
-        _set_ink(ctx, outline_rgb, outline_w * 0.85)
-        ctx.stroke()
-
+    ctx.arc(2.0, 0.0, 6.8, 0, 2 * math.pi)
+    ctx.set_source_rgb(0.07, 0.09, 0.14)
+    ctx.fill()
     ctx.restore()
 
 

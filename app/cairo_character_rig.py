@@ -426,65 +426,14 @@ def _draw_hand(
     scale: float,
     pose: str = "relaxed",
 ) -> None:
-    """Draw an expressive cartoon hand (`relaxed`, `point`, `reach`, `spread`, `adjust_glasses`)."""
+    """Draw a clean, fingerless rounded hand cap at the wrist (no fingers, thumbs, or claws)."""
     ctx.save()
     ctx.translate(wrist[0], wrist[1])
     ctx.rotate(math.radians(angle_deg))
     ctx.scale(scale, scale)
-    ink = (0.06, 0.08, 0.12)
-
-    if pose in ("point", "adjust_glasses"):
-        ctx.arc(0, 6, 11.5, 0, 2 * math.pi)
-        ctx.set_source_rgb(1.0, 1.0, 1.0)
-        ctx.fill_preserve()
-        _set_ink(ctx, ink, 5.2)
-        ctx.stroke()
-        # Extended index finger
-        ctx.new_path()
-        ctx.move_to(4, -1)
-        ctx.line_to(24, 2)
-        ctx.arc(24, 6, 4.2, -math.pi / 2, math.pi / 2)
-        ctx.line_to(4, 10)
-        ctx.close_path()
-        ctx.set_source_rgb(1.0, 1.0, 1.0)
-        ctx.fill_preserve()
-        _set_ink(ctx, ink, 5.0)
-        ctx.stroke()
-    elif pose in ("reach", "spread"):
-        # Open palm with two expressive spread fingers + thumb
-        ctx.arc(0, 7, 12.5, 0, 2 * math.pi)
-        ctx.set_source_rgb(1.0, 1.0, 1.0)
-        ctx.fill_preserve()
-        _set_ink(ctx, ink, 5.2)
-        ctx.stroke()
-        for f_ang in (-22.0, 10.0):
-            ctx.save()
-            ctx.rotate(math.radians(f_ang))
-            ctx.new_path()
-            ctx.move_to(6, -1)
-            ctx.line_to(21, 1)
-            ctx.arc(21, 4.5, 3.8, -math.pi / 2, math.pi / 2)
-            ctx.line_to(6, 8)
-            ctx.close_path()
-            ctx.set_source_rgb(1.0, 1.0, 1.0)
-            ctx.fill_preserve()
-            _set_ink(ctx, ink, 4.6)
-            ctx.stroke()
-            ctx.restore()
-    else:
-        # Relaxed cartoon hand with thumb contour
-        ctx.arc(0, 8, 12.5, 0, 2 * math.pi)
-        ctx.set_source_rgb(1.0, 1.0, 1.0)
-        ctx.fill_preserve()
-        _set_ink(ctx, ink, 5.2)
-        ctx.stroke()
-        ctx.new_path()
-        ctx.arc(9, 4, 6.2, -math.pi * 0.6, math.pi * 0.6)
-        ctx.set_source_rgb(1.0, 1.0, 1.0)
-        ctx.fill_preserve()
-        _set_ink(ctx, ink, 4.6)
-        ctx.stroke()
-
+    ctx.arc(2.0, 0.0, 6.8, 0, 2 * math.pi)
+    ctx.set_source_rgb(0.07, 0.09, 0.14)
+    ctx.fill()
     ctx.restore()
 
 

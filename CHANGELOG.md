@@ -2,6 +2,11 @@
 
 All notable changes to the **Math Mayhem** project are documented in this file.
 
+## [0.4.1-ep001-option-c] — 2026-11-11
+### Changed
+- Removed fingers and thumb bumps from the Option C Cairo character rig (`app/cairo_character_rig.py`, `app/character_redesign_proposals.py`) so arms terminate in clean, seamless fingerless rounded ends.
+- Rebuilt Episode 001 (*Never Divide by Zero*) 10-second pilot (`app/episode001_pilot.py`) using the fingerless Option C Cairo character rig, world-space foot pinning (`0.0 px` planted foot slip), Cubic-Bezier easing, and zero floating punctuation symbols, producing `renders/previews/ep001_pilot_10s_1080x1920.mp4`, `renders/previews/ep001_pilot_10s_540x960.mp4`, and `renders/previews/ep001_pilot_contact_sheet.png`.
+
 ## [0.4.0-phase2r] — 2026-11-11
 ### Added
 - Evaluated 7 animation technologies (`DEC-008`) and added Cairo (`pycairo`) + `resvg-py` vector rendering engine (`T2R.1`).

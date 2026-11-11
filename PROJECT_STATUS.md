@@ -35,7 +35,7 @@
 ---
 
 ## Last Verified Checkpoint
-- **Checkpoint ID:** `CHK-004-PHASE2R-QC-COMPLETE`
-- **Timestamp:** 2026-11-11T15:28:00-06:00
-- **Completed:** Option C Cairo character rig (`app/cairo_character_rig.py`), turnaround & 8-pose model sheets (`assets/character/protagonist_model_sheet.png`, `assets/character/protagonist_expression_pose_matrix.png`), 10s *The Mysterious Object* QC animation (`app/qc_mysterious_object.py`, `renders/previews/qc_mysterious_object_10s.mp4`, `renders/previews/qc_mysterious_object_contact_sheet.png`), and 28/28 passing acceptance tests (`tests/test_animation_qc.py`).
-- **Next Action:** **Stop and request owner visual review** of `renders/previews/qc_mysterious_object_10s.mp4` and `renders/previews/qc_mysterious_object_contact_sheet.png`.
+- **Checkpoint ID:** `CHK-005-EP001-OPTION-C-FINGERLESS`
+- **Timestamp:** 2026-11-11T16:11:00-06:00
+- **Completed:** Removed fingers/thumbs from Option C Cairo character rig (`app/cairo_character_rig.py`, `app/character_redesign_proposals.py`), regenerated all character sheets (`assets/character/*.png`) and *The Mysterious Object* QC video (`renders/previews/qc_mysterious_object_10s.mp4`), and rebuilt Episode 001 (*Never Divide by Zero*) 10s pilot (`app/episode001_pilot.py`, `renders/previews/ep001_pilot_10s_1080x1920.mp4`, `renders/previews/ep001_pilot_10s_540x960.mp4`, `renders/previews/ep001_pilot_contact_sheet.png`) using the fingerless Option C rig with `0.0 px` foot slip and 28/28 passing acceptance tests.
+- **Next Action:** **Stop and request owner visual review** of the rebuilt Episode 001 (*Never Divide by Zero*) before starting Phase 4 (AI Production Agents).
