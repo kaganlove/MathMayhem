@@ -14,17 +14,14 @@ build/
 *.key
 data/*.vault
 
-# Local Runtime Databases, Logs, Backups & Renders
+# Local Runtime Databases, Logs, Backups & Temporary Renders
 data/*.db
 data/*.db-shm
 data/*.db-wal
 logs/*.log
- logs/*.log.*
+logs/*.log.*
 backups/*.zip
 backups/*.bak
-renders/previews/*.mp4
-renders/masters/*.mp4
-renders/smoke_test.mp4
 renders/tmp/
 
 # Local Binary Tools (if portable FFmpeg is stored locally)
