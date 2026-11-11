@@ -48,3 +48,19 @@
 | `tests/test_render_smoke.py::test_gpu_nvenc_render_smoke_test_produces_valid_1080x1920_mp4` | `T1.6` | Renders 60-frame (`2.0s @ 30fps`, `1080x1920`) vertical MP4 via RTX 5080 `h264_nvenc` + procedural WAV motif (`aac` audio); verified via FFmpeg stream/frame inspection. | ✅ **PASSED** |
 | `tests/test_dashboard_api.py::test_dashboard_auth_and_endpoints` | `T1.7` | Unauthenticated requests return `401`; valid token login sets session cookie; mobile-responsive dashboard renders GPU/storage/queue telemetry; episode creation API logs audit events. | ✅ **PASSED** |
 | `tests/test_backup.py::test_atomic_backup_verify_and_restore_parity` | `T1.8` | Online `sqlite3.backup` creates timestamped zip with SHA-256 manifest, passes `PRAGMA integrity_check`, and restores with 100% row parity. | ✅ **PASSED** |
+
+---
+
+## Phase 2 — Character Animation Acceptance Test Suite (`T2.1` – `T2.5`)
+- **Date:** 2026-11-11
+- **Command:** `.\.venv\Scripts\python.exe -m pytest -v`
+- **Execution Time:** `4.97s` (All 19 Phase 1 + Phase 2 tests)
+- **Summary:** ✅ **19 PASSED, 0 FAILED**
+
+| Test Case | Target Task | Acceptance Criteria Verified | Result |
+| :--- | :--- | :--- | :--- |
+| `tests/test_character_animation.py::test_canonical_character_invariants_and_violation_guards` | `T2.1` | Verifies messy short hair (`6` spikes), short beard, blank-lens glasses (`has_pupils=False`), `has_backpack=False`, and silent rules (`speaks=False`, `vocalizes=False`, `has_narrator=False`); raises `SafetyPolicyViolationError` if any invariant is violated. | ✅ **PASSED** |
+| `tests/test_character_animation.py::test_canonical_model_sheet_generation_and_db_registration` | `T2.1` | Generates `assets/character/canonical_model_sheet.png` + `.json` across 5 canonical poses and registers the asset in the SQLite `Asset` table with commercial & sponsored clearance. | ✅ **PASSED** |
+| `tests/test_character_animation.py::test_character_consistency_across_movements_and_poses` | `T2.2`, `T2.3` | Evaluates 5 continuous movements (`walk`, `run`, `head_tilt_gesture`, `button_press_prop_interaction`, `freeze_reaction`) across multiple phases and verifies blank-lens white interior pixels (`(255, 255, 255)`), 6 hair spikes, no backpack, and invariant torso geometry (`165.0 px`). | ✅ **PASSED** |
+| `tests/test_character_animation.py::test_phase2_multi_scene_multi_movement_showcase_render` | `T2.3` | Renders `1080x1920 @ 30fps` showcase MP4 via RTX 5080 `h264_nvenc` across **2 scenes** (`scene_white_calculator`, `scene_chalkboard_lab`) and **5 movements** (`walk`, `head_tilt_gesture`, `button_press_prop_interaction`, `freeze_reaction`, `run`) with verified frame/pixel consistency. | ✅ **PASSED** |
+| `tests/test_character_animation.py::test_dashboard_character_endpoints` | `T2.4` | Verifies `/api/character/spec` and `/api/character/model-sheet` endpoints on the authenticated dashboard. | ✅ **PASSED** |

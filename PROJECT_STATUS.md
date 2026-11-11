@@ -1,21 +1,18 @@
 # Math Mayhem — Project Status
 
 **Last Updated:** 2026-11-11  
-**Current Phase:** Phase 1 — Foundation (`COMPLETED — AWAITING OWNER GATE REVIEW`)  
-**Overall Health:** 🟢 All 14 Phase 1 Acceptance Tests Passing
+**Current Phase:** Phase 2 — Character Animation (`COMPLETED — AWAITING OWNER GATE REVIEW`)  
+**Overall Health:** 🟢 All 19 Phase 1 + Phase 2 Acceptance Tests Passing (`4.97s`)
 
 ---
 
 ## Executive Summary
-Phase 1 (Foundation) has been implemented and verified on the owner's CLX desktop (Windows 11, NVIDIA GeForce RTX 5080 16GB, Python 3.13.9):
-1. **Git Repository & Scaffolding (`T1.1`):** Initialized on `main` branch with `.gitignore`, `CHANGELOG.md`, and complete directory hierarchy.
-2. **Environment & Hardware Encoding (`T1.2`):** `.venv` configured with pinned `requirements.txt`, `SymPy`, `NumPy`, `SciPy`, `Pillow`, and `FFmpeg v9.0.2` with verified `h264_nvenc` / `hevc_nvenc` / `av1_nvenc` support on the RTX 5080.
-3. **Security, Config & Logging (`T1.3`):** Auto-bootstrapped `.env`, Fernet-encrypted credential vault (`app/security.py`), token/session authentication, and rotating JSON audit logging (`app/logging_config.py`).
-4. **Database & Safety Guardrails (`T1.4`):** SQLite WAL database (`app/database.py`, `app/models.py`) enforcing immutable `EpisodeVersion` records after approval, mandatory asset provenance/license clearance, and mandatory owner approval before publishing or sending substantive sponsor emails.
-5. **Persistent Job Queue (`T1.5`):** SQLite-backed job queue (`app/queue.py`) with idempotency keys, exponential retry backoff, and crash recovery of interrupted `RUNNING` jobs.
-6. **GPU Render Smoke Test (`T1.6`):** `app/render_smoke.py` renders a 60-frame (`2.0s @ 30fps`, `1080x1920`) vertical MP4 encoded via RTX 5080 `h264_nvenc` with a 100% original procedural musical motif (`aac`) and verifies exact frame count and stream headers.
-7. **Local Dashboard Shell (`T1.7`):** Mobile-responsive FastAPI web application (`app/main.py`, `app/templates/dashboard.html`) protected by owner authentication.
-8. **Automated Backup & Restore (`T1.8`):** `scripts/backup.py` performs atomic online SQLite backups with SHA-256 manifest verification and `PRAGMA integrity_check`.
+- **Phase 1 (Foundation):** Completed, verified (`14/14` tests), committed, pushed to GitHub (`kaganlove/MathMayhem`), and approved by owner.
+- **Phase 2 (Character Animation):** Completed and verified (`19/19` total tests passing):
+  1. **Canonical Character Spec & Parametric 2D Rig (`T2.1`):** Implemented `app/character_rig.py` enforcing all Creative Bible invariants: messy short hair (6 deterministic spikes), short beard, blank-lens glasses (`has_pupils=False`), **NO backpack (`has_backpack=False`)**, and strictly silent (`speaks=False`, `vocalizes=False`, `has_narrator=False`). Generated canonical model sheet at `assets/character/canonical_model_sheet.png` + `.json` and registered it in the SQLite `Asset` table with commercial & sponsored rights provenance.
+  2. **Pose Library & Motion Solvers (`T2.2`):** Implemented 5 canonical poses (`idle`, `curious_tilt`, `typing_reach`, `freeze_shock`, `scramble_panic`) and 5 continuous motion solvers (`walk`, `run`, `head_tilt_gesture`, `button_press_prop_interaction`, `freeze_reaction`) with smooth linear interpolation (`lerp_pose`).
+  3. **Multi-Scene Framing & Visual Consistency Validator (`T2.3`):** Implemented `app/character_scenes.py` rendering the character across **2 distinct scenes** (`scene_white_calculator` and `scene_chalkboard_lab`) and **5 movements** (`walk`, `head_tilt_gesture`, `button_press_prop_interaction`, `freeze_reaction`, `run`) into `renders/previews/phase2_character_showcase.mp4` (`1080x1920 @ 30fps`, `120 frames`, RTX 5080 `h264_nvenc`). Pixel-level and geometric consistency checks confirm blank white lenses (`(255, 255, 255)`), invariant torso proportions (`165.0 px`), 6 hair spikes, and zero backpack across every scene and movement.
+  4. **Dashboard Integration (`T2.4`):** Added `/api/character/spec`, `/api/character/model-sheet`, and `/api/character/render-showcase` endpoints plus a "Render Phase 2 Showcase" button in `app/templates/dashboard.html`.
 
 ---
 
@@ -23,9 +20,9 @@ Phase 1 (Foundation) has been implemented and verified on the owner's CLX deskto
 
 | Phase | Name | Status | Gate Criteria | Evidence / Approval |
 | :--- | :--- | :--- | :--- | :--- |
-| **Phase 1** | **Foundation** | 🟢 **Completed (Awaiting Owner Review)** | Reproducible setup, basic dashboard runs, GPU/FFmpeg render smoke test completes, tests documented. | `14/14` pytest suite passed (`TEST_RESULTS.md`), `renders/smoke_test.mp4` verified. |
-| **Phase 2** | **Character Animation** | ⚪ Not Started | Canonical character sheet (messy short hair, short beard, blank-lens glasses, no pupils, no backpack, silent), reusable rig, consistent across ≥3 movements and ≥2 scenes. | Locked until Phase 1 review approved. |
-| **Phase 3** | **Mathematical Animation** | ⚪ Not Started | Exact notation, SymPy symbolic/numerical verification, separate correct math from fictional effects, Episode 001 opening 10s (1080x1920, 30fps, 300 frames) rendered & approved. | Locked until Phase 2 complete. |
+| **Phase 1** | **Foundation** | ✅ **Approved** | Reproducible setup, basic dashboard runs, GPU/FFmpeg render smoke test completes, tests documented. | `14/14` pytest suite passed; Owner Approved. |
+| **Phase 2** | **Character Animation** | 🟢 **Completed (Awaiting Owner Review)** | Canonical character sheet (messy short hair, short beard, blank-lens glasses, no pupils, no backpack, silent), reusable rig, consistent across ≥3 movements and ≥2 scenes. | `19/19` pytest suite passed (`TEST_RESULTS.md`), `assets/character/canonical_model_sheet.png`, `renders/previews/phase2_character_showcase.mp4`. |
+| **Phase 3** | **Mathematical Animation** | ⚪ Not Started | Exact notation, SymPy symbolic/numerical verification, separate correct math from fictional effects, Episode 001 opening 10s (1080x1920, 30fps, 300 frames) rendered & approved. | Locked until Phase 2 review approved. |
 | **Phase 4** | **AI Production Agents** | ⚪ Not Started | Structured pipeline (research → script → storyboard → math verifier → scene planner → animation → procedural audio/motif → render → QA → package), 1 full pilot episode end-to-end. | Locked until Phase 3 complete. |
 | **Phase 5** | **Remote Phone Control** | ⚪ Not Started | Mobile-responsive dashboard, secure remote access, recovery after disconnect, owner submits idea from phone, views status, approves test preview. | Locked until Phase 4 complete. |
 | **Phase 6** | **Onboarding, Distribution, Monetization & Sponsors** | ⚪ Not Started | Guided setup wizard, platform adapters with verified quotas/fallbacks, immutable approval gate, sponsor CRM dry-run proving zero unapproved substantive emails. | Locked until Phase 5 complete. |
@@ -34,7 +31,7 @@ Phase 1 (Foundation) has been implemented and verified on the owner's CLX deskto
 ---
 
 ## Last Verified Checkpoint
-- **Checkpoint ID:** `CHK-001-PHASE1-COMPLETE`
-- **Timestamp:** 2026-11-11T12:45:00-06:00
-- **Completed:** All Phase 1 tasks (`T1.1` – `T1.9`), initial database & backup snapshot created, 14/14 acceptance tests passing.
-- **Next Action:** **Stop and request owner review of Phase 1** before starting Phase 2 (Character Animation).
+- **Checkpoint ID:** `CHK-002-PHASE2-COMPLETE`
+- **Timestamp:** 2026-11-11T13:20:00-06:00
+- **Completed:** All Phase 2 tasks (`T2.1` – `T2.5`), canonical model sheet (`assets/character/canonical_model_sheet.png`), multi-scene showcase (`renders/previews/phase2_character_showcase.mp4`), 19/19 acceptance tests passing.
+- **Next Action:** **Stop and request owner review of Phase 2** before starting Phase 3 (Mathematical Animation).

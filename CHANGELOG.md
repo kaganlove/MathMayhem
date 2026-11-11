@@ -2,6 +2,14 @@
 
 All notable changes to the **Math Mayhem** project are documented in this file.
 
+## [0.2.0-phase2] — 2026-11-11
+### Added
+- Implemented canonical stick-figure adventurer rig and pose/motion library (`app/character_rig.py`) enforcing messy short hair, short beard, blank-lens glasses (no pupils), no backpack, and silent rules (`T2.1`, `T2.2`).
+- Generated canonical character model sheet (`assets/character/canonical_model_sheet.png` and `.json`) and registered it in the SQLite `Asset` registry (`T2.1`).
+- Implemented multi-scene framing, prop interaction, and pixel/geometric consistency validator (`app/character_scenes.py`) across 2 scenes (`scene_white_calculator`, `scene_chalkboard_lab`) and 5 movements (`walk`, `head_tilt_gesture`, `button_press_prop_interaction`, `freeze_reaction`, `run`) (`T2.3`).
+- Added character rig inspection and showcase rendering endpoints to the FastAPI dashboard (`app/main.py`, `app/templates/dashboard.html`) (`T2.4`).
+- Added 5-test Phase 2 acceptance suite (`tests/test_character_animation.py`); all 19/19 project tests pass (`T2.5`).
+
 ## [0.1.0-phase1] — 2026-11-11
 ### Added
 - Initialized persistent tracking suite (`PROJECT_STATUS.md`, `TASKS.md`, `DECISIONS.md`, `ARCHITECTURE.md`, `TEST_RESULTS.md`, `BLOCKERS.md`, `RUNBOOK.md`).

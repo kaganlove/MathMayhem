@@ -13,6 +13,12 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app import __version__
+from app.character_rig import (
+    CharacterCanonicalSpec,
+    POSE_LIBRARY,
+    generate_canonical_model_sheet,
+)
+from app.character_scenes import render_phase2_character_showcase
 from app.config import Settings, get_settings
 from app.database import create_db_engine, init_db, make_session_factory
 from app.logging_config import setup_logging
@@ -35,11 +41,21 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     session_factory = make_session_factory(engine)
     job_queue = PersistentJobQueue(session_factory)
 
-    # Register default Phase 1 handlers
+    # Register default Phase 1 & Phase 2 handlers
     job_queue.register_handler(
         "gpu_smoke_render",
         lambda payload: run_gpu_render_smoke_test(
             frame_count=int(payload.get("frame_count", 60)),
+            fps=int(payload.get("fps", 30)),
+            width=int(payload.get("width", 1080)),
+            height=int(payload.get("height", 1920)),
+            settings=cfg,
+        ),
+    )
+    job_queue.register_handler(
+        "phase2_character_showcase",
+        lambda payload: render_phase2_character_showcase(
+            frame_count=int(payload.get("frame_count", 120)),
             fps=int(payload.get("fps", 30)),
             width=int(payload.get("width", 1080)),
             height=int(payload.get("height", 1920)),
@@ -170,6 +186,55 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
             )
         import json
 
+        return {
+            "job_id": processed.id,
+            "status": processed.status,
+            "result": json.loads(processed.result_json or "{}"),
+        }
+
+    @app.get("/api/character/spec")
+    async def get_character_spec(_owner: str = Depends(require_owner_auth)) -> Dict[str, Any]:
+        from dataclasses import asdict
+
+        spec = CharacterCanonicalSpec()
+        spec.validate_invariants()
+        return {
+            "spec": asdict(spec),
+            "poses": sorted(POSE_LIBRARY.keys()),
+            "movements": [
+                "walk",
+                "run",
+                "head_tilt_gesture",
+                "button_press_prop_interaction",
+                "freeze_reaction",
+            ],
+        }
+
+    @app.post("/api/character/model-sheet")
+    async def build_character_model_sheet(_owner: str = Depends(require_owner_auth)) -> Dict[str, Any]:
+        with session_factory() as session:
+            return generate_canonical_model_sheet(settings=cfg, session=session)
+
+    @app.post("/api/character/render-showcase")
+    async def trigger_character_showcase(
+        frame_count: int = 120,
+        owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        import json
+
+        idem_key = f"char_showcase_{uuid.uuid4().hex[:12]}"
+        job_queue.enqueue(
+            job_type="phase2_character_showcase",
+            payload={"frame_count": frame_count, "fps": 30, "width": 1080, "height": 1920},
+            idempotency_key=idem_key,
+            owner_id=owner,
+        )
+        processed = job_queue.process_next()
+        if not processed or processed.status != "COMPLETED":
+            raise HTTPException(
+                status_code=500,
+                detail=f"Character showcase job failed: {processed.error_message if processed else 'not processed'}",
+            )
         return {
             "job_id": processed.id,
             "status": processed.status,

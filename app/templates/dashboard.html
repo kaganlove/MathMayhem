@@ -96,10 +96,11 @@
   <header>
     <div class="brand">
       <h1>Math Mayhem</h1>
-      <span class="badge">PHASE 1 FOUNDATION</span>
+      <span class="badge">PHASE 2 CHARACTER RIG</span>
     </div>
-    <div>
+    <div style="display:flex; gap:0.5rem;">
       <button id="smokeBtn" onclick="triggerSmokeTest()">Run RTX 5080 Smoke Render</button>
+      <button id="charBtn" onclick="triggerCharShowcase()">Render Phase 2 Showcase</button>
     </div>
   </header>
 
@@ -196,6 +197,29 @@
         const data = await res.json();
         if (res.ok) {
           out.textContent = 'Smoke render passed: ' + data.result.encoder + ' (' + data.result.width + 'x' + data.result.height + ', ' + data.result.frame_count + ' frames)';
+          setTimeout(() => window.location.reload(), 900);
+        } else {
+          out.textContent = 'Error: ' + (data.detail || JSON.stringify(data));
+        }
+      } catch (e) {
+        out.textContent = 'Request failed: ' + e;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+    async function triggerCharShowcase() {
+      const btn = document.getElementById('charBtn');
+      const out = document.getElementById('smokeResult');
+      btn.disabled = true;
+      out.textContent = 'Rendering Phase 2 Character Showcase (2 scenes, 4 movements)...';
+      try {
+        const res = await fetch('/api/character/render-showcase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          out.textContent = 'Character Showcase passed: ' + data.result.scenes_rendered.join(', ') + ' | Movements: ' + data.result.movements_rendered.join(', ');
           setTimeout(() => window.location.reload(), 900);
         } else {
           out.textContent = 'Error: ' + (data.detail || JSON.stringify(data));

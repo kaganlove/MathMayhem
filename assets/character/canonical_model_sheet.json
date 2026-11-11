@@ -1,0 +1,117 @@
+{
+  "spec": {
+    "character_id": "mm_adventurer_v1",
+    "name": "The Math Mayhem Adventurer",
+    "style": "2D Black-on-White Stick-Figure Line Art",
+    "hair_style": "messy_short",
+    "hair_spike_angles_deg": [
+      -55.0,
+      -32.0,
+      -12.0,
+      8.0,
+      28.0,
+      50.0
+    ],
+    "hair_spike_lengths_px": [
+      22.0,
+      28.0,
+      25.0,
+      30.0,
+      24.0,
+      20.0
+    ],
+    "has_short_beard": true,
+    "has_blank_lens_glasses": true,
+    "has_pupils": false,
+    "has_backpack": false,
+    "speaks": false,
+    "vocalizes": false,
+    "has_narrator": false,
+    "head_radius": 52.0,
+    "neck_length": 18.0,
+    "torso_length": 165.0,
+    "upper_arm_length": 82.0,
+    "forearm_length": 78.0,
+    "thigh_length": 98.0,
+    "shin_length": 96.0,
+    "stroke_width": 8
+  },
+  "poses": [
+    "idle",
+    "curious_tilt",
+    "typing_reach",
+    "freeze_shock",
+    "scramble_panic"
+  ],
+  "supported_motions": [
+    "walk",
+    "run",
+    "head_tilt_gesture",
+    "button_press_prop_interaction",
+    "freeze_reaction"
+  ],
+  "sheet_png_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\assets\\character\\canonical_model_sheet.png",
+  "sheet_png_sha256": "290bfd598f8e2d50b975977ab489fcef1937738d5cf8edcfa8e0f4fa3f887669",
+  "rendered_poses": [
+    {
+      "pose_name": "idle",
+      "label": "IDLE (NEUTRAL)",
+      "head_center": [
+        240.0,
+        480.25000000000006
+      ],
+      "right_hand": [
+        321.7311795926681,
+        646.9931502364435
+      ]
+    },
+    {
+      "pose_name": "curious_tilt",
+      "label": "CURIOUS HEAD TILT",
+      "head_center": [
+        657.0100455364199,
+        486.2758355711006
+      ],
+      "right_hand": [
+        641.3286410997732,
+        640.5923934020904
+      ]
+    },
+    {
+      "pose_name": "typing_reach",
+      "label": "PROP / BUTTON REACH",
+      "head_center": [
+        1040.6695251874635,
+        484.7764559987053
+      ],
+      "right_hand": [
+        1155.8984410700473,
+        523.8203343944084
+      ]
+    },
+    {
+      "pose_name": "freeze_shock",
+      "label": "FREEZE SHOCK (!)",
+      "head_center": [
+        1343.2343338106673,
+        484.42938806851157
+      ],
+      "right_hand": [
+        1470.5318049394734,
+        464.7772309229999
+      ]
+    },
+    {
+      "pose_name": "scramble_panic",
+      "label": "SCRAMBLE PANIC",
+      "head_center": [
+        1770.380842740961,
+        487.92373345413665
+      ],
+      "right_hand": [
+        1813.920355600408,
+        427.17331742072923
+      ]
+    }
+  ]
+}
