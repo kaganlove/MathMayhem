@@ -1,23 +1,24 @@
 {
+  "version": "2.0",
   "spec": {
-    "character_id": "mm_adventurer_v1",
+    "character_id": "mm_adventurer_v2",
     "name": "The Math Mayhem Adventurer",
-    "style": "2D Black-on-White Stick-Figure Line Art",
+    "style": "Commercial 2D Anti-Aliased Bezier Stick-Figure Line Art",
     "hair_style": "messy_short",
     "hair_spike_angles_deg": [
-      -55.0,
-      -32.0,
+      -58.0,
+      -34.0,
       -12.0,
-      8.0,
-      28.0,
-      50.0
+      10.0,
+      32.0,
+      54.0
     ],
     "hair_spike_lengths_px": [
       22.0,
       28.0,
-      25.0,
+      26.0,
       30.0,
-      24.0,
+      25.0,
       20.0
     ],
     "has_short_beard": true,
@@ -27,90 +28,187 @@
     "speaks": false,
     "vocalizes": false,
     "has_narrator": false,
-    "head_radius": 52.0,
+    "head_radius": 54.0,
     "neck_length": 18.0,
     "torso_length": 165.0,
-    "upper_arm_length": 82.0,
-    "forearm_length": 78.0,
-    "thigh_length": 98.0,
-    "shin_length": 96.0,
-    "stroke_width": 8
+    "shoulder_half_width": 0.0,
+    "hip_half_width": 0.0,
+    "upper_arm_length": 84.0,
+    "forearm_length": 80.0,
+    "hand_radius": 9.0,
+    "thigh_length": 100.0,
+    "shin_length": 98.0,
+    "foot_length": 32.0,
+    "stroke_width": 9
   },
+  "turnaround_views": [
+    "front",
+    "three_quarter",
+    "side"
+  ],
   "poses": [
     "idle",
     "curious_tilt",
     "typing_reach",
     "freeze_shock",
-    "scramble_panic"
+    "scramble_panic",
+    "curiosity",
+    "confusion",
+    "surprise",
+    "fear",
+    "excitement",
+    "frustration",
+    "celebration",
+    "hesitation",
+    "thinking",
+    "looking_around",
+    "inspecting_object",
+    "recoiling_from_danger",
+    "recovering_from_fall"
   ],
   "supported_motions": [
     "walk",
     "run",
     "head_tilt_gesture",
     "button_press_prop_interaction",
-    "freeze_reaction"
+    "freeze_reaction",
+    "curiosity",
+    "confusion",
+    "surprise",
+    "fear",
+    "excitement",
+    "frustration",
+    "celebration",
+    "hesitation",
+    "thinking",
+    "looking_around",
+    "inspecting_object",
+    "recoiling_from_danger",
+    "recovering_from_fall"
   ],
   "sheet_png_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\assets\\character\\canonical_model_sheet.png",
-  "sheet_png_sha256": "290bfd598f8e2d50b975977ab489fcef1937738d5cf8edcfa8e0f4fa3f887669",
+  "sheet_v2_png_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\assets\\character\\canonical_model_sheet_v2.png",
+  "sheet_svg_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\assets\\character\\canonical_model_sheet_v2.svg",
+  "sheet_png_sha256": "7e3ee80b0e64d1d900b0d21ef3cd1855527fe3bc831f989282089279a100c25f",
   "rendered_poses": [
     {
-      "pose_name": "idle",
-      "label": "IDLE (NEUTRAL)",
+      "pose_name": "turnaround_front",
+      "label": "FRONT VIEW",
       "head_center": [
-        240.0,
-        480.25000000000006
-      ],
-      "right_hand": [
-        321.7311795926681,
-        646.9931502364435
+        580.0,
+        564.5600000000001
       ]
     },
     {
-      "pose_name": "curious_tilt",
-      "label": "CURIOUS HEAD TILT",
+      "pose_name": "turnaround_three_quarter",
+      "label": "THREE-QUARTER (3/4) VIEW",
       "head_center": [
-        657.0100455364199,
-        486.2758355711006
-      ],
-      "right_hand": [
-        641.3286410997732,
-        640.5923934020904
+        1578.8344516276668,
+        565.3438828474063
       ]
     },
     {
-      "pose_name": "typing_reach",
-      "label": "PROP / BUTTON REACH",
+      "pose_name": "turnaround_side",
+      "label": "SIDE PROFILE VIEW",
       "head_center": [
-        1040.6695251874635,
-        484.7764559987053
-      ],
-      "right_hand": [
-        1155.8984410700473,
-        523.8203343944084
+        2561.5999018074012,
+        565.4832946366835
       ]
     },
     {
-      "pose_name": "freeze_shock",
-      "label": "FREEZE SHOCK (!)",
+      "pose_name": "curiosity",
+      "label": "CURIOSITY",
       "head_center": [
-        1343.2343338106673,
-        484.42938806851157
-      ],
-      "right_hand": [
-        1470.5318049394734,
-        464.7772309229999
+        538.5889357430121,
+        1523.9976247549428
       ]
     },
     {
-      "pose_name": "scramble_panic",
-      "label": "SCRAMBLE PANIC",
+      "pose_name": "confusion",
+      "label": "CONFUSION",
       "head_center": [
-        1770.380842740961,
-        487.92373345413665
-      ],
-      "right_hand": [
-        1813.920355600408,
-        427.17331742072923
+        1174.7267199739472,
+        1513.227094137376
+      ]
+    },
+    {
+      "pose_name": "surprise",
+      "label": "SURPRISE (!)",
+      "head_center": [
+        1901.6994290634248,
+        1505.5367648500073
+      ]
+    },
+    {
+      "pose_name": "fear",
+      "label": "FEAR / RECOIL",
+      "head_center": [
+        2661.9143697309287,
+        1540.1851915685168
+      ]
+    },
+    {
+      "pose_name": "excitement",
+      "label": "EXCITEMENT",
+      "head_center": [
+        3559.357916577245,
+        1495.513535536412
+      ]
+    },
+    {
+      "pose_name": "frustration",
+      "label": "FRUSTRATION",
+      "head_center": [
+        4361.7805040310095,
+        1523.5843534361532
+      ]
+    },
+    {
+      "pose_name": "celebration",
+      "label": "CELEBRATION",
+      "head_center": [
+        433.79542631198234,
+        2496.5307889480055
+      ]
+    },
+    {
+      "pose_name": "hesitation",
+      "label": "HESITATION",
+      "head_center": [
+        1194.4804249167737,
+        2506.910505091688
+      ]
+    },
+    {
+      "pose_name": "thinking",
+      "label": "THINKING",
+      "head_center": [
+        2026.2156115140215,
+        2509.4251676343993
+      ]
+    },
+    {
+      "pose_name": "inspecting_object",
+      "label": "INSPECTING OBJECT",
+      "head_center": [
+        2877.443141165119,
+        2534.460191598921
+      ]
+    },
+    {
+      "pose_name": "recoiling_from_danger",
+      "label": "RECOILING BACK",
+      "head_center": [
+        3403.563781100232,
+        2539.209749404654
+      ]
+    },
+    {
+      "pose_name": "recovering_from_fall",
+      "label": "ADJUSTING GLASSES",
+      "head_center": [
+        4338.827976127536,
+        2508.1163694260276
       ]
     }
   ]

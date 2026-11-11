@@ -85,3 +85,35 @@
     2. **Optional Cloud LLM (Gemini / OpenAI / Anthropic)** — disabled by default unless owner explicitly configures an API key and budget cap in `.env`. Every call logs token usage and estimated USD cost to the database.
   - **Mathematical Verification is Always Deterministic (`SymPy` + AST):** Never rely solely on an LLM to verify arithmetic or algebra; `SymPy` is the authoritative gate.
 - **Cost:** $0 default. Any paid API requires explicit owner opt-in and key provisioning.
+
+---
+
+## DEC-007: Character Animation Quality Overhaul — Technology Comparison & Recommended Architecture
+- **Date:** 2026-11-11
+- **Status:** `APPROVED`
+- **Context:** The initial Phase 2/3 stick-figure prototype (`app/character_rig.py`) proved the pipeline end-to-end, but its visual quality and motion are unacceptable for a commercial animated series:
+  1. It used 1x-sampled `PIL.ImageDraw` primitives (`draw.line`, `draw.ellipse`, `draw.arc`), producing jagged, stiff, CAD-like geometry instead of fluid, variable-taper, anti-aliased cartoon line art.
+  2. It lacked **Inverse Kinematics (IK)** and **world-space foot pinning**, causing feet to slide during walks and weight transfers.
+  3. It used rigid straight-line torso segments rather than a **flexible multi-joint cubic-Bezier spine** with squash-and-stretch, anticipation, follow-through, and overlapping secondary motion (hair/beard/glasses lag).
+  4. Scene composition looked like a technical HUD (permanent outer box border, top status text banner, flat layout) rather than a cinematic 9:16 cartoon with virtual camera framing, ground shadow grounding, and clean negative space.
+- **Options Evaluated:**
+  - **Option A — Blender (Grease Pencil + Armatures/IK + Headless `bpy`):**
+    - *Pros:* Full 3D/2D armature IK, F-curves, modifiers, Eevee/Grease Pencil rendering.
+    - *Cons:* Not installed; 1GB+ install footprint; generating expressive 2D turnaround head tilts, beard/glasses perspective shifts, and frame-exact procedural typography purely through headless AI-generated `bpy` Python scripts without manual keyframing in the Blender GUI is notoriously brittle and slow to iterate.
+  - **Option B — SVG-Based Skeletal Animation + Anti-Aliased Vector/Cairo/Skia Rasterizer + Analytic 2-Bone IK:**
+    - *Pros:* Clean hierarchical SVG/Bezier vector components (head, messy hair silhouette tufts, contoured short beard, rounded-rect blank-lens glasses, multi-segment spline spine, rounded-cap tapered limbs, articulated hands/feet), exact **2-Bone Analytic IK** with world-space foot locking (zero foot slip), cubic-Bezier motion curves (`ease_in_out`, `overshoot`, `spring_damper`), squash-and-stretch volume preservation, 2.5D head turnaround (`front`, `three_quarter`, `side`), and 100% programmatic control via a declarative `ActionTimeline` API (`walk_to`, `inspect_curious`, `touch_object`, `recoil_stumble`, `recover_adjust_glasses`).
+    - *Cons:* Requires supersampled anti-aliased vector rendering (`4x SSAA` / Cairo / Agg) rather than raw 1x `PIL.ImageDraw`.
+  - **Option C — Dedicated 2D Software (OpenToonz / Synfig Studio / Moho / Rive):**
+    - *Pros:* Strong manual timeline UIs for human animators.
+    - *Cons:* Moho and Rive require commercial/cloud editor workflows; OpenToonz and Synfig XML/CLI pipelines are designed for human GUI rigging first and have poor AI-agent natural-language-to-action compilation without manual bone setup.
+  - **Option D — Hybrid Animation Pipeline (Recommended: Option B + Option D):**
+    - Combine **SVG/Bezier Hierarchical Skeletal + IK Engine** (for the character, props, and 2D camera), **Physics/Spring Secondary Motion Solver** (hair, head, torso overlap), **Declarative AI Action Compiler** (so AI agents compose scenes via high-level actions without touching frames or keyframes), **SymPy + High-DPI Math Renderer** (preserved from Phase 3), and **FFmpeg + RTX 5080 NVENC** (`60 fps` or `30 fps` hardware encoding).
+- **Proposed Decision:** Select **Option D (Hybrid Pipeline powered by Option B's SVG/Bezier IK & Spring-Physics Character Engine + Supersampled Anti-Aliased Vector Renderer + RTX 5080 NVENC)**.
+- **Implementation Plan (Incremental, Preserving Phase 1–3 Infrastructure):**
+  1. ** Checkpoint (`T2R.1`):** Created Git tag `checkpoint-pre-anim-overhaul`. Keep all Phase 1–3 DB, security, queue, and `SymPy` math verifier infrastructure intact.
+  2. **Stage 1 — Character Design Overhaul & Approval Gate (`T2R.2`):** Build the new SVG/Bezier vector character renderer with 4x supersampled anti-aliasing, balanced cartoon proportions, cohesive messy short hair silhouette, recognizable short beard contour, properly seated blank-lens glasses (no pupils), tapered rounded-joint limbs, and `front` / `three_quarter` / `side` head/body views. Generate the comprehensive **Revised Character Model Sheet** (turnaround views + 13 emotional/expressive poses) and **stop for owner visual review before finalizing the rig/demo** if requested, or proceed through the overhaul tasks per owner direction.
+  3. **Stage 2 — 2-Bone IK, Foot Locking, Bezier Spine & 12 Animation Principles (`T2R.3`):** Implement analytic two-bone limb IK, world-space foot-plant constraints (zero foot slip), cubic-Bezier spine bending, squash-and-stretch, anticipation, follow-through, and spring-damped secondary motion.
+  4. **Stage 3 — Reusable Motion & Emotion Library + AI Action Sequencer (`T2R.4`):** Implement the 13 expressive body-language states (`curiosity`, `confusion`, `surprise`, `fear`, `excitement`, `frustration`, `celebration`, `hesitation`, `thinking`, `looking_around`, `inspecting_object`, `recoiling_from_danger`, `recovering_from_fall`) and 14 reusable locomotion/action clips (`idle`, `walk`, `run`, `jump`, `fall`, `land`, `turn`, `look_around`, `point`, `reach`, `push_pull`, `interact_object`, `adjust_glasses`, `stumble_recover`) driven by a declarative `ActionSequence` compiler.
+  5. **Stage 4 — Cinematic Scene Composition & 10-Second Quality Demonstration (`T2R.5`):** Remove technical borders/banners; add cinematic 2D virtual camera (smooth pan/zoom/shake), ground contact shadows, and visual hierarchy; render the 5-scene **Animation Quality Demonstration** (`1080x1920`, `60 fps`, `10.0s`: Walking → Curiosity → Interaction with mysterious floating mathematical artifact → Surprise/Recoil/Stumble → Recovery & Glasses Adjustment).
+  6. **Stage 5 — Technical QA Validators & Visual Review Gate (`T2R.6`):** Implement automated QA metrics for foot-slip distance (`< 1.0 px` while planted), joint-angle constraint bounds, frame-to-frame velocity continuity, character scale stability, and anti-aliasing quality; present the rendered demonstration MP4 and model sheet for owner visual approval.
+- **Cost:** $0.
