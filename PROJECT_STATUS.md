@@ -1,14 +1,17 @@
 # Math Mayhem — Project Status
 
 **Last Updated:** 2026-11-11  
-**Current Phase:** Phase 2R — Character Redesign & Animation Pipeline Overhaul (`AWAITING OWNER SELECTION OF CHARACTER DESIGN ALTERNATIVE A, B, OR C`)  
-**Overall Health:** 🟢 Cairo Vector Engine (`pycairo` + `resvg-py`) Installed & 3 Visual Design Alternatives Ready for Review
+**Current Phase:** Phase 2R — Character Redesign & Animation Pipeline Overhaul (`AWAITING OWNER VISUAL REVIEW OF 'THE MYSTERIOUS OBJECT' 10S QC ANIMATION`)  
+**Overall Health:** 🟢 Option C Cairo Protagonist Rig + 10s QC Animation (`qc_mysterious_object_10s.mp4`) Verified (`28/28` Tests Passing, `0.0 px` Foot Slip)
 
 ---
 
 ## Executive Summary
 - **Phase 1 (Foundation):** Completed, verified (`14/14` tests), committed, pushed to GitHub (`kaganlove/MathMayhem`), and approved by owner.
-- **Phase 2 (Character Animation):** Completed, verified (`19/19` tests), committed, pushed to GitHub, and approved by owner.
+- **Phase 2R (Character Redesign & Animation Pipeline Overhaul — Option C Approved):**
+  1. **Technology Evaluation (`DEC-008`):** Evaluated 7 animation technologies and implemented the **Hybrid Cairo/resvg-py 2D Vector Engine + Analytic 2-Bone IK + Cubic-Bezier Keyframe Timeline**.
+  2. **Owner-Approved Option C Protagonist (`T2R.2`, `T2R.3`):** Implemented [app/cairo_character_rig.py](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/app/cairo_character_rig.py) (`OptionCCharacterSpec`, `1:3.4` compact mobile-first proportion, round head, cohesive 4-lock tousled hair cap, contoured lower-jaw beard, expressive mouth/brows, blank rectangular glasses without pupils, tapered S/C-curve spine and limbs, articulated hands, planted boots, no backpack, no spoken dialogue, zero floating `?`/`!` symbols). Rendered turnaround sheet ([assets/character/protagonist_model_sheet.png](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/assets/character/protagonist_model_sheet.png)) and 8-pose acting matrix ([assets/character/protagonist_expression_pose_matrix.png](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/assets/character/protagonist_expression_pose_matrix.png)).
+  3. **10-Second Quality-Control Animation (*The Mysterious Object* — `T2R.4`, `T2R.5`):** Implemented [app/qc_mysterious_object.py](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/app/qc_mysterious_object.py) and rendered [renders/previews/qc_mysterious_object_10s.mp4](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/renders/previews/qc_mysterious_object_10s.mp4) (`1080x1920 @ 30fps`, `300 frames`, `h264_nvenc`) + 6-panel contact sheet ([renders/previews/qc_mysterious_object_contact_sheet.png](file:///c:/Users/Kagan%20Love/Documents/Projects/MathMayhem/renders/previews/qc_mysterious_object_contact_sheet.png)). Programmatic QA confirms `0.0 px` planted foot slip and `0.0 px` limb/head length drift across all 300 frames (`28/28` total `pytest` tests passing).
 - **Phase 3 (Mathematical Animation & Episode 001 Pilot):** Completed and verified (`24/24` total tests passing):
   1. **Symbolic & Numerical Mathematical Verifier (`T3.1`):** Implemented `app/math_verifier.py` using `SymPy` to deterministically verify arithmetic, algebra, trigonometry, and division-by-zero rules. Enforces that `10 ÷ 0` and `0 ÷ 0` are strictly `UNDEFINED` in ordinary arithmetic (never given a numerical answer) and requires explicit `fictional_disclaimer` separation for any fictional visual metaphor.
   2. **Mathematical Notation, Calculator Prop, Graph & Geometry Renderer (`T3.2`):** Implemented `app/math_renderer.py` supporting high-legibility Unicode math typography (`÷`, `×`, `−`), an interactive pedestal calculator prop displaying full expressions (`10 ÷ 2 =`, `10 ÷ 1 =`, `10 ÷ 0 =`) alongside results (`5`, `10`, `UNDEFINED`), a Cartesian function graph plotter (`f(x) = 10 / x` with vertical asymptote at `x = 0`), and geometric figure rendering.
@@ -32,7 +35,7 @@
 ---
 
 ## Last Verified Checkpoint
-- **Checkpoint ID:** `CHK-003-PHASE3-COMPLETE`
-- **Timestamp:** 2026-11-11T13:33:00-06:00
-- **Completed:** All Phase 3 tasks (`T3.1` – `T3.5`), mathematical verifier (`app/math_verifier.py`), math/calculator/graph/geometry renderer (`app/math_renderer.py`), Episode 001 10s pilot low-res (`540x960`) and full-res (`1080x1920`, `300 frames`, `30fps`) renders (`app/episode001_pilot.py`), 24/24 acceptance tests passing.
-- **Next Action:** **Stop and request owner review of Phase 3** (and Episode 001 10s pilot) before starting Phase 4 (AI Production Agents).
+- **Checkpoint ID:** `CHK-004-PHASE2R-QC-COMPLETE`
+- **Timestamp:** 2026-11-11T15:28:00-06:00
+- **Completed:** Option C Cairo character rig (`app/cairo_character_rig.py`), turnaround & 8-pose model sheets (`assets/character/protagonist_model_sheet.png`, `assets/character/protagonist_expression_pose_matrix.png`), 10s *The Mysterious Object* QC animation (`app/qc_mysterious_object.py`, `renders/previews/qc_mysterious_object_10s.mp4`, `renders/previews/qc_mysterious_object_contact_sheet.png`), and 28/28 passing acceptance tests (`tests/test_animation_qc.py`).
+- **Next Action:** **Stop and request owner visual review** of `renders/previews/qc_mysterious_object_10s.mp4` and `renders/previews/qc_mysterious_object_contact_sheet.png`.

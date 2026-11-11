@@ -80,3 +80,29 @@
 | `tests/test_math_animation.py::test_ep001_pilot_storyboard_and_audio_synchronization` | `T3.3` | Verifies the 5-scene storyboard (`0–2s`, `2–4s`, `4–6s`, `6–8s`, `8–10s`, frames `0..299`), `SymPy` storyboard verification, and 10.0s procedural WAV synthesis (`motif_rms > 0`, `beep1_rms`, `beep2_rms`, `music_cut_gap_rms == 0.0`, `error_tone_rms > 0.1`). | ✅ **PASSED** |
 | `tests/test_math_animation.py::test_episode001_opening_10s_pilot_frame_perfect_render` | `T3.3` | Renders low-res preview (`540x960`, `300 frames`, `30.0 fps`) and full-res pilot (`1080x1920`, `300 frames`, `30.0 fps`, `h264_nvenc`, `aac` audio) and verifies frame-perfect output + 5 character consistency keyframes + DB persistence. | ✅ **PASSED** |
 | `tests/test_math_animation.py::test_dashboard_math_and_ep001_approval_endpoints` | `T3.4` | Verifies `/api/math/verify`, `/api/episodes/ep001/render-pilot`, and `/api/episodes/ep001/approve-pilot` endpoints on the authenticated dashboard. | ✅ **PASSED** |
+
+---
+
+## Phase 2R — Character Redesign & Animation Pipeline Overhaul (`T2R.1` – `T2R.5`)
+- **Date:** 2026-11-11
+- **Command:** `.\.venv\Scripts\python.exe -m pytest -v`
+- **Execution Time:** `26.73s` (All 28 tests across Phase 1, Phase 2, Phase 3, and Phase 2R Overhaul)
+- **Summary:** ✅ **28 PASSED, 0 FAILED**
+
+### Programmatic QA Metrics for *The Mysterious Object* (`300 frames @ 30fps`, `1080x1920`)
+- **`frames_validated`:** `300`
+- **`max_left_planted_foot_slip_px`:** `0.0 px` (Strict world-space foot pinning)
+- **`max_right_planted_foot_slip_px`:** `0.0 px` (Strict world-space foot pinning)
+- **`leg_length_spread_px`:** `0.0 px` (Zero limb stretching/shrinking across all 300 frames)
+- **`arm_length_spread_px`:** `0.0 px` (Zero arm stretching/shrinking across all 300 frames)
+- **`head_radius_spread_px`:** `0.0 px` (Locked `1:3.4` Option C proportions)
+- **`max_pelvis_velocity_px_per_frame`:** `12.37 px/frame` (Smooth Cubic-Bezier eased motion, zero joint snapping)
+- **`max_head_velocity_px_per_frame`:** `24.34 px/frame` (Smooth staggered overlapping follow-through)
+
+| Test Case | Target Task | Acceptance Criteria Verified | Result |
+| :--- | :--- | :--- | :--- |
+| `tests/test_animation_qc.py::test_option_c_character_spec_guardrails` | `T2R.2`, `T2R.3` | Verifies Option C protagonist invariants (`has_blank_lens_glasses=True`, `has_pupils=False`, `has_short_beard=True`, `has_messy_short_hair=True`, `has_backpack=False`, `speaks=False`, `uses_floating_symbols=False`) and raises `SafetyPolicyViolationError` if violated. | ✅ **PASSED** |
+| `tests/test_animation_qc.py::test_two_bone_ik_and_turnaround_proportion_invariance` | `T2R.3` | Verifies analytic 2-bone IK preserves exact segment lengths (`< 1e-4 px`) and `solve_cairo_anatomy` maintains identical limb/head proportions across `front` (`0.00`), `three_quarter` (`0.22`), and `side` (`0.44`) views. | ✅ **PASSED** |
+| `tests/test_animation_qc.py::test_mysterious_object_timeline_qa_invariants` | `T2R.4`, `T2R.5` | Evaluates all 300 frames of *The Mysterious Object* and verifies `0.0 px` planted foot slip, `0.0 px` limb/head length drift, and smooth pelvis/head velocity continuity. | ✅ **PASSED** |
+| `tests/test_animation_qc.py::test_option_c_sheets_and_qc_video_outputs_exist` | `T2R.2`–`T2R.5` | Verifies generation of `assets/character/character_design_alternatives.png`, `assets/character/protagonist_model_sheet.png`, `assets/character/protagonist_expression_pose_matrix.png`, `renders/previews/qc_mysterious_object_10s.mp4`, and `renders/previews/qc_mysterious_object_contact_sheet.png`. | ✅ **PASSED** |
+

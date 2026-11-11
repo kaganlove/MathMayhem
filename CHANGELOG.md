@@ -2,6 +2,15 @@
 
 All notable changes to the **Math Mayhem** project are documented in this file.
 
+## [0.4.0-phase2r] — 2026-11-11
+### Added
+- Evaluated 7 animation technologies (`DEC-008`) and added Cairo (`pycairo`) + `resvg-py` vector rendering engine (`T2R.1`).
+- Generated 3 visual protagonist alternatives (`assets/character/character_design_alternatives.png`); owner selected **Option C (Compact Mobile-First 1:3.4 Protagonist)** (`T2R.2`).
+- Implemented canonical Option C Cairo character rig (`app/cairo_character_rig.py`) with analytic 2-bone IK (`solve_two_bone_ik_exact`), world-space foot pinning (`0.0 px` planted slip), tapered S/C-curve spine and limbs, articulated hands, planted boots, expressive brows/mouth, and zero floating punctuation symbols (`T2R.3`).
+- Generated canonical Option C turnaround sheet (`assets/character/protagonist_model_sheet.png`) and 8-pose acting matrix (`assets/character/protagonist_expression_pose_matrix.png`) (`T2R.3`).
+- Implemented and rendered the 10-second Quality-Control Animation *The Mysterious Object* (`app/qc_mysterious_object.py`, `renders/previews/qc_mysterious_object_10s.mp4`, `renders/previews/qc_mysterious_object_contact_sheet.png`) across 5 acting beats (`0–2s Curiosity`, `2–4s Investigation`, `4–6s Surprise`, `6–8s Recovery`, `8–10s Comedic Realization & Glasses Adjust`) (`T2R.4`).
+- Added automated Phase 6 QA test suite (`tests/test_animation_qc.py`); all 28/28 project tests pass (`T2R.5`).
+
 ## [0.3.0-phase3] — 2026-11-11
 ### Added
 - Implemented deterministic symbolic and numerical mathematical verifier (`app/math_verifier.py`) via `SymPy`, enforcing that `10 ÷ 0` and `0 ÷ 0` evaluate strictly to `UNDEFINED` in ordinary arithmetic and requiring explicit disclaimers for fictional visual metaphors (`T3.1`).

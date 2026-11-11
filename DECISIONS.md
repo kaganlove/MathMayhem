@@ -96,7 +96,7 @@
 
 ## DEC-008: Fundamental Character Redesign & Cairo Vector + IK Animation Pipeline Overhaul
 - **Date:** 2026-11-11
-- **Status:** `PROPOSED (Awaiting Owner Selection of Visual Alternative A, B, or C)`
+- **Status:** `APPROVED (Owner Selected Option C — Compact Mobile-First 1:3.4 Protagonist)`
 - **Context:** Visual inspection of both v1 and v2 (`canonical_model_sheet_v2.png`) showed why incremental tweaks to `PIL.ImageDraw` wire stick figures are unacceptable:
   1. `PIL.ImageDraw` only draws uniform-thickness geometric primitives; hair looked like straight needles, the beard looked like a spiked cog wheel, and hands/feet were hollow wireframe loops (`o` and `L`).
   2. Poses relied on floating punctuation crutches (`?`, `!`, `+`, sweat triangles) instead of genuine facial/postural acting (eyebrow shapes, mouth/beard contour, shoulder elevation, spine S/C curves, and articulated hand gestures).
