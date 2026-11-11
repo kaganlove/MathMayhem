@@ -2,6 +2,14 @@
 
 All notable changes to the **Math Mayhem** project are documented in this file.
 
+## [0.6.0-phase4-production-agents] — 2026-11-11
+### Added
+- Locked **Option A (`option_a_orchestral_cartoon` — Playful Orchestral Cartoon Comedy)** as the canonical Math Mayhem musical identity (`DEC-010`) and synthesized `reality_reset_chime` and `cartoon_void_whoosh` in `app/adaptive_audio.py`.
+- Implemented the 10-stage AI Production Agent Pipeline (`app/production_agents.py`): `ResearchAndIdeaAgent`, `ScriptAgent`, `StoryboardAgent`, `MathVerifierAgent`, `ScenePlannerAgent`, `AnimatorAgent`, `MusicAgent`, `SFXAndMixerAgent`, `RenderAndQCAgent`, and `PackagerAgent`, complete with `AgentStageLog` and `$0.00` `CostLedgerEntry` tracking (`T4.1`–`T4.4`).
+- Rendered the full 24.0-second (`720 frames @ 30fps`, `1080x1920`) Episode 001 (*Never Divide by Zero*) master preview (`renders/previews/ep001_full_24s_1080x1920.mp4`), 8-panel contact sheet (`renders/previews/ep001_full_24s_contact_sheet.png`), Option A adaptive mix (`assets/audio/ep001_full_24s_option_a_mix.wav`), and complete publishing package in `renders/packages/EP001_v2/` (`thumbnail_1080x1920.png`, `captions.srt`, `captions.vtt`, `source_project_state.json`, `package_manifest.json`) featuring **20 physical calculator button presses** (`10÷2=5`, `10÷1=10`, `10÷0=UNDEFINED`, cartoon void metaphor, `C` reset, and `0÷0=UNDEFINED` cliffhanger) (`T4.2`, `T4.3`).
+- Added Phase 4 pipeline and revision endpoints (`/api/pipeline/run-ep001-full`, `/api/pipeline/revise`, `/api/pipeline/report`, `/api/episodes/ep001/approve-full`) to `app/main.py` and `app/templates/dashboard.html` (`T4.5`).
+- Added 4-test Phase 4 automated acceptance suite (`tests/test_phase4_agents.py`); all 37/37 project tests pass (`T4.6`).
+
 ## [0.5.0-phase3r-interaction-audio] — 2026-11-11
 ### Added
 - Implemented reusable physical interaction engine (`app/interaction_engine.py`) supporting pressing buttons/switches, picking up/holding/moving/releasing objects, opening/closing doors, pushing/pulling objects, and touching mathematical symbols/shapes using object-local coordinates, collision bounds, contact points, and strict contact-before-activation checks (`T3R.1`).

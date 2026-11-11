@@ -134,4 +134,33 @@
 | `tests/test_interaction_and_audio.py::test_three_music_candidates_and_adaptive_audio_synchronization` | `T3R.4` | Generates all 3 original 16s musical theme candidates (`Option A`, `Option B`, `Option C`), verifies acoustic distinctness, non-clipping levels, commercial provenance registration in SQLite `Asset`, adaptive states (`EXPLORATION`, `SUSPENSE`, `CHAOS`), musical pause window, and 18 synchronized SFX cues (`15` clicks + `3` result chimes/alarms). | ✅ **PASSED** |
 | `tests/test_interaction_and_audio.py::test_ep001_debug_preview_and_clean_16s_production_render` | `T3R.5`, `T3R.6` | Verifies output video integrity (`1080x1920`, `480 frames`, `30.0 fps`, `aac` audio) and contact sheets for both `renders/previews/ep001_interaction_debug_preview.mp4` and `renders/previews/ep001_pilot_16s_1080x1920.mp4`. | ✅ **PASSED** |
 
+---
+
+## Phase 4 — AI Production Agents & Full Episode 001 Acceptance Suite (`T4.1` – `T4.6`)
+- **Date:** 2026-11-11
+- **Command:** `.\.venv\Scripts\python.exe -m pytest -v`
+- **Execution Time:** `49.88s` (All 37 tests across Phase 1, Phase 2, Phase 2R, Phase 3, Phase 3R, and Phase 4)
+- **Summary:** ✅ **37 PASSED, 0 FAILED**
+
+### Programmatic QA Metrics for Full 24.0-Second Episode 001 (`720 frames @ 30fps`, `1080x1920`, Option A Theme)
+- **`frames_validated`:** `666` (all character-active frames `54..719`)
+- **`interaction_events_count`:** `20` (`["1", "0", "÷", "2", "=", "1", "0", "÷", "1", "=", "1", "0", "÷", "0", "=", "C", "0", "÷", "0", "="]`)
+- **`max_contact_distance_at_trigger_px`:** `<= 4.0 px` (`<= 24.0 px` target radius — 100% contact-before-activation verified across all 20 presses)
+- **`max_left_planted_foot_slip_px`:** `0.0 px`
+- **`max_right_planted_foot_slip_px`:** `0.0 px`
+- **`leg_length_spread_px`:** `0.0 px`
+- **`arm_length_spread_px`:** `0.0 px`
+- **`head_radius_spread_px`:** `0.0 px`
+- **`max_pelvis_velocity_px_per_frame`:** `10.75 px/frame`
+- **`max_head_velocity_px_per_frame`:** `13.20 px/frame`
+- **`total_cost_usd`:** `$0.00` (100% local deterministic execution)
+
+| Test Case | Target Task | Acceptance Criteria Verified | Result |
+| :--- | :--- | :--- | :--- |
+| `tests/test_phase4_agents.py::test_phase4_ten_agent_stages_and_zero_cost_ledger` | `T4.1` | Verifies `ResearchAndIdeaAgent`, `ScriptAgent` (locked to **Option A**), `StoryboardAgent` (8 scenes, `0..719` frames, explicit fictional metaphor tagging on Scene 6), and `MathVerifierAgent` (`0 ÷ 0 =` -> `UNDEFINED`). | ✅ **PASSED** |
+| `tests/test_phase4_agents.py::test_ep001_full_24s_twenty_physical_button_contacts_and_qa` | `T4.2` | Simulates all 720 frames (`24.0s @ 30fps`) and verifies all 20 physical button presses (`1,0,÷,2,=, 1,0,÷,1,=, 1,0,÷,0,=, C, 0,÷,0,=`), void collapse & `READY / 0` reset upon pressing `C`, and final `0 ÷ 0 = UNDEFINED` state. | ✅ **PASSED** |
+| `tests/test_phase4_agents.py::test_ep001_full_24s_master_video_and_packaging_bundle` | `T4.2`, `T4.3` | Verifies the 720-frame `1080x1920` MP4 (`renders/previews/ep001_full_24s_1080x1920.mp4`), 8-panel contact sheet, `thumbnail_1080x1920.png`, `captions.srt`, `captions.vtt`, `source_project_state.json`, and `package_manifest.json` (`10` stage logs, `$0.00` cost). | ✅ **PASSED** |
+| `tests/test_phase4_agents.py::test_revision_workflow_and_dashboard_pipeline_endpoints` | `T4.4`, `T4.5` | Verifies `/api/pipeline/run-ep001-full`, `/api/episodes/ep001/approve-full`, `/api/pipeline/revise`, and `/api/pipeline/report`; confirms approving `v2` locks it as immutable (`ImmutableRecordError`) while requesting a revision creates `v3` (`PREVIEW_READY`). | ✅ **PASSED** |
+
+
 

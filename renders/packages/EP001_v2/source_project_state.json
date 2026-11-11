@@ -1,0 +1,978 @@
+{
+  "episode_code": "EP001",
+  "version_number": 2,
+  "character_spec": {
+    "design_id": "mm_protagonist_option_c_v1",
+    "ratio_description": "1:3.4 Compact Mobile-First Cartoon Adventurer",
+    "head_radius": 78.0,
+    "neck_length": 22.0,
+    "torso_length": 158.0,
+    "hip_half_width": 13.0,
+    "shoulder_half_width": 10.0,
+    "upper_arm_length": 144.0,
+    "forearm_length": 140.0,
+    "thigh_length": 92.0,
+    "shin_length": 90.0,
+    "ankle_height": 16.0,
+    "boot_length": 44.0,
+    "spine_widths": [
+      23.0,
+      18.5,
+      20.5
+    ],
+    "leg_widths": [
+      17.0,
+      13.5,
+      11.0
+    ],
+    "arm_widths": [
+      15.5,
+      12.2,
+      9.8
+    ],
+    "outline_width": 6.8,
+    "has_blank_lens_glasses": true,
+    "has_pupils": false,
+    "has_short_beard": true,
+    "has_messy_short_hair": true,
+    "has_backpack": false,
+    "speaks": false,
+    "uses_floating_symbols": false
+  },
+  "calculator_box": [
+    555,
+    620,
+    843,
+    1242
+  ],
+  "scheduled_steps": [
+    {
+      "step_id": "ep001_full_press_01_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "start_time_sec": 3.6,
+      "contact_time_sec": 3.82,
+      "end_time_sec": 4.04,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 1
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_02_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "start_time_sec": 4.1,
+      "contact_time_sec": 4.32,
+      "end_time_sec": 4.54,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 2
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_03_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "start_time_sec": 4.6,
+      "contact_time_sec": 4.82,
+      "end_time_sec": 5.04,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 3
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_04_key_2",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_2",
+      "action": "press_button",
+      "start_time_sec": 5.1,
+      "contact_time_sec": 5.32,
+      "end_time_sec": 5.54,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "2",
+        "sequence_index": 4
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_05_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "start_time_sec": 5.6,
+      "contact_time_sec": 5.84,
+      "end_time_sec": 6.08,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 5,
+        "expected_result": "5"
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_06_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "start_time_sec": 7.0,
+      "contact_time_sec": 7.22,
+      "end_time_sec": 7.44,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 6
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_07_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "start_time_sec": 7.5,
+      "contact_time_sec": 7.72,
+      "end_time_sec": 7.94,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 7
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_08_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "start_time_sec": 8.0,
+      "contact_time_sec": 8.22,
+      "end_time_sec": 8.44,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 8
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_09_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "start_time_sec": 8.5,
+      "contact_time_sec": 8.72,
+      "end_time_sec": 8.94,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 9
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_10_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "start_time_sec": 9.0,
+      "contact_time_sec": 9.24,
+      "end_time_sec": 9.48,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 10,
+        "expected_result": "10"
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_11_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "start_time_sec": 10.4,
+      "contact_time_sec": 10.62,
+      "end_time_sec": 10.84,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 11
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_12_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "start_time_sec": 10.9,
+      "contact_time_sec": 11.12,
+      "end_time_sec": 11.34,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 12
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_13_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "start_time_sec": 11.4,
+      "contact_time_sec": 11.62,
+      "end_time_sec": 11.84,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 13
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_14_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "start_time_sec": 11.9,
+      "contact_time_sec": 12.14,
+      "end_time_sec": 12.38,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 14
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_15_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "start_time_sec": 12.44,
+      "contact_time_sec": 12.7,
+      "end_time_sec": 12.96,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 15,
+        "expected_result": "UNDEFINED"
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_16_key_C",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_C",
+      "action": "press_button",
+      "start_time_sec": 18.85,
+      "contact_time_sec": 19.15,
+      "end_time_sec": 19.45,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "C",
+        "sequence_index": 16
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_17_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "start_time_sec": 21.1,
+      "contact_time_sec": 21.32,
+      "end_time_sec": 21.54,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 17
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_18_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "start_time_sec": 21.6,
+      "contact_time_sec": 21.82,
+      "end_time_sec": 22.04,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 18
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_19_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "start_time_sec": 22.1,
+      "contact_time_sec": 22.32,
+      "end_time_sec": 22.54,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 19
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    },
+    {
+      "step_id": "ep001_full_press_20_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "start_time_sec": 22.6,
+      "contact_time_sec": 22.84,
+      "end_time_sec": 23.08,
+      "effector": "right_hand",
+      "sfx_cue": "button_click",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 20,
+        "expected_result": "UNDEFINED"
+      },
+      "contact_triggered": true,
+      "completed": true,
+      "contact_distance_at_trigger_px": 4.0
+    }
+  ],
+  "contact_events": [
+    {
+      "step_id": "ep001_full_press_01_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "timestamp_sec": 3.8333,
+      "frame_idx": 115,
+      "world_contact_point": [
+        606.0,
+        1098.0
+      ],
+      "effector_pos": [
+        606.0,
+        1102.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '1' appended -> '1'",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 1
+      }
+    },
+    {
+      "step_id": "ep001_full_press_02_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "timestamp_sec": 4.3333,
+      "frame_idx": 130,
+      "world_contact_point": [
+        668.0,
+        1178.0
+      ],
+      "effector_pos": [
+        668.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '0' appended -> '10'",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 2
+      }
+    },
+    {
+      "step_id": "ep001_full_press_03_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "timestamp_sec": 4.8333,
+      "frame_idx": 145,
+      "world_contact_point": [
+        792.0,
+        938.0
+      ],
+      "effector_pos": [
+        792.0,
+        942.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Operator '\u00f7' appended -> '10 \u00f7'",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 3
+      }
+    },
+    {
+      "step_id": "ep001_full_press_04_key_2",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_2",
+      "action": "press_button",
+      "timestamp_sec": 5.3333,
+      "frame_idx": 160,
+      "world_contact_point": [
+        668.0,
+        1098.0
+      ],
+      "effector_pos": [
+        668.0,
+        1102.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '2' appended -> '10 \u00f7 2'",
+      "payload": {
+        "expected_key": "2",
+        "sequence_index": 4
+      }
+    },
+    {
+      "step_id": "ep001_full_press_05_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "timestamp_sec": 5.8667,
+      "frame_idx": 176,
+      "world_contact_point": [
+        792.0,
+        1178.0
+      ],
+      "effector_pos": [
+        792.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Evaluated '10 \u00f7 2 =' -> '5'",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 5,
+        "expected_result": "5"
+      }
+    },
+    {
+      "step_id": "ep001_full_press_06_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "timestamp_sec": 7.2333,
+      "frame_idx": 217,
+      "world_contact_point": [
+        606.0,
+        1098.0
+      ],
+      "effector_pos": [
+        606.0,
+        1102.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '1' appended -> '1'",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 6
+      }
+    },
+    {
+      "step_id": "ep001_full_press_07_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "timestamp_sec": 7.7333,
+      "frame_idx": 232,
+      "world_contact_point": [
+        668.0,
+        1178.0
+      ],
+      "effector_pos": [
+        668.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '0' appended -> '10'",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 7
+      }
+    },
+    {
+      "step_id": "ep001_full_press_08_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "timestamp_sec": 8.2333,
+      "frame_idx": 247,
+      "world_contact_point": [
+        792.0,
+        938.0
+      ],
+      "effector_pos": [
+        792.0,
+        942.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Operator '\u00f7' appended -> '10 \u00f7'",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 8
+      }
+    },
+    {
+      "step_id": "ep001_full_press_09_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "timestamp_sec": 8.7333,
+      "frame_idx": 262,
+      "world_contact_point": [
+        606.0,
+        1098.0
+      ],
+      "effector_pos": [
+        606.0,
+        1102.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '1' appended -> '10 \u00f7 1'",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 9
+      }
+    },
+    {
+      "step_id": "ep001_full_press_10_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "timestamp_sec": 9.2667,
+      "frame_idx": 278,
+      "world_contact_point": [
+        792.0,
+        1178.0
+      ],
+      "effector_pos": [
+        792.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Evaluated '10 \u00f7 1 =' -> '10'",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 10,
+        "expected_result": "10"
+      }
+    },
+    {
+      "step_id": "ep001_full_press_11_key_1",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_1",
+      "action": "press_button",
+      "timestamp_sec": 10.6333,
+      "frame_idx": 319,
+      "world_contact_point": [
+        606.0,
+        1098.0
+      ],
+      "effector_pos": [
+        606.0,
+        1102.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '1' appended -> '1'",
+      "payload": {
+        "expected_key": "1",
+        "sequence_index": 11
+      }
+    },
+    {
+      "step_id": "ep001_full_press_12_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "timestamp_sec": 11.1333,
+      "frame_idx": 334,
+      "world_contact_point": [
+        668.0,
+        1178.0
+      ],
+      "effector_pos": [
+        668.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '0' appended -> '10'",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 12
+      }
+    },
+    {
+      "step_id": "ep001_full_press_13_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "timestamp_sec": 11.6333,
+      "frame_idx": 349,
+      "world_contact_point": [
+        792.0,
+        938.0
+      ],
+      "effector_pos": [
+        792.0,
+        942.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Operator '\u00f7' appended -> '10 \u00f7'",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 13
+      }
+    },
+    {
+      "step_id": "ep001_full_press_14_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "timestamp_sec": 12.1667,
+      "frame_idx": 365,
+      "world_contact_point": [
+        668.0,
+        1178.0
+      ],
+      "effector_pos": [
+        668.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '0' appended -> '10 \u00f7 0'",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 14
+      }
+    },
+    {
+      "step_id": "ep001_full_press_15_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "timestamp_sec": 12.7,
+      "frame_idx": 381,
+      "world_contact_point": [
+        792.0,
+        1178.0
+      ],
+      "effector_pos": [
+        792.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "division_by_zero_alarm",
+      "state_change_summary": "Evaluated '10 \u00f7 0 =' -> 'UNDEFINED'",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 15,
+        "expected_result": "UNDEFINED"
+      }
+    },
+    {
+      "step_id": "ep001_full_press_16_key_C",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_C",
+      "action": "press_button",
+      "timestamp_sec": 19.1667,
+      "frame_idx": 575,
+      "world_contact_point": [
+        606.0,
+        1178.0
+      ],
+      "effector_pos": [
+        606.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Calculator cleared to READY / 0",
+      "payload": {
+        "expected_key": "C",
+        "sequence_index": 16
+      }
+    },
+    {
+      "step_id": "ep001_full_press_17_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "timestamp_sec": 21.3333,
+      "frame_idx": 640,
+      "world_contact_point": [
+        668.0,
+        1178.0
+      ],
+      "effector_pos": [
+        668.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '0' appended -> '0'",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 17
+      }
+    },
+    {
+      "step_id": "ep001_full_press_18_key_\u00f7",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_\u00f7",
+      "action": "press_button",
+      "timestamp_sec": 21.8333,
+      "frame_idx": 655,
+      "world_contact_point": [
+        792.0,
+        938.0
+      ],
+      "effector_pos": [
+        792.0,
+        942.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Operator '\u00f7' appended -> '0 \u00f7'",
+      "payload": {
+        "expected_key": "\u00f7",
+        "sequence_index": 18
+      }
+    },
+    {
+      "step_id": "ep001_full_press_19_key_0",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_0",
+      "action": "press_button",
+      "timestamp_sec": 22.3333,
+      "frame_idx": 670,
+      "world_contact_point": [
+        668.0,
+        1178.0
+      ],
+      "effector_pos": [
+        668.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "button_click",
+      "state_change_summary": "Digit '0' appended -> '0 \u00f7 0'",
+      "payload": {
+        "expected_key": "0",
+        "sequence_index": 19
+      }
+    },
+    {
+      "step_id": "ep001_full_press_20_key_=",
+      "object_id": "pedestal_calculator",
+      "target_id": "key_=",
+      "action": "press_button",
+      "timestamp_sec": 22.8667,
+      "frame_idx": 686,
+      "world_contact_point": [
+        792.0,
+        1178.0
+      ],
+      "effector_pos": [
+        792.0,
+        1182.0
+      ],
+      "contact_distance_px": 4.0,
+      "sfx_cue": "division_by_zero_alarm",
+      "state_change_summary": "Evaluated '0 \u00f7 0 =' -> 'UNDEFINED'",
+      "payload": {
+        "expected_key": "=",
+        "sequence_index": 20,
+        "expected_result": "UNDEFINED"
+      }
+    }
+  ],
+  "storyboard": [
+    {
+      "scene_index": 1,
+      "start_frame": 0,
+      "end_frame": 53,
+      "time_range_sec": "0.0-1.8",
+      "description": "Calculator pedestal appears in a clean white studio; Option A playful orchestral cartoon theme begins.",
+      "math_expression": null,
+      "math_expected_display": null,
+      "is_fictional_metaphor": false,
+      "fictional_disclaimer": "",
+      "audio_cue": "option_a_exploration_intro"
+    },
+    {
+      "scene_index": 2,
+      "start_frame": 54,
+      "end_frame": 106,
+      "time_range_sec": "1.8-3.55",
+      "description": "Fingerless Option C protagonist walks in from left, plants boots, and tilts head curiously at the 4x4 keypad.",
+      "math_expression": null,
+      "math_expected_display": null,
+      "is_fictional_metaphor": false,
+      "fictional_disclaimer": "",
+      "audio_cue": "option_a_exploration_walk"
+    },
+    {
+      "scene_index": 3,
+      "start_frame": 107,
+      "end_frame": 208,
+      "time_range_sec": "3.55-6.95",
+      "description": "Protagonist physically presses '1', '0', '\u00f7', '2', '='; calculator displays '5' with a rising triad chime; pleased nod.",
+      "math_expression": "10 \u00f7 2 =",
+      "math_expected_display": "5",
+      "is_fictional_metaphor": false,
+      "fictional_disclaimer": "",
+      "audio_cue": "key_clicks_and_positive_calc_chime"
+    },
+    {
+      "scene_index": 4,
+      "start_frame": 209,
+      "end_frame": 310,
+      "time_range_sec": "6.95-10.35",
+      "description": "Protagonist physically presses '1', '0', '\u00f7', '1', '='; calculator displays '10' with a faster double chime; intrigued head tilt.",
+      "math_expression": "10 \u00f7 1 =",
+      "math_expected_display": "10",
+      "is_fictional_metaphor": false,
+      "fictional_disclaimer": "",
+      "audio_cue": "key_clicks_and_intrigued_double_chime"
+    },
+    {
+      "scene_index": 5,
+      "start_frame": 311,
+      "end_frame": 449,
+      "time_range_sec": "10.35-15.00",
+      "description": "Protagonist physically presses '1', '0', '\u00f7', '0', '='; calculator displays 'UNDEFINED' in red; music pauses, error alarm sounds, character recoils backward.",
+      "math_expression": "10 \u00f7 0 =",
+      "math_expected_display": "UNDEFINED",
+      "is_fictional_metaphor": false,
+      "fictional_disclaimer": "",
+      "audio_cue": "musical_pause_and_division_by_zero_alarm"
+    },
+    {
+      "scene_index": 6,
+      "start_frame": 450,
+      "end_frame": 539,
+      "time_range_sec": "15.00-18.00",
+      "description": "Calculator glitches; a swirling cartoon void vortex opens above the pedestal (explicitly tagged fantasy metaphor) and tugs at the protagonist's hair and glasses.",
+      "math_expression": "10 \u00f7 0 =",
+      "math_expected_display": "UNDEFINED",
+      "is_fictional_metaphor": true,
+      "fictional_disclaimer": "Swirling cartoon vortex is an explicitly fictional fantasy comedy metaphor, not a literal mathematical consequence of division by zero.",
+      "audio_cue": "option_a_chaos_and_cartoon_void_whoosh"
+    },
+    {
+      "scene_index": 7,
+      "start_frame": 540,
+      "end_frame": 629,
+      "time_range_sec": "18.00-21.00",
+      "description": "Protagonist scrambles forward and physically presses 'C' (Clear); the cartoon void collapses, reality resets to 'READY / 0', and protagonist adjusts his glasses in relief.",
+      "math_expression": null,
+      "math_expected_display": null,
+      "is_fictional_metaphor": false,
+      "fictional_disclaimer": "",
+      "audio_cue": "key_c_click_and_reality_reset_chime"
+    },
+    {
+      "scene_index": 8,
+      "start_frame": 630,
+      "end_frame": 719,
+      "time_range_sec": "21.00-24.00",
+      "description": "Final cliffhanger: protagonist smirks mischievously and physically presses '0', '\u00f7', '0', '='; calculator displays '0 \u00f7 0 =' / 'UNDEFINED' in red as alarm sounds.",
+      "math_expression": "0 \u00f7 0 =",
+      "math_expected_display": "UNDEFINED",
+      "is_fictional_metaphor": false,
+      "fictional_disclaimer": "",
+      "audio_cue": "cliffhanger_0_div_0_alarm"
+    }
+  ]
+}

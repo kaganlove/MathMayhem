@@ -862,6 +862,33 @@ def _synthesize_sfx_clip(sfx_name: str, pitch_shift_semitones: float = 0.0, samp
             for i in range(n)
         ]
 
+    if sfx_name == "reality_reset_chime":
+        # Bright sparkling C-major ascending arpeggio chime when pressing 'C' (Clear) collapses the cartoon void
+        n = int(0.75 * sample_rate)
+        out = [0.0] * n
+        notes = [(0.0, 523.25), (0.06, 659.25), (0.12, 783.99), (0.18, 1046.50), (0.25, 1318.51)]
+        for t0, freq in notes:
+            s0 = int(t0 * sample_rate)
+            for i in range(s0, n):
+                dt = (i - s0) / float(sample_rate)
+                env = 0.32 * math.exp(-dt * 5.8)
+                out[i] += env * (math.sin(two_pi * freq * dt) + 0.38 * math.sin(two_pi * freq * 2.0 * dt))
+        return out
+
+    if sfx_name == "cartoon_void_whoosh":
+        # Swirling low-to-mid vortex hum + phase-modulated cartoon suction whoosh
+        n = int(1.60 * sample_rate)
+        out = [0.0] * n
+        for i in range(n):
+            t = i / float(sample_rate)
+            env = 0.34 * math.sin(math.pi * min(1.0, t / 1.60))
+            f_swirl = 135.0 + 45.0 * math.sin(two_pi * 3.5 * t)
+            out[i] = env * (
+                0.60 * math.sin(two_pi * f_swirl * t)
+                + 0.40 * math.sin(two_pi * (f_swirl * 1.5) * t + math.sin(two_pi * 7.0 * t))
+            )
+        return out
+
     # Generic interaction SFX (`object_pickup`, `door_creak`, `block_slide`, `math_symbol_chime`)
     n = int(0.22 * sample_rate)
     return [
@@ -952,6 +979,19 @@ class AdaptiveAudioEngine:
                     )
                     self.sound_cues.append(res_cue)
                     created.append(res_cue)
+            elif ev.target_id == "key_C":
+                reset_t = min(self.duration_seconds - 0.1, ev.timestamp_sec + 0.06)
+                reset_frame = int(round(reset_t * self.fps))
+                reset_cue = SoundCueEvent(
+                    cue_id=f"cue_reality_reset_{ev.step_id}",
+                    sfx_name="reality_reset_chime",
+                    timestamp_sec=reset_t,
+                    frame_idx=reset_frame,
+                    gain=0.96,
+                    source_target_id=ev.target_id,
+                )
+                self.sound_cues.append(reset_cue)
+                created.append(reset_cue)
         return created
 
     def state_at(self, t_sec: float) -> AdaptiveMusicState:

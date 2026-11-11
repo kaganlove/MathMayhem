@@ -96,12 +96,13 @@
   <header>
     <div class="brand">
       <h1>Math Mayhem</h1>
-      <span class="badge">PHASE 3 MATH &amp; EP001 PILOT</span>
+      <span class="badge">PHASE 4 AI PRODUCTION AGENTS</span>
     </div>
     <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
       <button id="smokeBtn" onclick="triggerSmokeTest()">Run RTX 5080 Smoke Render</button>
       <button id="charBtn" onclick="triggerCharShowcase()">Render Phase 2 Showcase</button>
-      <button id="ep001Btn" onclick="triggerEp001Pilot()">Render EP001 10s Pilot</button>
+      <button id="ep001Btn" onclick="triggerEp001Pilot()">Render EP001 16s Pilot</button>
+      <button id="ep001FullBtn" onclick="triggerEp001Full()">Run Phase 4 Full EP001 (24s)</button>
     </div>
   </header>
 
@@ -244,6 +245,29 @@
         const data = await res.json();
         if (res.ok) {
           out.textContent = 'EP001 Pilot rendered: ' + data.width + 'x' + data.height + ', ' + data.frame_count + ' frames, math_verified=' + data.math_verification.all_verified;
+          setTimeout(() => window.location.reload(), 900);
+        } else {
+          out.textContent = 'Error: ' + (data.detail || JSON.stringify(data));
+        }
+      } catch (e) {
+        out.textContent = 'Request failed: ' + e;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+    async function triggerEp001Full() {
+      const btn = document.getElementById('ep001FullBtn');
+      const out = document.getElementById('smokeResult');
+      btn.disabled = true;
+      out.textContent = 'Running 10-Stage Phase 4 AI Production Pipeline for Episode 001 (24.0s / 720 frames, Option A theme)...';
+      try {
+        const res = await fetch('/api/pipeline/run-ep001-full', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          out.textContent = 'Phase 4 EP001 Full v' + data.version_number + ' packaged: ' + data.width + 'x' + data.height + ', ' + data.frame_count + ' frames, 20 keys pressed, cost=$' + data.total_cost_usd.toFixed(2);
           setTimeout(() => window.location.reload(), 900);
         } else {
           out.textContent = 'Error: ' + (data.detail || JSON.stringify(data));

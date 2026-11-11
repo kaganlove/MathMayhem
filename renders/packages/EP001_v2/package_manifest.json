@@ -1,0 +1,479 @@
+{
+  "episode_code": "EP001",
+  "title": "Never Divide by Zero",
+  "version_number": 2,
+  "musical_theme": "option_a_orchestral_cartoon",
+  "revision_notes": "",
+  "video_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\previews\\ep001_full_24s_1080x1920.mp4",
+  "video_sha256": "0d83abf26aa09002e2a1bbbc9f8714c61243fca5610888b548c6b12114815d52",
+  "contact_sheet_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\previews\\ep001_full_24s_contact_sheet.png",
+  "thumbnail_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\thumbnail_1080x1920.png",
+  "captions_srt_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\captions.srt",
+  "captions_vtt_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\captions.vtt",
+  "source_project_state_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\source_project_state.json",
+  "duration_seconds": 24.0,
+  "frame_count": 720,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "interaction_events_count": 20,
+  "pressed_keys": [
+    "1",
+    "0",
+    "\u00f7",
+    "2",
+    "=",
+    "1",
+    "0",
+    "\u00f7",
+    "1",
+    "=",
+    "1",
+    "0",
+    "\u00f7",
+    "0",
+    "=",
+    "C",
+    "0",
+    "\u00f7",
+    "0",
+    "="
+  ],
+  "math_verification": {
+    "all_verified": true,
+    "checked_count": 5,
+    "checks": [
+      {
+        "raw_expression": "10 \u00f7 2 =",
+        "normalized_expression": "10 / 2",
+        "expected_display": "5",
+        "computed_result": "5",
+        "is_valid": true,
+        "is_undefined_division_by_zero": false,
+        "is_fictional_metaphor": false,
+        "fictional_disclaimer": "",
+        "explanation": "Verified exact evaluation: 10 \u00f7 2 = -> 5"
+      },
+      {
+        "raw_expression": "10 \u00f7 1 =",
+        "normalized_expression": "10 / 1",
+        "expected_display": "10",
+        "computed_result": "10",
+        "is_valid": true,
+        "is_undefined_division_by_zero": false,
+        "is_fictional_metaphor": false,
+        "fictional_disclaimer": "",
+        "explanation": "Verified exact evaluation: 10 \u00f7 1 = -> 10"
+      },
+      {
+        "raw_expression": "10 \u00f7 0 =",
+        "normalized_expression": "10 / 0",
+        "expected_display": "UNDEFINED",
+        "computed_result": "UNDEFINED",
+        "is_valid": true,
+        "is_undefined_division_by_zero": true,
+        "is_fictional_metaphor": false,
+        "fictional_disclaimer": "",
+        "explanation": "Verified: '10 \u00f7 0 =' is UNDEFINED in ordinary arithmetic (no numerical answer depicted)."
+      },
+      {
+        "raw_expression": "10 \u00f7 0 =",
+        "normalized_expression": "10 / 0",
+        "expected_display": "UNDEFINED",
+        "computed_result": "UNDEFINED",
+        "is_valid": true,
+        "is_undefined_division_by_zero": true,
+        "is_fictional_metaphor": true,
+        "fictional_disclaimer": "Swirling cartoon vortex is an explicitly fictional fantasy comedy metaphor, not a literal mathematical consequence of division by zero.",
+        "explanation": "Verified: '10 \u00f7 0 =' is UNDEFINED in ordinary arithmetic (no numerical answer depicted)."
+      },
+      {
+        "raw_expression": "0 \u00f7 0 =",
+        "normalized_expression": "0 / 0",
+        "expected_display": "UNDEFINED",
+        "computed_result": "UNDEFINED",
+        "is_valid": true,
+        "is_undefined_division_by_zero": true,
+        "is_fictional_metaphor": false,
+        "fictional_disclaimer": "",
+        "explanation": "Verified: '0 \u00f7 0 =' is UNDEFINED in ordinary arithmetic (no numerical answer depicted)."
+      }
+    ]
+  },
+  "qa_report": {
+    "frames_validated": 666,
+    "max_left_planted_foot_slip_px": 0.0,
+    "max_right_planted_foot_slip_px": 0.0,
+    "leg_length_spread_px": 0.0,
+    "arm_length_spread_px": 0.0,
+    "head_radius_spread_px": 0.0,
+    "max_pelvis_velocity_px_per_frame": 10.75,
+    "max_head_velocity_px_per_frame": 13.2,
+    "all_qa_checks_passed": true
+  },
+  "stage_logs": [
+    {
+      "stage_index": 1,
+      "stage_name": "research_and_idea",
+      "agent_role": "ResearchAndIdeaAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:18.253906+00:00",
+      "completed_at": "2026-11-11T23:09:18.253913+00:00",
+      "duration_ms": 0.0,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "Topic: Never Divide by Zero (10/0 and 0/0)",
+      "output_summary": "Established 5 axioms and silent comedy premise.",
+      "artifacts": {
+        "episode_code": "EP001"
+      }
+    },
+    {
+      "stage_index": 2,
+      "stage_name": "script",
+      "agent_role": "ScriptAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:18.253925+00:00",
+      "completed_at": "2026-11-11T23:09:18.253927+00:00",
+      "duration_ms": 0.0,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "Research brief + silent character guardrails",
+      "output_summary": "Generated 3-act silent script (24.0s, 0 dialogue lines, Option A theme).",
+      "artifacts": {
+        "acts_count": 3,
+        "musical_theme": "option_a_orchestral_cartoon"
+      }
+    },
+    {
+      "stage_index": 3,
+      "stage_name": "storyboard",
+      "agent_role": "StoryboardAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:18.253934+00:00",
+      "completed_at": "2026-11-11T23:09:18.253935+00:00",
+      "duration_ms": 0.0,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "3-act silent script (24.0s / 720 frames)",
+      "output_summary": "Built 8-scene storyboard (frames 0..719) with explicit fictional metaphor tagging on Scene 6.",
+      "artifacts": {
+        "scene_count": 8
+      }
+    },
+    {
+      "stage_index": 4,
+      "stage_name": "math_verification",
+      "agent_role": "MathVerifierAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:18.255136+00:00",
+      "completed_at": "2026-11-11T23:09:18.255139+00:00",
+      "duration_ms": 1.2,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "8 storyboard scenes",
+      "output_summary": "Verified 5 mathematical expressions via SymPy (10\u00f72=5, 10\u00f71=10, 10\u00f70=UNDEFINED, 0\u00f70=UNDEFINED).",
+      "artifacts": {
+        "all_verified": true,
+        "checked_count": 5,
+        "checks": [
+          {
+            "raw_expression": "10 \u00f7 2 =",
+            "normalized_expression": "10 / 2",
+            "expected_display": "5",
+            "computed_result": "5",
+            "is_valid": true,
+            "is_undefined_division_by_zero": false,
+            "is_fictional_metaphor": false,
+            "fictional_disclaimer": "",
+            "explanation": "Verified exact evaluation: 10 \u00f7 2 = -> 5"
+          },
+          {
+            "raw_expression": "10 \u00f7 1 =",
+            "normalized_expression": "10 / 1",
+            "expected_display": "10",
+            "computed_result": "10",
+            "is_valid": true,
+            "is_undefined_division_by_zero": false,
+            "is_fictional_metaphor": false,
+            "fictional_disclaimer": "",
+            "explanation": "Verified exact evaluation: 10 \u00f7 1 = -> 10"
+          },
+          {
+            "raw_expression": "10 \u00f7 0 =",
+            "normalized_expression": "10 / 0",
+            "expected_display": "UNDEFINED",
+            "computed_result": "UNDEFINED",
+            "is_valid": true,
+            "is_undefined_division_by_zero": true,
+            "is_fictional_metaphor": false,
+            "fictional_disclaimer": "",
+            "explanation": "Verified: '10 \u00f7 0 =' is UNDEFINED in ordinary arithmetic (no numerical answer depicted)."
+          },
+          {
+            "raw_expression": "10 \u00f7 0 =",
+            "normalized_expression": "10 / 0",
+            "expected_display": "UNDEFINED",
+            "computed_result": "UNDEFINED",
+            "is_valid": true,
+            "is_undefined_division_by_zero": true,
+            "is_fictional_metaphor": true,
+            "fictional_disclaimer": "Swirling cartoon vortex is an explicitly fictional fantasy comedy metaphor, not a literal mathematical consequence of division by zero.",
+            "explanation": "Verified: '10 \u00f7 0 =' is UNDEFINED in ordinary arithmetic (no numerical answer depicted)."
+          },
+          {
+            "raw_expression": "0 \u00f7 0 =",
+            "normalized_expression": "0 / 0",
+            "expected_display": "UNDEFINED",
+            "computed_result": "UNDEFINED",
+            "is_valid": true,
+            "is_undefined_division_by_zero": true,
+            "is_fictional_metaphor": false,
+            "fictional_disclaimer": "",
+            "explanation": "Verified: '0 \u00f7 0 =' is UNDEFINED in ordinary arithmetic (no numerical answer depicted)."
+          }
+        ]
+      }
+    },
+    {
+      "stage_index": 5,
+      "stage_name": "scene_planning",
+      "agent_role": "ScenePlannerAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:18.273630+00:00",
+      "completed_at": "2026-11-11T23:09:18.273634+00:00",
+      "duration_ms": 18.49,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "8-scene storyboard + 4x4 calculator prop",
+      "output_summary": "Compiled 20 contact-gated keypad interactions: ['1', '0', '\u00f7', '2', '=', '1', '0', '\u00f7', '1', '=', '1', '0', '\u00f7', '0', '=', 'C', '0', '\u00f7', '0', '=']",
+      "artifacts": {
+        "scheduled_steps": 20,
+        "pressed_keys": [
+          "1",
+          "0",
+          "\u00f7",
+          "2",
+          "=",
+          "1",
+          "0",
+          "\u00f7",
+          "1",
+          "=",
+          "1",
+          "0",
+          "\u00f7",
+          "0",
+          "=",
+          "C",
+          "0",
+          "\u00f7",
+          "0",
+          "="
+        ]
+      }
+    },
+    {
+      "stage_index": 6,
+      "stage_name": "animation_simulation",
+      "agent_role": "AnimatorAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:18.273665+00:00",
+      "completed_at": "2026-11-11T23:09:18.273666+00:00",
+      "duration_ms": 0.03,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "720 frames @ 30fps with Option C fingerless rig",
+      "output_summary": "Solved 666 active character frames and verified 20 physical hand-to-button contacts.",
+      "artifacts": {
+        "contact_events_count": 20
+      }
+    },
+    {
+      "stage_index": 7,
+      "stage_name": "music_scoring",
+      "agent_role": "MusicAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:18.273674+00:00",
+      "completed_at": "2026-11-11T23:09:18.273675+00:00",
+      "duration_ms": 0.01,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "Owner-selected Option A (Playful Orchestral Cartoon Comedy, 132 BPM)",
+      "output_summary": "Scored 24.0s adaptive track across EXPLORATION, SUSPENSE, SILENCE, CHAOS, and RESOLUTION states.",
+      "artifacts": {
+        "selected_theme": "option_a_orchestral_cartoon"
+      }
+    },
+    {
+      "stage_index": 8,
+      "stage_name": "sfx_and_mixer",
+      "agent_role": "SFXAndMixerAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:20.749668+00:00",
+      "completed_at": "2026-11-11T23:09:20.749678+00:00",
+      "duration_ms": 2475.98,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "20 physical contacts + Scene 6 void whoosh",
+      "output_summary": "Mixed 26 frame-accurate SFX cues with Option A score (peak=0.9).",
+      "artifacts": {
+        "wav_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\assets\\audio\\ep001_full_24s_option_a_mix.wav",
+        "duration_seconds": 24.0,
+        "candidate_option": "option_a_orchestral_cartoon",
+        "sound_cue_count": 26,
+        "pause_windows": [
+          [
+            12.68,
+            13.25
+          ],
+          [
+            22.8,
+            24.0
+          ]
+        ],
+        "peak_amplitude": 0.9,
+        "rms_amplitude": 0.1042,
+        "sha256": "1b47fe80a3ee7b48aeac780ed703214e6586d0d512a2cf70ad05a46fcdfda668"
+      }
+    },
+    {
+      "stage_index": 9,
+      "stage_name": "render_and_qc",
+      "agent_role": "RenderAndQCAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:43.983763+00:00",
+      "completed_at": "2026-11-11T23:09:43.983771+00:00",
+      "duration_ms": 23234.07,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "720 frames (1080x1920) + Option A audio track",
+      "output_summary": "Encoded ep001_full_24s_1080x1920.mp4 via h264_nvenc; QA passed (0.0px foot slip, 20/20 button contacts).",
+      "artifacts": {
+        "video_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\previews\\ep001_full_24s_1080x1920.mp4",
+        "qa_report": {
+          "frames_validated": 666,
+          "max_left_planted_foot_slip_px": 0.0,
+          "max_right_planted_foot_slip_px": 0.0,
+          "leg_length_spread_px": 0.0,
+          "arm_length_spread_px": 0.0,
+          "head_radius_spread_px": 0.0,
+          "max_pelvis_velocity_px_per_frame": 10.75,
+          "max_head_velocity_px_per_frame": 13.2,
+          "all_qa_checks_passed": true
+        }
+      }
+    },
+    {
+      "stage_index": 10,
+      "stage_name": "packaging",
+      "agent_role": "PackagerAgent",
+      "status": "COMPLETED",
+      "started_at": "2026-11-11T23:09:44.009166+00:00",
+      "completed_at": "2026-11-11T23:09:44.009172+00:00",
+      "duration_ms": 25.38,
+      "cost_usd": 0.0,
+      "provider": "local_deterministic_cpu_gpu",
+      "input_summary": "Rendered MP4 + 8 scenes",
+      "output_summary": "Exported thumbnail, SRT/VTT captions, source project state, and package manifest in EP001_v2.",
+      "artifacts": {
+        "package_dir": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2",
+        "thumbnail_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\thumbnail_1080x1920.png",
+        "srt_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\captions.srt",
+        "vtt_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\captions.vtt",
+        "source_state_path": "C:\\Users\\Kagan Love\\Documents\\Projects\\MathMayhem\\renders\\packages\\EP001_v2\\source_project_state.json"
+      }
+    }
+  ],
+  "cost_ledger": [
+    {
+      "stage_name": "research_and_idea",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "ResearchAndIdeaAgent",
+      "units_used": 0.0,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "script",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "ScriptAgent",
+      "units_used": 0.0,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "storyboard",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "StoryboardAgent",
+      "units_used": 0.0,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "math_verification",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "MathVerifierAgent",
+      "units_used": 1.2,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "scene_planning",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "ScenePlannerAgent",
+      "units_used": 18.49,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "animation_simulation",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "AnimatorAgent",
+      "units_used": 0.03,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "music_scoring",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "MusicAgent",
+      "units_used": 0.01,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "sfx_and_mixer",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "SFXAndMixerAgent",
+      "units_used": 2475.98,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "render_and_qc",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "RenderAndQCAgent",
+      "units_used": 23234.07,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    },
+    {
+      "stage_name": "packaging",
+      "provider": "local_clx_rtx5080",
+      "model_or_tool": "PackagerAgent",
+      "units_used": 25.38,
+      "unit_type": "milliseconds",
+      "cost_usd": 0.0
+    }
+  ],
+  "total_cost_usd": 0.0,
+  "gpu": {
+    "available": true,
+    "name": "NVIDIA GeForce RTX 5080",
+    "driver_version": "610.88",
+    "vram_total_mib": 16303,
+    "vram_free_mib": 15211,
+    "temperature_c": 35
+  }
+}

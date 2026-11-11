@@ -25,6 +25,7 @@ from app.episode001_pilot import build_ep001_pilot_storyboard, render_episode001
 from app.logging_config import setup_logging
 from app.math_verifier import verify_math_statement
 from app.models import AuditEvent, Episode, EpisodeVersion, Job, approve_episode_version
+from app.production_agents import request_episode_revision, run_phase4_episode001_pipeline
 from app.queue import PersistentJobQueue
 from app.render_smoke import detect_gpu_info, run_gpu_render_smoke_test
 from app.schemas import EpisodeCreateRequest, HealthStatusResponse, LoginRequest
@@ -294,6 +295,91 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
             return {
                 "episode_code": ep.code,
                 "version_id": ver.id,
+                "status": ver.status,
+                "video_sha256": ver.video_sha256,
+                "approval_log_id": log_entry.id,
+            }
+
+    @app.post("/api/pipeline/run-ep001-full")
+    async def api_run_phase4_ep001_full(
+        mode: str = "master",
+        revision_notes: str = "",
+        _owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        res_tuple = (540, 960) if mode == "lowres" else (1080, 1920)
+        with session_factory() as session:
+            return run_phase4_episode001_pipeline(
+                resolution=res_tuple,
+                revision_notes=revision_notes,
+                settings=cfg,
+                session=session,
+            )
+
+    @app.post("/api/pipeline/revise")
+    async def api_request_episode_revision(
+        payload: Dict[str, Any],
+        owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        episode_code = str(payload.get("episode_code", "EP001"))
+        revision_notes = str(payload.get("revision_notes", "Owner requested timing & pacing adjustment"))
+        mode = str(payload.get("mode", "lowres"))
+        res_tuple = (540, 960) if mode == "lowres" else (1080, 1920)
+        with session_factory() as session:
+            return request_episode_revision(
+                session=session,
+                episode_code=episode_code,
+                revision_notes=revision_notes,
+                requested_by=owner,
+                resolution=res_tuple,
+                settings=cfg,
+            )
+
+    @app.get("/api/pipeline/report")
+    async def api_get_pipeline_report(
+        episode_code: str = "EP001",
+        _owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        import json
+
+        packages_root = cfg.MM_RENDERS_DIR / "packages"
+        candidates = sorted(
+            packages_root.glob(f"{episode_code}_v*/package_manifest.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        if not candidates:
+            raise HTTPException(status_code=404, detail=f"No package manifest found for {episode_code}")
+        return json.loads(candidates[0].read_text(encoding="utf-8"))
+
+    @app.post("/api/episodes/ep001/approve-full")
+    async def api_approve_ep001_full(
+        version_number: int = 2,
+        owner: str = Depends(require_owner_auth),
+    ) -> Dict[str, Any]:
+        with session_factory() as session:
+            ep = session.query(Episode).filter_by(code="EP001").first()
+            if not ep:
+                raise HTTPException(status_code=404, detail="EP001 not found")
+            ver = (
+                session.query(EpisodeVersion)
+                .filter_by(episode_id=ep.id, version_number=version_number)
+                .first()
+            )
+            if not ver:
+                raise HTTPException(status_code=404, detail=f"EP001 v{version_number} not found")
+            log_entry = approve_episode_version(
+                session,
+                ver,
+                approved_by=owner,
+                approval_mode="INDIVIDUAL",
+                notes=f"Owner approved full 24s Episode 001 v{version_number} (Option A theme)",
+            )
+            ep.status = "APPROVED"
+            session.commit()
+            return {
+                "episode_code": ep.code,
+                "version_id": ver.id,
+                "version_number": ver.version_number,
                 "status": ver.status,
                 "video_sha256": ver.video_sha256,
                 "approval_log_id": log_entry.id,

@@ -148,7 +148,7 @@
 
 ## DEC-009: Reusable Physical Interaction Engine & Revised 16-Second Pilot Timeline
 - **Date:** 2026-11-11
-- **Status:** `PROPOSED & IMPLEMENTED FOR OWNER REVIEW`
+- **Status:** `APPROVED BY OWNER`
 - **Context:**
   - In the initial Episode 001 pilot, the calculator expressions (`10 ÷ 2 =`, `10 ÷ 1 =`, `10 ÷ 0 =`) were pre-populated rather than built token-by-token through physical hand-to-button contact, and 10 seconds (`300 frames`) was too compressed for 15 distinct readable button presses (`1`, `0`, `÷`, `2`, `=` / `1`, `0`, `÷`, `1`, `=` / `1`, `0`, `÷`, `0`, `=`) plus character walk-in and reactions.
 - **Decision:**
@@ -168,9 +168,9 @@
 
 ---
 
-## DEC-010: Original Multi-Voice Musical Identity & Adaptive Audio System (`Option A`, `B`, `C`)
+## DEC-010: Original Multi-Voice Musical Identity & Adaptive Audio System (`Option A` Selected)
 - **Date:** 2026-11-11
-- **Status:** `AWAITING OWNER SELECTION OF MUSICAL THEME (OPTION A, B, OR C)`
+- **Status:** `APPROVED BY OWNER — OPTION A (PLAYFUL ORCHESTRAL CARTOON COMEDY) SELECTED`
 - **Context:**
   - The initial pilot used a simple single-voice sine-wave arpeggio that lacked the personality, instrumentation, and comedic timing of a recognizable animated series theme.
 - **Evaluation of Music Production Approaches:**
