@@ -89,90 +89,151 @@ class InteractionPlanner:
         """
         import copy
         pose = copy.deepcopy(base_pose)
-        rest_wrist = (pose.root_x + 36.0, pose.root_y - 18.0)
+        scale = pose.scale
+        hand_len = 14.0 * scale
+        rest_wrist = (pose.root_x + 36.0 * scale, pose.root_y - 20.0 * scale)
 
         if not plans or t < plans[0].start_time:
             pose.right_wrist_target = rest_wrist
+            pose.right_hand_angle_deg = 15.0
             return pose, None, 0.0
 
         if t > plans[-1].end_time:
-            # Settle back to rest pose
+            # Settle back to rest pose with satisfied smirk and looking at display
             last = plans[-1]
-            last_hover = (last.target_pos[0] - 24.0, last.target_pos[1] - 8.0)
-            p = min(1.0, (t - last.end_time) / 0.55)
+            last_target = last.target_pos
+            theta_reach = math.atan2(last_target[1] - (pose.root_y - 120.0 * scale), last_target[0] - pose.root_x)
+            last_wrist = (
+                last_target[0] - hand_len * math.cos(theta_reach) - 18.0 * scale,
+                last_target[1] - hand_len * math.sin(theta_reach) - 10.0 * scale,
+            )
+            p = min(1.0, (t - last.end_time) / 0.70)
             p_smooth = p * p * (3.0 - 2.0 * p)
             pose.right_wrist_target = (
-                last_hover[0] + (rest_wrist[0] - last_hover[0]) * p_smooth,
-                last_hover[1] + (rest_wrist[1] - last_hover[1]) * p_smooth,
+                last_wrist[0] + (rest_wrist[0] - last_wrist[0]) * p_smooth,
+                last_wrist[1] + (rest_wrist[1] - last_wrist[1]) * p_smooth,
             )
-            pose.torso_lean_deg = 7.5 - 2.0 * p_smooth
+            # Recovery to neutral posture
+            pose.root_x = base_pose.root_x + 12.0 * (1.0 - p_smooth)
+            pose.torso_lean_deg = 8.0 - 4.5 * p_smooth
+            pose.spine_arch_deg = 7.0 - 2.0 * p_smooth
             pose.right_shoulder_protract_px = 22.0 * (1.0 - p_smooth)
+            # Subtle satisfied head tilt & recognition
+            pose.head_tilt_deg = -3.5 * math.sin(p * math.pi)
+            pose.head_nod_px = -4.0 * math.sin(p * math.pi)  # Look up at display
+            pose.right_brow_raise_px = 6.0 * p_smooth
+            pose.left_brow_raise_px = 5.0 * p_smooth
+            pose.mouth_state = "smirk"
+            pose.right_hand_angle_deg = math.degrees(theta_reach) + (15.0 - math.degrees(theta_reach)) * p_smooth
             return pose, None, 0.0
 
         for idx, plan in enumerate(plans):
             if plan.start_time <= t <= plan.end_time:
-                # Determine start anchor
-                if idx == 0:
-                    start_anchor = rest_wrist
-                else:
-                    prev_p = plans[idx - 1]
-                    start_anchor = (prev_p.target_pos[0] - 24.0, prev_p.target_pos[1] - 8.0)
-
                 target = plan.target_pos
 
-                # Phase 1: Anticipation (slight subtle recoil before advancing)
+                # Shoulder reference for approach vector
+                approx_shoulder = (pose.root_x + 12.0 * scale, pose.root_y - 140.0 * scale)
+                theta_reach = math.atan2(target[1] - approx_shoulder[1], target[0] - approx_shoulder[0])
+                theta_deg = math.degrees(theta_reach)
+
+                # Hand tip contact: wrist is positioned backward along hand direction
+                wrist_contact = (
+                    target[0] - hand_len * math.cos(theta_reach),
+                    target[1] - hand_len * math.sin(theta_reach),
+                )
+                hover_wrist = (
+                    wrist_contact[0] - 22.0 * scale,
+                    wrist_contact[1] - 12.0 * scale,
+                )
+
+                if idx == 0:
+                    start_anchor = rest_wrist
+                    start_angle = 15.0
+                else:
+                    prev_p = plans[idx - 1]
+                    prev_target = prev_p.target_pos
+                    prev_theta = math.atan2(prev_target[1] - approx_shoulder[1], prev_target[0] - approx_shoulder[0])
+                    start_anchor = (
+                        prev_target[0] - hand_len * math.cos(prev_theta) - 22.0 * scale,
+                        prev_target[1] - hand_len * math.sin(prev_theta) - 12.0 * scale,
+                    )
+                    start_angle = math.degrees(prev_theta)
+
+                # Phase 1: Anticipation (subtle whole-body recoil and gaze focus)
                 if t < plan.anticipation_time:
                     p = (t - plan.start_time) / max(1e-4, plan.anticipation_time - plan.start_time)
-                    dip = -4.0 * math.sin(math.pi * p)
-                    pose.right_wrist_target = (start_anchor[0], start_anchor[1] + dip)
-                    pose.torso_lean_deg = 5.5
+                    s_dip = math.sin(math.pi * p)
+                    pose.right_wrist_target = (start_anchor[0] - 4.0 * s_dip, start_anchor[1] + 3.0 * s_dip)
+                    pose.root_x = base_pose.root_x - 3.5 * s_dip  # Weight shifts slightly to back leg
+                    pose.torso_lean_deg = 3.5 - 1.5 * s_dip
                     pose.head_tilt_deg = 3.5
+                    pose.right_hand_angle_deg = start_angle
                     return pose, None, 0.0
 
                 # Phase 2: Reach approach along purposeful arc
                 elif t < plan.contact_time:
                     p = (t - plan.anticipation_time) / max(1e-4, plan.contact_time - plan.anticipation_time)
                     p_smooth = p * p * (3.0 - 2.0 * p)
-                    arc_y = -14.0 * math.sin(math.pi * p)
+                    arc_y = -12.0 * math.sin(math.pi * p)
                     pose.right_wrist_target = (
-                        start_anchor[0] + (target[0] - start_anchor[0]) * p_smooth,
-                        start_anchor[1] + (target[1] - start_anchor[1]) * p_smooth + arc_y,
+                        start_anchor[0] + (wrist_contact[0] - start_anchor[0]) * p_smooth,
+                        start_anchor[1] + (wrist_contact[1] - start_anchor[1]) * p_smooth + arc_y,
                     )
-                    pose.torso_lean_deg = 5.5 + 2.5 * p_smooth
-                    pose.head_tilt_deg = 3.5 - 1.5 * p_smooth
-                    pose.right_shoulder_protract_px = 10.0 + 16.0 * p_smooth
+                    # Whole body weight shift into the reach
+                    pose.root_x = base_pose.root_x + 12.0 * p_smooth
+                    pose.torso_lean_deg = 4.0 + 4.5 * p_smooth
+                    pose.spine_arch_deg = 5.0 + 2.0 * p_smooth
+                    pose.head_tilt_deg = 3.5 - 2.0 * p_smooth
+                    pose.right_shoulder_protract_px = 6.0 + 18.0 * p_smooth
+                    pose.right_hand_angle_deg = start_angle + (theta_deg - start_angle) * p_smooth
                     return pose, None, 0.0
 
-                # Phase 3: Physical Contact & Button Activation
+                # Phase 3: Physical Contact & Button Activation (hand tip touches button exactly)
                 elif t <= plan.release_time:
                     dep = 4.0
-                    pose.right_wrist_target = (target[0], target[1] + dep)
-                    pose.torso_lean_deg = 8.0
-                    pose.head_tilt_deg = 2.0
-                    pose.right_shoulder_protract_px = 26.0
+                    dep_wrist = (
+                        wrist_contact[0],
+                        wrist_contact[1] + dep,
+                    )
+                    pose.right_wrist_target = dep_wrist
+                    pose.root_x = base_pose.root_x + 12.0
+                    pose.torso_lean_deg = 8.5
+                    pose.spine_arch_deg = 7.0
+                    pose.head_tilt_deg = 1.5
+                    pose.right_shoulder_protract_px = 24.0
+                    pose.right_hand_angle_deg = theta_deg
                     return pose, plan.key_label, dep
 
                 # Phase 4: Release & Retract to hover position
                 else:
                     p = (t - plan.release_time) / max(1e-4, plan.end_time - plan.release_time)
                     p_smooth = p * p * (3.0 - 2.0 * p)
-                    hover = (target[0] - 24.0, target[1] - 8.0)
                     pose.right_wrist_target = (
-                        target[0] + (hover[0] - target[0]) * p_smooth,
-                        (target[1] + 4.0) + (hover[1] - (target[1] + 4.0)) * p_smooth - 4.0 * math.sin(math.pi * p),
+                        wrist_contact[0] + (hover_wrist[0] - wrist_contact[0]) * p_smooth,
+                        (wrist_contact[1] + 4.0) + (hover_wrist[1] - (wrist_contact[1] + 4.0)) * p_smooth - 3.0 * math.sin(math.pi * p),
                     )
-                    pose.torso_lean_deg = 8.0 - 0.5 * p_smooth
-                    pose.right_shoulder_protract_px = 26.0 - 4.0 * p_smooth
+                    pose.root_x = base_pose.root_x + 12.0 - 2.0 * p_smooth
+                    pose.torso_lean_deg = 8.5 - 1.0 * p_smooth
+                    pose.right_shoulder_protract_px = 24.0 - 4.0 * p_smooth
+                    pose.right_hand_angle_deg = theta_deg
                     return pose, None, 0.0
 
             # Gap between plans (e.g. paused watching result)
             if idx < len(plans) - 1:
                 next_p = plans[idx + 1]
                 if plan.end_time < t < next_p.start_time:
-                    hover = (plan.target_pos[0] - 24.0, plan.target_pos[1] - 8.0)
-                    pose.right_wrist_target = hover
+                    target = plan.target_pos
+                    approx_shoulder = (pose.root_x + 12.0 * scale, pose.root_y - 140.0 * scale)
+                    theta_reach = math.atan2(target[1] - approx_shoulder[1], target[0] - approx_shoulder[0])
+                    hover_wrist = (
+                        target[0] - hand_len * math.cos(theta_reach) - 22.0 * scale,
+                        target[1] - hand_len * math.sin(theta_reach) - 12.0 * scale,
+                    )
+                    pose.right_wrist_target = hover_wrist
+                    pose.root_x = base_pose.root_x + 10.0
                     pose.torso_lean_deg = 7.5
-                    pose.right_shoulder_protract_px = 22.0
+                    pose.right_shoulder_protract_px = 20.0
+                    pose.right_hand_angle_deg = math.degrees(theta_reach)
                     return pose, None, 0.0
 
         return pose, None, 0.0

@@ -23,6 +23,7 @@ logs/*.log.*
 backups/*.zip
 backups/*.bak
 renders/tmp/
+renders/previews/*.mp4
 
 # Local Binary Tools (if portable FFmpeg is stored locally)
 tools/
