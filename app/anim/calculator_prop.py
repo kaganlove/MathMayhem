@@ -1,6 +1,6 @@
 """Full Cairo native vector rendering for the 4x4 pedestal calculator prop.
 
-Unifies coordinate systems and enables seamless camera zooms and close-ups.
+Matches exact layout and coordinate spacing of the canonical Math Mayhem calculator.
 """
 
 from __future__ import annotations
@@ -30,145 +30,140 @@ class CairoCalculatorProp:
         button_depression_px: float = 0.0,
         y_offset: float = 0.0,
     ) -> None:
-        bx1, by1, bx2, by2 = self.box
-        by1 += y_offset
-        by2 += y_offset
-        calc_w = bx2 - bx1
-        calc_h = by2 - by1
+        x1, y1, x2, y2 = self.box
+        y1 += y_offset
+        y2 += y_offset
+        calc_w = x2 - x1
+        calc_h = y2 - y1
 
-        # 1. Heavy Pedestal Stand & Base
-        pedestal_w = 48.0
-        pedestal_x = (bx1 + bx2) * 0.5 - pedestal_w * 0.5
-        pedestal_top_y = by2 - 6.0
-        pedestal_h = self.floor_y - pedestal_top_y
-
-        ctx.set_source_rgb(0.90, 0.92, 0.94)
-        ctx.rectangle(pedestal_x, pedestal_top_y, pedestal_w, pedestal_h)
+        # 1. Pedestal Stand & Base
+        stand_cx = (x1 + x2) * 0.5
+        stand_w = 56.0
+        ctx.set_source_rgb(0.89, 0.89, 0.89)
+        ctx.rectangle(stand_cx - stand_w * 0.5, y2, stand_w, self.floor_y - y2)
         ctx.fill_preserve()
-        ctx.set_source_rgb(0.06, 0.08, 0.12)
-        ctx.set_line_width(5.0)
+        ctx.set_source_rgb(0.0, 0.0, 0.0)
+        ctx.set_line_width(6.0)
         ctx.stroke()
 
-        # Pedestal foot plate
         foot_w = 190.0
-        foot_x = (bx1 + bx2) * 0.5 - foot_w * 0.5
-        foot_h = 16.0
-        ctx.set_source_rgb(0.90, 0.92, 0.94)
-        ctx.rectangle(foot_x, self.floor_y - foot_h, foot_w, foot_h)
+        foot_h = 22.0
+        ctx.set_source_rgb(0.82, 0.82, 0.82)
+        ctx.rectangle(stand_cx - foot_w * 0.5, self.floor_y - foot_h, foot_w, foot_h)
         ctx.fill_preserve()
-        ctx.set_source_rgb(0.06, 0.08, 0.12)
-        ctx.set_line_width(5.0)
+        ctx.set_source_rgb(0.0, 0.0, 0.0)
+        ctx.set_line_width(6.0)
         ctx.stroke()
 
-        # 2. Main Calculator Housing
-        r_corner = 20.0
-        border_col = (0.86, 0.08, 0.15) if error_mode else (0.06, 0.08, 0.12)
-        
-        ctx.new_path()
-        ctx.arc(bx1 + calc_w - r_corner, by1 + r_corner, r_corner, -math.pi/2, 0)
-        ctx.arc(bx1 + calc_w - r_corner, by1 + calc_h - r_corner, r_corner, 0, math.pi/2)
-        ctx.arc(bx1 + r_corner, by1 + calc_h - r_corner, r_corner, math.pi/2, math.pi)
-        ctx.arc(bx1 + r_corner, by1 + r_corner, r_corner, math.pi, 3*math.pi/2)
-        ctx.close_path()
-
-        ctx.set_source_rgb(1.0, 1.0, 1.0)
-        ctx.fill_preserve()
-        ctx.set_source_rgb(*border_col)
-        ctx.set_line_width(6.5)
-        ctx.stroke()
-
-        # 3. Calculator LCD Display Window
-        disp_pad_x = 24.0
-        disp_pad_y = 26.0
-        disp_w = calc_w - 2.0 * disp_pad_x
-        disp_h = 175.0
-        dx1 = bx1 + disp_pad_x
-        dy1 = by1 + disp_pad_y
-        disp_r = 12.0
+        # 2. Main Calculator Outer Housing
+        r_corner = 26.0
+        border_col = (0.86, 0.08, 0.15) if error_mode else (0.0, 0.0, 0.0)
+        body_fill = (1.0, 0.95, 0.96) if error_mode else (0.96, 0.96, 0.96)
 
         ctx.new_path()
-        ctx.arc(dx1 + disp_w - disp_r, dy1 + disp_r, disp_r, -math.pi/2, 0)
-        ctx.arc(dx1 + disp_w - disp_r, dy1 + disp_h - disp_r, disp_r, 0, math.pi/2)
-        ctx.arc(dx1 + disp_r, dy1 + disp_h - disp_r, disp_r, math.pi/2, math.pi)
-        ctx.arc(dx1 + disp_r, dy1 + disp_r, disp_r, math.pi, 3*math.pi/2)
+        ctx.arc(x1 + calc_w - r_corner, y1 + r_corner, r_corner, -math.pi/2, 0)
+        ctx.arc(x1 + calc_w - r_corner, y1 + calc_h - r_corner, r_corner, 0, math.pi/2)
+        ctx.arc(x1 + r_corner, y1 + calc_h - r_corner, r_corner, math.pi/2, math.pi)
+        ctx.arc(x1 + r_corner, y1 + r_corner, r_corner, math.pi, 3*math.pi/2)
         ctx.close_path()
 
-        disp_bg = (1.0, 0.94, 0.94) if error_mode else (0.97, 0.98, 0.99)
-        ctx.set_source_rgb(*disp_bg)
+        ctx.set_source_rgb(*body_fill)
         ctx.fill_preserve()
         ctx.set_source_rgb(*border_col)
-        ctx.set_line_width(3.5)
+        ctx.set_line_width(8.0)
         ctx.stroke()
 
-        # Display text (Cairo Toy Text API)
+        # 3. High-Contrast LCD Screen Area
+        scr_x1, scr_y1 = x1 + 28.0, y1 + 30.0
+        scr_x2, scr_y2 = x2 - 28.0, y1 + 250.0
+        scr_w = scr_x2 - scr_x1
+        scr_h = scr_y2 - scr_y1
+        scr_r = 14.0
+
+        ctx.new_path()
+        ctx.arc(scr_x1 + scr_w - scr_r, scr_y1 + scr_r, scr_r, -math.pi/2, 0)
+        ctx.arc(scr_x1 + scr_w - scr_r, scr_y1 + scr_h - scr_r, scr_r, 0, math.pi/2)
+        ctx.arc(scr_x1 + scr_r, scr_y1 + scr_h - scr_r, scr_r, math.pi/2, math.pi)
+        ctx.arc(scr_x1 + scr_r, scr_y1 + scr_r, scr_r, math.pi, 3*math.pi/2)
+        ctx.close_path()
+
+        scr_fill = (1.0, 0.92, 0.93) if error_mode else (1.0, 1.0, 1.0)
+        ctx.set_source_rgb(*scr_fill)
+        ctx.fill_preserve()
+        ctx.set_source_rgb(*border_col)
+        ctx.set_line_width(6.0)
+        ctx.stroke()
+
+        # Display text
         ctx.select_font_face("Segoe UI", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        ctx.set_font_size(24.0)
-        ctx.set_source_rgb(0.15, 0.20, 0.28)
-        ctx.move_to(dx1 + 18.0, dy1 + 44.0)
+        ctx.set_font_size(28.0)
+        ctx.set_source_rgb(0.15, 0.15, 0.15)
+        ctx.move_to(scr_x1 + 18.0, scr_y1 + 54.0)
         ctx.show_text(expression_text)
 
-        ctx.set_font_size(36.0 if not error_mode else 30.0)
+        ctx.set_font_size(36.0 if result_text == "UNDEFINED" else 48.0)
         if error_mode:
             ctx.set_source_rgb(0.86, 0.08, 0.15)
         else:
-            ctx.set_source_rgb(0.06, 0.08, 0.12)
-        ctx.move_to(dx1 + 18.0, dy1 + 120.0)
+            ctx.set_source_rgb(0.0, 0.0, 0.0)
+        ctx.move_to(scr_x1 + 18.0, scr_y1 + 165.0)
         ctx.show_text(result_text)
 
-        # 4. 4x4 Keypad Buttons
-        key_grid = [
+        # 4. Canonical 4x4 Keypad Buttons
+        keys = [
             ["7", "8", "9", "÷"],
             ["4", "5", "6", "×"],
             ["1", "2", "3", "−"],
             ["C", "0", "+", "="],
         ]
-        grid_top = dy1 + disp_h + 24.0
-        grid_left = bx1 + 20.0
-        btn_w = 54.0
-        btn_h = 52.0
-        gap_x = 9.0
-        gap_y = 12.0
+        grid_top = scr_y2 + 32.0
+        pad_x = 24.0
+        gap_x = 8.0
+        gap_y = 8.0
+        col_w = ((x2 - x1) - 2.0 * pad_x - 3.0 * gap_x) / 4.0
+        row_h = ((y2 - grid_top) - 28.0 - 3.0 * gap_y) / 4.0
 
-        for r_idx, row in enumerate(key_grid):
-            for c_idx, key_lbl in enumerate(row):
-                kx = grid_left + c_idx * (btn_w + gap_x)
-                ky = grid_top + r_idx * (btn_h + gap_y)
-
-                is_pressed = (active_key == key_lbl)
-                press_dy = button_depression_px if is_pressed else 0.0
-                ky_eff = ky + press_dy
+        for r_idx, row in enumerate(keys):
+            for c_idx, label in enumerate(row):
+                bx1 = x1 + pad_x + c_idx * (col_w + gap_x)
+                by1 = grid_top + r_idx * (row_h + gap_y)
+                is_pressed = (active_key == label)
+                depress = button_depression_px if is_pressed else 0.0
+                by1_eff = by1 + depress
 
                 # Button box
+                btn_r = 12.0
                 ctx.new_path()
-                br_corner = 8.0
-                ctx.arc(kx + btn_w - br_corner, ky_eff + br_corner, br_corner, -math.pi/2, 0)
-                ctx.arc(kx + btn_w - br_corner, ky_eff + btn_h - br_corner, br_corner, 0, math.pi/2)
-                ctx.arc(kx + br_corner, ky_eff + btn_h - br_corner, br_corner, math.pi/2, math.pi)
-                ctx.arc(kx + br_corner, ky_eff + br_corner, br_corner, math.pi, 3*math.pi/2)
+                ctx.arc(bx1 + col_w - btn_r, by1_eff + btn_r, btn_r, -math.pi/2, 0)
+                ctx.arc(bx1 + col_w - btn_r, by1_eff + row_h - btn_r, btn_r, 0, math.pi/2)
+                ctx.arc(bx1 + btn_r, by1_eff + row_h - btn_r, btn_r, math.pi/2, math.pi)
+                ctx.arc(bx1 + btn_r, by1_eff + btn_r, btn_r, math.pi, 3*math.pi/2)
                 ctx.close_path()
 
-                if is_pressed:
-                    btn_fill = (0.75, 0.88, 1.0)
-                    btn_border = (0.12, 0.45, 0.88)
-                elif key_lbl in ("÷", "×", "−", "+", "="):
-                    btn_fill = (0.92, 0.95, 0.99)
-                    btn_border = (0.18, 0.32, 0.50)
-                elif key_lbl == "C":
-                    btn_fill = (1.0, 0.92, 0.92)
-                    btn_border = (0.80, 0.15, 0.15)
+                if is_pressed and error_mode:
+                    k_fill = (0.86, 0.08, 0.15)
+                    t_fill = (1.0, 1.0, 1.0)
+                elif is_pressed:
+                    k_fill = (0.75, 0.88, 1.0)
+                    t_fill = (0.12, 0.45, 0.88)
+                elif label in ("÷", "×", "−", "+", "="):
+                    k_fill = (0.92, 0.95, 0.99)
+                    t_fill = (0.18, 0.32, 0.50)
+                elif label == "C":
+                    k_fill = (1.0, 0.92, 0.92)
+                    t_fill = (0.80, 0.15, 0.15)
                 else:
-                    btn_fill = (1.0, 1.0, 1.0)
-                    btn_border = (0.15, 0.20, 0.28)
+                    k_fill = (1.0, 1.0, 1.0)
+                    t_fill = (0.12, 0.12, 0.12)
 
-                ctx.set_source_rgb(*btn_fill)
+                ctx.set_source_rgb(*k_fill)
                 ctx.fill_preserve()
-                ctx.set_source_rgb(*btn_border)
+                ctx.set_source_rgb(*t_fill)
                 ctx.set_line_width(3.2 if is_pressed else 2.5)
                 ctx.stroke()
 
-                # Key symbol label
-                ctx.set_font_size(24.0)
-                ctx.set_source_rgb(*btn_border)
-                # Centering heuristic
-                ctx.move_to(kx + btn_w * 0.32, ky_eff + btn_h * 0.68)
-                ctx.show_text(key_lbl)
+                # Text label
+                ctx.set_font_size(26.0)
+                ctx.set_source_rgb(*t_fill)
+                ctx.move_to(bx1 + col_w * 0.32, by1_eff + row_h * 0.65)
+                ctx.show_text(label)
