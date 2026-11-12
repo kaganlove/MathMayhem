@@ -19,10 +19,14 @@ const TARGET_OBJ_POS: Vector2 = Vector2(740.0, 1220.0)
 
 const PoseLibrary = preload("res://scripts/pose_library.gd")
 const AnimationBuilder = preload("res://scripts/animation_builder.gd")
+const PoseLibraryV12 = preload("res://scripts/pose_library_v12.gd")
+const AnimationBuilderV12 = preload("res://scripts/animation_builder_v12.gd")
 
 var anim_player: AnimationPlayer = null
 
 const CLIP_DURATIONS: Dictionary = {
+	"v12_six_poses": 6.0,
+	"v12_stepped_blocking": 11.5,
 	"mysterious_button": 10.0,
 	"mysterious_button_stepped": 10.0,
 	"six_poses": 6.0,
@@ -54,14 +58,17 @@ func _setup_animation_player() -> void:
 	var lib = AnimationLibrary.new()
 	var master_anim = AnimationBuilder.create_mysterious_button_animation(false)
 	var stepped_anim = AnimationBuilder.create_mysterious_button_animation(true)
+	var v12_stepped = AnimationBuilderV12.create_v12_animation(true)
 	
 	lib.add_animation("mysterious_button", master_anim)
 	lib.add_animation("mysterious_button_stepped", stepped_anim)
+	lib.add_animation("v12_stepped_blocking", v12_stepped)
 	anim_player.add_animation_library("", lib)
 	
-	# Save reusable resources to disk (Milestone 7)
+	# Save reusable resources to disk (Milestone 7 & v12)
 	ResourceSaver.save(master_anim, "res://animations/mysterious_button_master.res")
 	ResourceSaver.save(stepped_anim, "res://animations/mysterious_button_stepped.res")
+	ResourceSaver.save(v12_stepped, "res://animations/mysterious_button_v12_stepped.res")
 
 func set_clip(clip_name: String) -> void:
 	active_clip = clip_name
@@ -72,7 +79,11 @@ func evaluate_at(t: float) -> void:
 	if rig == null:
 		return
 		
-	if active_clip == "mysterious_button":
+	if active_clip == "v12_six_poses":
+		_evaluate_v12_six_poses(t)
+	elif active_clip == "v12_stepped_blocking":
+		_evaluate_v12_stepped_blocking(t)
+	elif active_clip == "mysterious_button":
 		_evaluate_mysterious_button(t, false)
 	elif active_clip == "mysterious_button_stepped":
 		_evaluate_mysterious_button(t, true)
@@ -131,6 +142,52 @@ func _evaluate_mysterious_button(t: float, is_stepped: bool) -> void:
 				right_plant = (walk_t < 0.2 or walk_t > 0.7)
 			else:
 				left_plant = (walk_t < 1.1 or walk_t > 1.6)
+		debug_overlay.set("left_foot_planted", left_plant)
+		debug_overlay.set("right_foot_planted", right_plant)
+
+# ===========================================================================
+# 0. v12.1 Canonical 6 Reference Poses & Stepped Blocking
+# ===========================================================================
+func _evaluate_v12_six_poses(t: float) -> void:
+	var poses = PoseLibraryV12.get_all_six_poses()
+	var pose_idx: int = clampi(int(floor(t)), 0, poses.size() - 1)
+	var p_data: Dictionary = poses[pose_idx]
+	PoseLibraryV12.apply_pose_to_rig(rig, p_data)
+	_set_action(p_data["label"], true, true)
+
+func _evaluate_v12_stepped_blocking(t: float) -> void:
+	_setup_animation_player()
+	anim_player.play("v12_stepped_blocking")
+	anim_player.seek(t, true)
+	
+	var label: String
+	if t < 1.5:
+		label = "Beat 1: Discovery (Notice, head turn, lean)"
+	elif t < 3.0:
+		label = "Beat 2: Approach (Balanced steps to button)"
+	elif t < 4.0:
+		label = "Beat 3: Hesitation (Hand hovers above button, doubt)"
+	elif t < 5.0:
+		label = "Beat 4: Press (Commit & press, button -8px)"
+	elif t < 5.5:
+		label = "Beat 5: Activation (Energy burst flash)"
+	elif t < 7.0:
+		label = "Beat 6: Surprise (Recoil back, rear weight, wide arms gasp)"
+	elif t < 9.0:
+		label = "Beat 7: Recovery (Settle balance, push glasses up)"
+	else:
+		label = "Beat 8: Payoff (Amused smirk, appealing finish)"
+		
+	if debug_overlay != null:
+		debug_overlay.set("current_action_label", label)
+		var left_plant: bool = true
+		var right_plant: bool = true
+		if t >= 1.5 and t < 2.7:
+			var step_t = t - 1.5
+			if step_t < 0.6:
+				right_plant = false
+			elif step_t < 1.0:
+				left_plant = false
 		debug_overlay.set("left_foot_planted", left_plant)
 		debug_overlay.set("right_foot_planted", right_plant)
 
