@@ -62,14 +62,31 @@ func _ready() -> void:
 	transition_to(State.IDLE)
 
 func transition_to(new_state: State) -> void:
-	var old_name = STATE_NAMES.get(current_state, "UNKNOWN")
+	var old_state = current_state
+	var old_name = STATE_NAMES.get(old_state, "UNKNOWN")
 	var new_name = STATE_NAMES.get(new_state, "UNKNOWN")
+	
+	_on_state_exit(old_state)
 	state_exited.emit(old_name)
 	
 	current_state = new_state
 	state_time = 0.0
 	_on_state_enter(new_state)
 	state_entered.emit(new_name)
+
+func _on_state_exit(old_state: State) -> void:
+	if rig == null:
+		return
+	match old_state:
+		State.REACH, State.CONTACT:
+			# If transitioning anywhere other than PRESS/CONTACT, release hand IK
+			if current_state != State.CONTACT and current_state != State.PRESS:
+				rig.release_hand_ik()
+		State.PRESS, State.HOLD:
+			# Ensure hand detachment and proper mechanical release
+			rig.detach_hand_from_button()
+			if is_instance_valid(interactive_target):
+				interactive_target.set_depression(0.0)
 
 func _on_state_enter(state: State) -> void:
 	if rig == null:
@@ -84,13 +101,16 @@ func _on_state_enter(state: State) -> void:
 			# Stand tall, lock feet to baseline
 			rig.root_pos = Vector2(380.0, STANDING_Y)
 			rig.torso_lean_deg = 0.0
+			rig.shoulder_shrug_px = 0.0
+			rig.hair_lag_deg = 0.0
+			rig.glasses_slip_px = 0.0
 			rig.lock_foot("left", Vector2(380.0 - 13.0 * rig.character_scale, 1592.8))
 			rig.lock_foot("right", Vector2(380.0 + 13.0 * rig.character_scale, 1592.8))
 
 		State.NOTICE_TARGET:
 			state_duration = 0.8
 			rig.set_expression("curious", 0.8)
-			if interactive_target != null:
+			if is_instance_valid(interactive_target):
 				rig.look_at_target(interactive_target.get_contact_pos())
 			rig.torso_lean_deg = 8.0 # Small lean toward object
 
@@ -103,7 +123,7 @@ func _on_state_enter(state: State) -> void:
 			state_duration = 1.2
 			rig.set_expression("hesitant", 1.0)
 			# Hand hovers at pre-contact position
-			if interactive_target != null:
+			if is_instance_valid(interactive_target):
 				rig.reach_hand_to(interactive_target.get_pre_contact_pos(), true)
 			rig.left_shoulder_deg = 14.0
 			rig.left_elbow_deg = 72.0 # Left hand on hip contrapposto
@@ -121,13 +141,13 @@ func _on_state_enter(state: State) -> void:
 			rig.torso_lean_deg = 10.0 # Forward commitment
 			rig.right_shoulder_protract_px = 10.0
 			rig.right_hand_pose = "press"
-			if interactive_target != null:
+			if is_instance_valid(interactive_target):
 				rig.reach_hand_to(interactive_target.get_contact_pos(), true)
 
 		State.CONTACT:
 			state_duration = 0.15
 			rig.right_hand_pose = "press"
-			if interactive_target != null:
+			if is_instance_valid(interactive_target):
 				var c_pos = interactive_target.get_contact_pos()
 				rig.reach_hand_to(c_pos, true)
 				contact_event.emit("button_contact", c_pos)
@@ -135,7 +155,7 @@ func _on_state_enter(state: State) -> void:
 		State.PRESS:
 			state_duration = 0.35
 			rig.attach_hand_to_button()
-			if interactive_target != null:
+			if is_instance_valid(interactive_target):
 				interactive_target.set_depression(8.0)
 				contact_event.emit("button_depressed", interactive_target.get_depressed_pos())
 
@@ -146,7 +166,7 @@ func _on_state_enter(state: State) -> void:
 		State.RELEASE:
 			state_duration = 0.3
 			rig.detach_hand_from_button()
-			if interactive_target != null:
+			if is_instance_valid(interactive_target):
 				interactive_target.set_depression(0.0)
 				rig.reach_hand_to(interactive_target.get_release_pos(), true)
 				contact_event.emit("button_released", interactive_target.get_contact_pos())

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_b_pickup_uid"]
+
+[ext_resource type="Script" path="res://scripts/scene_test_b_pickup.gd" id="1_test_b"]
+
+[node name="SceneTestB" type="Node2D"]
+script = ExtResource("1_test_b")

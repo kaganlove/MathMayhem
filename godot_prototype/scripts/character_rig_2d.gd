@@ -79,6 +79,11 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 @export var button_depress_px: float = 0.0
 @export var button_glow_alpha: float = 0.0
 
+@export_group("Interactive Floor Item")
+@export var show_floor_item: bool = false
+@export var floor_item_pos: Vector2 = Vector2(700.0, 1600.0)
+@export var is_item_held: bool = false
+
 @export_group("Left Leg (Back)")
 @export var left_thigh_deg: float = 14.0
 @export var left_shin_deg: float = -28.0
@@ -166,8 +171,8 @@ static func solve_ik_2bone(origin: Vector2, target: Vector2, l1: float, l2: floa
 	var max_reach: float = l1 + l2 - 0.001
 	var d: float = clampf(dist, min_reach, max_reach)
 	
-	# Angle from +Y (vertical down)
-	var theta: float = atan2(delta.x, delta.y)
+	# Angle from +Y (vertical down) with safe singularity handling
+	var theta: float = atan2(delta.x, delta.y) if dist > 0.0001 else 0.0
 	
 	var cos_alpha: float = clampf((l1 * l1 + d * d - l2 * l2) / (2.0 * l1 * d), -1.0, 1.0)
 	var alpha: float = acos(cos_alpha)
@@ -194,7 +199,10 @@ static func solve_ik_2bone(origin: Vector2, target: Vector2, l1: float, l2: floa
 		"joint1_deg": rad_to_deg(joint1_rad),
 		"joint2_deg": rad_to_deg(joint2_rel_rad),
 		"joint1_pos": joint1_pos,
-		"joint2_pos": joint2_pos
+		"joint2_pos": joint2_pos,
+		"is_reachable": (dist >= min_reach and dist <= max_reach),
+		"distance": dist,
+		"clamped_distance": d
 	}
 
 func solve_kinematics() -> void:
@@ -260,7 +268,7 @@ func solve_kinematics() -> void:
 		left_thigh_deg = ik_left["joint1_deg"] * d
 		left_shin_deg = ik_left["joint2_deg"] * d
 		solved_left_knee = ik_left["joint1_pos"]
-		solved_left_ankle = left_foot_lock_pos
+		solved_left_ankle = ik_left["joint2_pos"]
 	else:
 		var l_thigh_rad: float = deg_to_rad(left_thigh_deg * d)
 		solved_left_knee = solved_left_hip + Vector2(thigh_l * sin(l_thigh_rad), thigh_l * cos(l_thigh_rad))
@@ -273,7 +281,7 @@ func solve_kinematics() -> void:
 		right_thigh_deg = ik_right["joint1_deg"] * d
 		right_shin_deg = ik_right["joint2_deg"] * d
 		solved_right_knee = ik_right["joint1_pos"]
-		solved_right_ankle = right_foot_lock_pos
+		solved_right_ankle = ik_right["joint2_pos"]
 	else:
 		var r_thigh_rad: float = deg_to_rad(right_thigh_deg * d)
 		solved_right_knee = solved_right_hip + Vector2(thigh_l * sin(r_thigh_rad), thigh_l * cos(r_thigh_rad))
@@ -290,15 +298,14 @@ func solve_kinematics() -> void:
 	if left_arm_ik_enabled and left_arm_ik_target != Vector2.ZERO:
 		var l_delta: Vector2 = left_arm_ik_target - solved_left_shoulder
 		var l_dist: float = l_delta.length()
-		var l_wrist_target: Vector2 = left_arm_ik_target
-		if l_dist > 0.001:
-			l_wrist_target = left_arm_ik_target - (l_delta / l_dist) * l_hand_len
+		var l_reach_dir: Vector2 = (l_delta / l_dist) if l_dist > 0.001 else Vector2(0.0, 1.0)
+		var l_wrist_target: Vector2 = left_arm_ik_target - l_reach_dir * l_hand_len
 		var ik_l_arm = solve_ik_2bone(solved_left_shoulder, l_wrist_target, u_arm, f_arm, not left_arm_ik_elbow_down)
 		left_shoulder_deg = ik_l_arm["joint1_deg"] * d
 		left_elbow_deg = ik_l_arm["joint2_deg"] * d
 		solved_left_elbow = ik_l_arm["joint1_pos"]
 		solved_left_wrist = ik_l_arm["joint2_pos"]
-		solved_left_fingertip = left_arm_ik_target
+		solved_left_fingertip = solved_left_wrist + l_reach_dir * l_hand_len
 	else:
 		var l_sh_rad: float = deg_to_rad(left_shoulder_deg * d)
 		solved_left_elbow = solved_left_shoulder + Vector2(u_arm * sin(l_sh_rad), u_arm * cos(l_sh_rad))
@@ -317,15 +324,14 @@ func solve_kinematics() -> void:
 	if right_arm_ik_enabled and right_arm_ik_target != Vector2.ZERO:
 		var r_delta: Vector2 = right_arm_ik_target - solved_right_shoulder
 		var r_dist: float = r_delta.length()
-		var r_wrist_target: Vector2 = right_arm_ik_target
-		if r_dist > 0.001:
-			r_wrist_target = right_arm_ik_target - (r_delta / r_dist) * r_hand_len
+		var r_reach_dir: Vector2 = (r_delta / r_dist) if r_dist > 0.001 else Vector2(0.0, 1.0)
+		var r_wrist_target: Vector2 = right_arm_ik_target - r_reach_dir * r_hand_len
 		var ik_r_arm = solve_ik_2bone(solved_right_shoulder, r_wrist_target, u_arm, f_arm, not right_arm_ik_elbow_down)
 		right_shoulder_deg = ik_r_arm["joint1_deg"] * d
 		right_elbow_deg = ik_r_arm["joint2_deg"] * d
 		solved_right_elbow = ik_r_arm["joint1_pos"]
 		solved_right_wrist = ik_r_arm["joint2_pos"]
-		solved_right_fingertip = right_arm_ik_target
+		solved_right_fingertip = solved_right_wrist + r_reach_dir * r_hand_len
 	else:
 		var r_sh_rad: float = deg_to_rad(right_shoulder_deg * d)
 		solved_right_elbow = solved_right_shoulder + Vector2(u_arm * sin(r_sh_rad), u_arm * cos(r_sh_rad))
@@ -390,6 +396,26 @@ func _draw() -> void:
 	# 9. The Mysterious Button on Pedestal (v11)
 	if show_button_pedestal:
 		_draw_button_pedestal(s)
+
+	# 10. Interactive Floor Item (Test B: Math Gadget / Prism)
+	if show_floor_item:
+		_draw_floor_item(s)
+
+func _draw_floor_item(s: float) -> void:
+	var item_pos: Vector2 = solved_right_fingertip if is_item_held else floor_item_pos
+	# Draw glowing golden prism / octahedron
+	var sz: float = 16.0 * s
+	var pts: PackedVector2Array = [
+		item_pos + Vector2(0.0, -sz),
+		item_pos + Vector2(sz * 0.8, -sz * 0.2),
+		item_pos + Vector2(0.0, sz * 0.6),
+		item_pos + Vector2(-sz * 0.8, -sz * 0.2)
+	]
+	draw_colored_polygon(pts, Color(0.98, 0.75, 0.15, 0.95))
+	draw_polyline(pts, INK_COLOR, 3.5 * s, true)
+	# Inner facet highlights
+	draw_line(item_pos + Vector2(0.0, -sz), item_pos + Vector2(0.0, sz * 0.6), INK_COLOR, 2.0 * s)
+	draw_line(item_pos + Vector2(-sz * 0.8, -sz * 0.2), item_pos + Vector2(sz * 0.8, -sz * 0.2), INK_COLOR, 2.0 * s)
 
 func _draw_button_pedestal(s: float) -> void:
 	var bx: float = button_pedestal_pos.x
@@ -945,4 +971,95 @@ func set_expression(expr_name: String, intensity: float = 1.0) -> void:
 			glasses_slip_px = 0.0
 			shoulder_shrug_px = 0.0
 			mouth_state = "neutral"
+
+## Robustness & Verification Metrics API
+func get_ik_error(limb: String) -> Dictionary:
+	solve_kinematics()
+	var s: float = character_scale
+	if limb.to_lower() == "right_arm":
+		var u_arm: float = UPPER_ARM_LENGTH * s
+		var f_arm: float = FOREARM_LENGTH * s
+		var r_hand_len: float = (17.5 if (right_hand_pose == "press" or right_hand_pose == "point") else 14.5) * s
+		var max_reach: float = u_arm + f_arm + r_hand_len
+		var reach_dist: float = solved_right_shoulder.distance_to(right_arm_ik_target)
+		var actual_err: float = solved_right_fingertip.distance_to(right_arm_ik_target) if right_arm_ik_enabled else 0.0
+		var b1: float = solved_right_shoulder.distance_to(solved_right_elbow)
+		var b2: float = solved_right_elbow.distance_to(solved_right_wrist)
+		var h_len: float = solved_right_wrist.distance_to(solved_right_fingertip)
+		return {
+			"enabled": right_arm_ik_enabled,
+			"target": right_arm_ik_target,
+			"actual_end_effector": solved_right_fingertip,
+			"error_distance": actual_err,
+			"reach_distance": reach_dist,
+			"max_reach": max_reach,
+			"is_reachable": reach_dist <= max_reach,
+			"bone1_length": b1,
+			"bone2_length": b2,
+			"hand_length": h_len,
+			"bone1_preserved": absf(b1 - u_arm) < 0.05,
+			"bone2_preserved": absf(b2 - f_arm) < 0.05,
+			"hand_preserved": absf(h_len - r_hand_len) < 0.05
+		}
+	elif limb.to_lower() == "left_leg":
+		var thigh_l: float = THIGH_LENGTH * s
+		var shin_l: float = SHIN_LENGTH * s
+		var err: float = solved_left_ankle.distance_to(left_foot_lock_pos) if left_foot_locked else 0.0
+		var b1: float = solved_left_hip.distance_to(solved_left_knee)
+		var b2: float = solved_left_knee.distance_to(solved_left_ankle)
+		return {
+			"locked": left_foot_locked,
+			"lock_pos": left_foot_lock_pos,
+			"actual_pos": solved_left_ankle,
+			"drift": err,
+			"bone1_preserved": absf(b1 - thigh_l) < 0.05,
+			"bone2_preserved": absf(b2 - shin_l) < 0.05
+		}
+	elif limb.to_lower() == "right_leg":
+		var thigh_l: float = THIGH_LENGTH * s
+		var shin_l: float = SHIN_LENGTH * s
+		var err: float = solved_right_ankle.distance_to(right_foot_lock_pos) if right_foot_locked else 0.0
+		var b1: float = solved_right_hip.distance_to(solved_right_knee)
+		var b2: float = solved_right_knee.distance_to(solved_right_ankle)
+		return {
+			"locked": right_foot_locked,
+			"lock_pos": right_foot_lock_pos,
+			"actual_pos": solved_right_ankle,
+			"drift": err,
+			"bone1_preserved": absf(b1 - thigh_l) < 0.05,
+			"bone2_preserved": absf(b2 - shin_l) < 0.05
+		}
+	return {}
+
+func get_foot_drift(side: String) -> float:
+	solve_kinematics()
+	if side.to_lower() == "left":
+		return solved_left_ankle.distance_to(left_foot_lock_pos) if left_foot_locked else 0.0
+	elif side.to_lower() == "right":
+		return solved_right_ankle.distance_to(right_foot_lock_pos) if right_foot_locked else 0.0
+	return 0.0
+
+func check_joint_limits() -> Array:
+	solve_kinematics()
+	var violations: Array = []
+	# Right elbow angle
+	var r_el_bend: float = absf(right_elbow_deg)
+	if r_el_bend > 165.0:
+		violations.append("Right elbow hyperextended/overbent: %.1f deg" % r_el_bend)
+	# Left elbow angle
+	var l_el_bend: float = absf(left_elbow_deg)
+	if l_el_bend > 165.0:
+		violations.append("Left elbow hyperextended/overbent: %.1f deg" % l_el_bend)
+	# Right knee bend (anatomical flex)
+	var r_knee_bend: float = absf(right_shin_deg)
+	if r_knee_bend > 155.0:
+		violations.append("Right knee overflexed: %.1f deg" % r_knee_bend)
+	# Left knee bend
+	var l_knee_bend: float = absf(left_shin_deg)
+	if l_knee_bend > 155.0:
+		violations.append("Left knee overflexed: %.1f deg" % l_knee_bend)
+	# Torso lean
+	if absf(torso_lean_deg) > 45.0:
+		violations.append("Torso lean excessive: %.1f deg" % torso_lean_deg)
+	return violations
 

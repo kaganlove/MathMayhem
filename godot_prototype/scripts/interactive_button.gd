@@ -48,6 +48,16 @@ func set_depression(depress_px: float) -> void:
 	elif current_depression < prev and prev >= max_depress_px:
 		button_released.emit()
 
+## Physical contact validation: only depresses if hand end-effector is within contact threshold
+func attempt_press(hand_pos: Vector2, depress_px: float, tolerance: float = 12.0) -> bool:
+	var c_pos = get_contact_pos()
+	var dist = hand_pos.distance_to(c_pos)
+	if dist <= tolerance:
+		set_depression(depress_px)
+		contact_established.emit(hand_pos)
+		return true
+	return false
+
 func activate() -> void:
 	is_active = true
 	glow_alpha = 1.0
