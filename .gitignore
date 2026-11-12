@@ -29,6 +29,7 @@ renders/previews/*.mp4
 tools/
 godot_prototype/temp_clean_frames/
 godot_prototype/temp_debug_frames/
+godot_prototype/temp_*/
 godot_prototype/.godot/
 godot_prototype/appdata/
 

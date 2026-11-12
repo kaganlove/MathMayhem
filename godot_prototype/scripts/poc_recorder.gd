@@ -17,23 +17,21 @@ var duration: float = 6.0
 var output_dir: String = "res://temp_frames"
 
 func _ready() -> void:
+	var target_clip: String = "full_poc"
 	# Parse command line args
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	for arg in args:
 		if arg == "--debug":
 			is_debug_mode = true
 		elif arg.begins_with("--clip="):
-			var clip = arg.substr(7)
-			if anim != null:
-				anim.set_clip(clip)
-				duration = anim.clip_duration
+			target_clip = arg.substr(7)
 		elif arg.begins_with("--out="):
 			output_dir = arg.substr(6)
 	
-	_setup_scene()
+	_setup_scene(target_clip)
 	_render_sequence()
 
-func _setup_scene() -> void:
+func _setup_scene(target_clip: String) -> void:
 	RenderingServer.set_default_clear_color(Color(0.96, 0.97, 0.98))
 	
 	rig = CharacterRig2D.new()
@@ -50,13 +48,13 @@ func _setup_scene() -> void:
 	anim.name = "AnimationController"
 	anim.rig = rig
 	anim.debug_overlay = debug_layer
-	anim.set_clip("full_poc")
+	anim.set_clip(target_clip)
 	duration = anim.clip_duration
 	add_child(anim)
 
 func _render_sequence() -> void:
 	var total_frames: int = int(round(duration * float(fps)))
-	print("Starting Godot batch render: total_frames=%d, fps=%d, debug=%s" % [total_frames, fps, str(is_debug_mode)])
+	print("Starting Godot batch render: clip=%s, total_frames=%d, fps=%d, debug=%s" % [anim.active_clip, total_frames, fps, str(is_debug_mode)])
 	
 	var dir = DirAccess.open("res://")
 	if not dir.dir_exists(output_dir):

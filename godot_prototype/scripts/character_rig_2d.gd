@@ -7,9 +7,14 @@ extends Node2D
 ## messy hair, blank rectangular glasses, short contoured beard, and seamless joint articulation.
 
 # Canonical proportions (scale 1.0 base, scaled by character_scale)
-@export var character_scale: float = 1.22
+@export var character_scale: float = 1.70
 @export var facing: int = 1 # +1 = right, -1 = left
-@export var floor_y: float = 1520.0
+@export var floor_y: float = 1620.0
+
+# Target Object for Reaching & Interaction Evaluation
+@export var show_target_object: bool = false
+@export var target_object_pos: Vector2 = Vector2(740.0, 1220.0)
+@export var target_object_pulse: float = 0.0
 
 # Base anatomical segment lengths (in local pixels at scale=1.0)
 const HEAD_RADIUS: float = 78.0
@@ -237,6 +242,29 @@ func _draw() -> void:
 	_draw_articulated_limb(solved_shoulder_center, (solved_shoulder_center + solved_right_shoulder) * 0.5, solved_right_shoulder, spine_w.x * 0.85, arm_w.x * 1.15, arm_w.x, BODY_FILL)
 	_draw_articulated_limb(solved_right_shoulder, solved_right_elbow, solved_right_wrist, arm_w.x, arm_w.y, arm_w.z, BODY_FILL)
 	_draw_hand(solved_right_wrist, right_shoulder_deg + right_elbow_deg + right_wrist_deg, right_hand_pose, s, arm_w.z)
+
+	# 8. Interactive Target Object (Simple minimalist pedestal stand & glowing orb)
+	if show_target_object:
+		_draw_interactive_target(s)
+
+func _draw_interactive_target(s: float) -> void:
+	var tx = target_object_pos.x
+	var ty = target_object_pos.y
+	# Pedestal Base & Pole
+	draw_line(Vector2(tx - 24.0 * s, floor_y), Vector2(tx + 24.0 * s, floor_y), INK_COLOR, 5.0 * s, true)
+	draw_line(Vector2(tx, floor_y), Vector2(tx, ty + 20.0 * s), INK_COLOR, 4.0 * s, true)
+	draw_circle(Vector2(tx, ty + 20.0 * s), 8.0 * s, INK_COLOR)
+	
+	# Target Orb
+	var orb_r: float = 16.0 * s
+	var glow_alpha: float = clampf(target_object_pulse, 0.0, 1.0)
+	if glow_alpha > 0.01:
+		draw_circle(Vector2(tx, ty), orb_r * (1.0 + glow_alpha * 0.5), Color(0.0, 0.85, 1.0, glow_alpha * 0.35))
+		draw_arc(Vector2(tx, ty), orb_r * (1.0 + glow_alpha * 0.7), 0, TAU, 32, Color(1.0, 0.85, 0.2, glow_alpha * 0.8), 2.5 * s, true)
+	
+	draw_circle(Vector2(tx, ty), orb_r, Color(0.12, 0.16, 0.24))
+	draw_circle(Vector2(tx, ty), orb_r * 0.72, Color(0.0, 0.85, 1.0) if glow_alpha > 0.01 else Color(0.85, 0.90, 0.96))
+	draw_arc(Vector2(tx, ty), orb_r, 0, TAU, 32, INK_COLOR, 3.8 * s, true)
 
 func _draw_articulated_limb(p0: Vector2, p1: Vector2, p2: Vector2, w0: float, w1: float, w2: float, col: Color) -> void:
 	# Segment 1 trapezoid (p0 -> p1)
