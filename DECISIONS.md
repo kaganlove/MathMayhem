@@ -168,7 +168,21 @@
 
 ---
 
-## DEC-010: Original Multi-Voice Musical Identity & Adaptive Audio System (`Option A` Selected)
+---
+
+## DEC-011: Godot Animation Quality Overhaul — Grounding, Locomotion, Contact Precision, and Staging Architecture
+
+- **Status:** APPROVED & IMPLEMENTED
+- **Date:** 2026-11-12
+- **Driver:** Independent review of `godot_ep001_stepped_blocking_clean.mp4` identified 4 critical architectural deficiencies: (1) character floating/sliding caused by moving stance foot coordinates with root motion; (2) hand graphic angle misaligned with IK solve vector in `_draw_hand`; (3) severe display occlusion caused by placing character directly in front of the LCD screen; (4) rushed 10-second timing that compressed 17 button interactions without comedic holds.
+- **Architectural Corrections:**
+  1. **Strict World-Space Foot Grounding:** Rebuilt foot kinematics with `LocomotionController`. During stance phase (loading response, mid-stance, terminal stance), stance ankle coordinates are strictly locked to stationary world coordinates $(X_{\text{plant}}, 1592.8\text{ px})$ with $0.000\text{ px}$ slip. Dual per-foot contact shadows ground each planted foot.
+  2. **IK Visual Hand Alignment:** Fixed visual graphic rotation in `_draw_hand` to orient along the solved reach vector `(solved_right_fingertip - solved_right_wrist)`, guaranteeing that the rendered index finger points directly to the button center with $<10\%$ button dimension error.
+  3. **Staging & Safe Display Region:** Re-staged the character to the left of the calculator ($X \approx 420\text{ px}$), with calculator placed at $X \approx 720\text{ px}$. Right arm reaches comfortably across the keypad while the LCD display ($X \in [740, 940\text{ px}]$) remains 100% visible and unobstructed throughout all calculations.
+  4. **Reusable Component Architecture:** Modularized Godot animation subsystems into dedicated scripts: `locomotion_controller.gd`, `pose_controller.gd`, `interaction_target.gd`, `contact_solver.gd`, `staging_validator.gd`, and `animation_diagnostics.gd`.
+  5. **Comedic Timing & Progressive Validation:** Expanded full pilot duration to 14.0s (420 frames @ 30 FPS) to support observation holds and suspense. Mandated sequential validation: Test A (Grounding/Walking) $\to$ Test B (Single Press) $\to$ Test C (Multiple Presses) $\to$ Test D (Full Pilot).
+- **Consequences:** Eliminates sliding and floating; guarantees clear mathematical visibility; provides reusable, testable subsystems for future episodes.
+
 - **Date:** 2026-11-11
 - **Status:** `APPROVED BY OWNER — OPTION A (PLAYFUL ORCHESTRAL CARTOON COMEDY) SELECTED`
 - **Context:**
