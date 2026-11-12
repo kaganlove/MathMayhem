@@ -18,8 +18,13 @@ const STANDING_Y: float = 1293.6
 const TARGET_OBJ_POS: Vector2 = Vector2(740.0, 1220.0)
 
 const PoseLibrary = preload("res://scripts/pose_library.gd")
+const AnimationBuilder = preload("res://scripts/animation_builder.gd")
+
+var anim_player: AnimationPlayer = null
 
 const CLIP_DURATIONS: Dictionary = {
+	"mysterious_button": 10.0,
+	"mysterious_button_stepped": 10.0,
 	"six_poses": 6.0,
 	"intensity_study": 9.0,
 	"test_c_curiosity": 3.0,
@@ -35,18 +40,43 @@ const CLIP_DURATIONS: Dictionary = {
 
 func _ready() -> void:
 	if active_clip == "":
-		set_clip("combined_acting")
+		set_clip("mysterious_button")
+	_setup_animation_player()
+
+func _setup_animation_player() -> void:
+	if anim_player != null:
+		return
+	anim_player = AnimationPlayer.new()
+	anim_player.name = "RigAnimationPlayer"
+	anim_player.root_node = NodePath("../..")
+	add_child(anim_player)
+	
+	var lib = AnimationLibrary.new()
+	var master_anim = AnimationBuilder.create_mysterious_button_animation(false)
+	var stepped_anim = AnimationBuilder.create_mysterious_button_animation(true)
+	
+	lib.add_animation("mysterious_button", master_anim)
+	lib.add_animation("mysterious_button_stepped", stepped_anim)
+	anim_player.add_animation_library("", lib)
+	
+	# Save reusable resources to disk (Milestone 7)
+	ResourceSaver.save(master_anim, "res://animations/mysterious_button_master.res")
+	ResourceSaver.save(stepped_anim, "res://animations/mysterious_button_stepped.res")
 
 func set_clip(clip_name: String) -> void:
 	active_clip = clip_name
-	clip_duration = CLIP_DURATIONS.get(clip_name, 11.0)
+	clip_duration = CLIP_DURATIONS.get(clip_name, 10.0)
 	current_time = 0.0
 
 func evaluate_at(t: float) -> void:
 	if rig == null:
 		return
 		
-	if active_clip == "six_poses":
+	if active_clip == "mysterious_button":
+		_evaluate_mysterious_button(t, false)
+	elif active_clip == "mysterious_button_stepped":
+		_evaluate_mysterious_button(t, true)
+	elif active_clip == "six_poses":
 		_evaluate_six_poses(t)
 	elif active_clip == "intensity_study":
 		_evaluate_intensity_study(t)
@@ -69,6 +99,40 @@ func evaluate_at(t: float) -> void:
 		
 	if debug_overlay != null:
 		debug_overlay.set("current_time_sec", t)
+
+func _evaluate_mysterious_button(t: float, is_stepped: bool) -> void:
+	_setup_animation_player()
+	var anim_name: String = "mysterious_button_stepped" if is_stepped else "mysterious_button"
+	anim_player.play(anim_name)
+	anim_player.seek(t, true)
+	
+	# Action labels and foot planting telemetry for debug overlay
+	var label: String
+	if t < 1.5:
+		label = "Beat 1: Discovery & Curious Notice"
+	elif t < 3.5:
+		label = "Beat 2: Weight-Balanced Approach"
+	elif t < 5.0:
+		label = "Beat 3: Hand Pauses (Hesitation & Doubt)"
+	elif t < 6.5:
+		label = "Beat 4: Decisive Contact & Button Depress (-8px)"
+	elif t < 7.6:
+		label = "Beat 5/6: Consequence Flash & Explosive Recoil Hold"
+	else:
+		label = "Beat 7: Glasses Slide-Up & Intrigued Smirk"
+		
+	if debug_overlay != null:
+		debug_overlay.set("current_action_label", label)
+		var left_plant: bool = true
+		var right_plant: bool = true
+		if t >= 1.5 and t < 3.3:
+			var walk_t = t - 1.5
+			if walk_t < 0.9:
+				right_plant = (walk_t < 0.2 or walk_t > 0.7)
+			else:
+				left_plant = (walk_t < 1.1 or walk_t > 1.6)
+		debug_overlay.set("left_foot_planted", left_plant)
+		debug_overlay.set("right_foot_planted", right_plant)
 
 # ===========================================================================
 # 0. v10 Expressive Acting Clips & Authored Pose Evaluations

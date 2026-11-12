@@ -59,10 +59,12 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 @export var spine_arch_deg: float = 4.5
 @export var shoulder_shrug_px: float = 0.0
 @export var right_shoulder_protract_px: float = 0.0
+@export var torso_squash: float = 1.0
 
 @export_group("Head & Face")
 @export var head_tilt_deg: float = 1.5
 @export var head_nod_px: float = 0.0
+@export var head_squash: float = 1.0
 @export var yaw_factor: float = 0.22
 @export var glasses_slip_px: float = 0.0
 @export var hair_lag_deg: float = 0.0
@@ -70,6 +72,12 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 @export var right_brow_raise_px: float = 0.0
 @export var brow_slant_deg: float = 0.0
 @export_enum("neutral", "curious_o", "open_gasp", "smirk", "firm", "concentrating", "confused", "satisfied") var mouth_state: String = "neutral"
+
+@export_group("Interactive Button Pedestal")
+@export var show_button_pedestal: bool = false
+@export var button_pedestal_pos: Vector2 = Vector2(760.0, 1220.0)
+@export var button_depress_px: float = 0.0
+@export var button_glow_alpha: float = 0.0
 
 @export_group("Left Leg (Back)")
 @export var left_thigh_deg: float = 14.0
@@ -130,7 +138,8 @@ func solve_kinematics() -> void:
 	
 	# Spine Lean & Arch
 	var lean_rad: float = deg_to_rad(torso_lean_deg * d)
-	var spine_len: float = TORSO_LENGTH * s
+	var sq: float = clampf(torso_squash, 0.5, 1.8)
+	var spine_len: float = TORSO_LENGTH * s * sq
 	
 	solved_shoulder_center = solved_pelvis + Vector2(
 		spine_len * sin(lean_rad),
@@ -246,6 +255,62 @@ func _draw() -> void:
 	# 8. Interactive Target Object (Simple minimalist pedestal stand & glowing orb)
 	if show_target_object:
 		_draw_interactive_target(s)
+
+	# 9. The Mysterious Button on Pedestal (v11)
+	if show_button_pedestal:
+		_draw_button_pedestal(s)
+
+func _draw_button_pedestal(s: float) -> void:
+	var bx: float = button_pedestal_pos.x
+	var by: float = button_pedestal_pos.y
+	
+	# 1. Base Plate & Column Stand on floor
+	var base_w: float = 64.0 * s
+	draw_line(Vector2(bx - base_w, floor_y), Vector2(bx + base_w, floor_y), INK_COLOR, 6.0 * s, true)
+	draw_line(Vector2(bx, floor_y), Vector2(bx, by + 18.0 * s), INK_COLOR, 5.0 * s, true)
+	
+	# 2. Sleek Pedestal Tabletop Console
+	var table_w: float = 48.0 * s
+	var table_h: float = 12.0 * s
+	var table_rect = Rect2(bx - table_w, by + 8.0 * s, table_w * 2.0, table_h)
+	draw_rect(table_rect, Color(0.16, 0.20, 0.28))
+	draw_rect(table_rect, INK_COLOR, false, 3.0 * s)
+	
+	# 3. Metallic Button Housing / Bezel
+	var bezel_w: float = 24.0 * s
+	var bezel_h: float = 10.0 * s
+	var bezel_rect = Rect2(bx - bezel_w, by - 2.0 * s, bezel_w * 2.0, bezel_h)
+	draw_rect(bezel_rect, Color(0.25, 0.30, 0.40))
+	draw_rect(bezel_rect, INK_COLOR, false, 2.5 * s)
+	
+	# 4. Physical Push Button Cap (Depresses by button_depress_px)
+	var cap_w: float = 18.0 * s
+	var cap_h: float = 10.0 * s
+	var depress: float = clampf(button_depress_px, 0.0, 10.0) * s
+	var cap_top_y: float = by - 8.0 * s + depress
+	var cap_rect = Rect2(bx - cap_w, cap_top_y, cap_w * 2.0, cap_h)
+	# Vibrant warning red button
+	draw_rect(cap_rect, Color(0.92, 0.18, 0.22))
+	# Highlight on top edge
+	draw_line(Vector2(bx - cap_w + 2.0 * s, cap_top_y + 1.5 * s), Vector2(bx + cap_w - 2.0 * s, cap_top_y + 1.5 * s), Color(1.0, 0.55, 0.55), 2.0 * s)
+	draw_rect(cap_rect, INK_COLOR, false, 2.5 * s)
+	
+	# 5. Energy Blast / Flash Burst on activation
+	var glow: float = clampf(button_glow_alpha, 0.0, 1.0)
+	if glow > 0.01:
+		var burst_r: float = 38.0 * s * (1.0 + glow * 0.8)
+		# Outer glow corona
+		draw_circle(Vector2(bx, by), burst_r * 1.5, Color(1.0, 0.85, 0.2, glow * 0.35))
+		# Inner brilliant flash
+		draw_circle(Vector2(bx, by), burst_r, Color(1.0, 0.95, 0.6, glow * 0.75))
+		# Flash shockwave ring
+		draw_arc(Vector2(bx, by), burst_r * 1.8, 0, TAU, 32, Color(1.0, 1.0, 1.0, glow * 0.9), 4.0 * s, true)
+		# Radial energy spikes
+		for ang_deg in [0, 45, 90, 135, 180, 225, 270, 315]:
+			var a_rad: float = deg_to_rad(float(ang_deg))
+			var p_start: Vector2 = Vector2(bx, by) + Vector2(cos(a_rad), sin(a_rad)) * (burst_r * 0.7)
+			var p_end: Vector2 = Vector2(bx, by) + Vector2(cos(a_rad), sin(a_rad)) * (burst_r * 2.2)
+			draw_line(p_start, p_end, Color(1.0, 0.9, 0.3, glow * 0.8), 3.0 * s)
 
 func _draw_interactive_target(s: float) -> void:
 	var tx = target_object_pos.x
@@ -424,7 +489,8 @@ func _draw_head_and_face(s: float, d: float, outline_w: float) -> void:
 	var yaw_px: float = head_r * yaw_factor * d
 	var nod_y: float = head_nod_px * s
 	
-	draw_set_transform(Vector2(hx, hy), deg_to_rad(head_tilt_deg), Vector2(1.02, 0.99))
+	var h_sq: float = clampf(head_squash, 0.7, 1.4)
+	draw_set_transform(Vector2(hx, hy), deg_to_rad(head_tilt_deg), Vector2(1.02 * (1.0 / sqrt(h_sq)), 0.99 * h_sq))
 	
 	# Head Cranium
 	draw_circle(Vector2.ZERO, head_r, HEAD_FILL)
