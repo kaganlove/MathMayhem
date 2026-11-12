@@ -44,8 +44,8 @@ class OptionCCharacterSpec:
     torso_length: float = 158.0
     hip_half_width: float = 13.0
     shoulder_half_width: float = 10.0
-    upper_arm_length: float = 144.0
-    forearm_length: float = 140.0
+    upper_arm_length: float = 98.0
+    forearm_length: float = 92.0
     thigh_length: float = 92.0
     shin_length: float = 90.0
     ankle_height: float = 16.0
@@ -119,7 +119,7 @@ class CairoRigState:
     right_hand_pose: str = "relaxed"
     left_elbow_bend_dir: int = 1
     right_elbow_bend_dir: int = 1
-    left_knee_bend_dir: int = 1
+    left_knee_bend_dir: int = -1
     right_knee_bend_dir: int = -1
 
     # Silent facial acting channels (zero floating symbols)
@@ -263,9 +263,9 @@ def solve_cairo_anatomy(spec: OptionCCharacterSpec, state: CairoRigState) -> Sol
 
     left_hip: Point = (pelvis[0] - hip_dx, pelvis[1])
     right_hip: Point = (pelvis[0] + hip_dx, pelvis[1])
-    protract_dx = max(-18.0, min(36.0, state.right_shoulder_protract_px)) * s * state.facing
-    left_shoulder: Point = (shoulder_center[0] - sh_dx, shoulder_center[1] + 4.0 * s)
-    right_shoulder: Point = (shoulder_center[0] + sh_dx + protract_dx, shoulder_center[1] + 4.0 * s)
+    protract_dx = max(-4.0, min(8.0, state.right_shoulder_protract_px * 0.25)) * s * state.facing
+    left_shoulder: Point = (shoulder_center[0] - sh_dx, shoulder_center[1] + 2.0 * s)
+    right_shoulder: Point = (shoulder_center[0] + sh_dx + protract_dx, shoulder_center[1] + 2.0 * s)
 
     # Neck & Head Center
     neck_rad = lean_rad + math.radians(state.spine_arch_deg * 0.25 * state.facing)
@@ -620,6 +620,16 @@ def draw_option_c_character(
         leg_w[1],
         leg_w[2],
     )
+    # 3b. Solid Shoulder Girdle / Clavicle Girth (locks arms 100% firmly to torso at the top)
+    _draw_articulated_limb(
+        ctx,
+        anat.left_shoulder,
+        anat.shoulder_center,
+        anat.right_shoulder,
+        arm_w[0],
+        spine_w[0] * 0.90,
+        arm_w[0],
+    )
 
     # 4. Front Leg
     _draw_articulated_limb(ctx, anat.right_hip, anat.right_knee, anat.right_ankle, *leg_w)
@@ -773,21 +783,13 @@ def draw_option_c_character(
     bridge_gap = spec.glasses_bridge_gap * s
     lens_y = -head_r * 0.16 + nod_y * 0.55 + state.glasses_slip_px * s
 
-    # Perspective yaw transformation: in neutral (yaw=0), left_w == right_w == canonical_w
+    # Canonical blank rectangular glasses: Left and Right lenses are ALWAYS 100% equal in width & height
     yaw_factor = state.yaw_factor
-    abs_yaw = abs(yaw_factor)
-    if abs_yaw < 0.04:
-        left_w = canonical_w
-        right_w = canonical_w
-    elif yaw_factor > 0:
-        left_w = canonical_w * max(0.45, 1.0 - abs_yaw * 0.85)
-        right_w = canonical_w * (1.0 - abs_yaw * 0.10)
-    else:
-        left_w = canonical_w * (1.0 - abs_yaw * 0.10)
-        right_w = canonical_w * max(0.45, 1.0 - abs_yaw * 0.85)
+    left_w = canonical_w
+    right_w = canonical_w
 
-    lx = yaw_px * 0.65 - bridge_gap * 0.5 - left_w
-    rx = yaw_px * 0.65 + bridge_gap * 0.5
+    lx = yaw_px * 0.60 - bridge_gap * 0.5 - left_w
+    rx = yaw_px * 0.60 + bridge_gap * 0.5
 
     # Temple arms (both sides visible in front view; back temple visible in 3/4 and side views)
     ctx.new_path()

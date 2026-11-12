@@ -37,24 +37,24 @@ def create_neutral_idle_pose(scale: float = 1.22, root_x: float = 420.0, floor_y
         head_nod_px=0.0,
         hair_lag_deg=0.0,
         glasses_slip_px=0.0,
-        # Arms hanging naturally beside hips
-        left_wrist_target=(root_x - 38.0 * scale, root_y + 2.0 * scale),
-        right_wrist_target=(root_x + 36.0 * scale, root_y + 4.0 * scale),
-        left_hand_angle_deg=75.0,
-        right_hand_angle_deg=65.0,
+        # Arms hanging naturally beside hips with comfortable human proportions
+        left_wrist_target=(root_x - 24.0 * scale, root_y - 10.0 * scale),
+        right_wrist_target=(root_x + 22.0 * scale, root_y - 8.0 * scale),
+        left_hand_angle_deg=80.0,
+        right_hand_angle_deg=70.0,
         left_hand_pose="relaxed",
         right_hand_pose="relaxed",
         left_elbow_pole=1,
         right_elbow_pole=1,
         right_shoulder_protract_px=0.0,
-        # Stable grounded stance with soft knees
+        # Stable grounded stance with soft knees both bending forward naturally
         left_ankle_target=(root_x - 38.0 * scale, ankle_y),
         right_ankle_target=(root_x + 32.0 * scale, ankle_y),
         left_foot_roll_deg=0.0,
         right_foot_roll_deg=0.0,
         left_foot_planted=True,
         right_foot_planted=True,
-        left_knee_pole=1,
+        left_knee_pole=-1,
         right_knee_pole=-1,
         # Facial acting in canonical neutral symmetry
         left_brow_raise_px=0.0,
@@ -83,11 +83,13 @@ def create_curiosity_pose(base: RigPose) -> RigPose:
     p.brow_slant_deg = 7.0
     p.mouth_state = "curious_o"
     # Hands tense with interest
-    p.right_wrist_target = (p.root_x + 44.0 * s, p.root_y - 12.0 * s)
+    p.right_wrist_target = (p.root_x + 26.0 * s, p.root_y - 20.0 * s)
     p.right_hand_angle_deg = 45.0
     p.right_hand_pose = "reach_open"
-    p.left_wrist_target = (p.root_x - 40.0 * s, p.root_y + 10.0 * s)
+    p.left_wrist_target = (p.root_x - 24.0 * s, p.root_y - 8.0 * s)
     p.left_hand_angle_deg = 80.0
+    p.left_knee_pole = -1
+    p.right_knee_pole = -1
     return p
 
 
@@ -131,8 +133,10 @@ def create_step_contact_pose(base: RigPose, stride_px: float = 64.0) -> RigPose:
     p.left_foot_roll_deg = 18.0
     p.left_foot_planted = True
     # Arms swing in natural walking opposition (left arm forward, right arm back)
-    p.left_wrist_target = (p.root_x + 12.0 * s, p.root_y + 8.0 * s)
-    p.right_wrist_target = (p.root_x + 22.0 * s, p.root_y + 12.0 * s)
+    p.left_wrist_target = (p.root_x + 10.0 * s, p.root_y - 6.0 * s)
+    p.right_wrist_target = (p.root_x - 14.0 * s, p.root_y - 8.0 * s)
+    p.left_knee_pole = -1
+    p.right_knee_pole = -1
     return p
 
 
@@ -146,11 +150,13 @@ def create_reach_extend_pose(base: RigPose, reach_target: Point) -> RigPose:
     s = p.scale
     p.torso_lean_deg = 9.5
     p.spine_arch_deg = 7.5
-    p.right_shoulder_protract_px = 28.0
+    p.right_shoulder_protract_px = 12.0
     p.head_tilt_deg = -3.0
     p.head_nod_px = -2.0
+    p.left_knee_pole = -1
+    p.right_knee_pole = -1
 
-    # Right arm reaches for target
+    # Right arm reaches for target with proportional length
     hand_len = 16.5 * s
     theta = math.atan2(reach_target[1] - (p.root_y - 120.0 * s), reach_target[0] - p.root_x)
     p.right_wrist_target = (
@@ -161,8 +167,8 @@ def create_reach_extend_pose(base: RigPose, reach_target: Point) -> RigPose:
     p.right_hand_pose = "point"
 
     # Free left arm swings back in counter-balance
-    p.left_wrist_target = (p.root_x - 52.0 * s, p.root_y + 14.0 * s)
-    p.left_hand_angle_deg = 110.0
+    p.left_wrist_target = (p.root_x - 28.0 * s, p.root_y - 12.0 * s)
+    p.left_hand_angle_deg = 115.0
     p.left_hand_pose = "relaxed"
     p.mouth_state = "curious_o"
     return p
@@ -185,16 +191,18 @@ def create_surprise_recoil_pose(base: RigPose) -> RigPose:
     p.head_nod_px = -6.0  # Chin pulled up
     p.hair_lag_deg = -16.0  # Hair whips back
     p.glasses_slip_px = 4.5  # Glasses slip down slightly
+    p.left_knee_pole = -1
+    p.right_knee_pole = -1
     # Both brows shoot straight up
     p.left_brow_raise_px = 12.0
     p.right_brow_raise_px = 12.0
     p.brow_slant_deg = -8.0
     p.mouth_state = "open_gasp"
     # Hands fling up and back defensively
-    p.right_wrist_target = (p.root_x + 18.0 * s, p.root_y - 36.0 * s)
+    p.right_wrist_target = (p.root_x + 12.0 * s, p.root_y - 48.0 * s)
     p.right_hand_angle_deg = -45.0
     p.right_hand_pose = "reach_open"
-    p.left_wrist_target = (p.root_x - 34.0 * s, p.root_y - 32.0 * s)
+    p.left_wrist_target = (p.root_x - 18.0 * s, p.root_y - 44.0 * s)
     p.left_hand_angle_deg = 135.0
     p.left_hand_pose = "reach_open"
     return p
@@ -215,14 +223,16 @@ def create_satisfied_smirk_pose(base: RigPose) -> RigPose:
     p.head_nod_px = -1.5
     p.glasses_slip_px = 0.0
     p.hair_lag_deg = 0.0
+    p.left_knee_pole = -1
+    p.right_knee_pole = -1
     p.left_brow_raise_px = 2.0
     p.right_brow_raise_px = 7.5
     p.brow_slant_deg = 5.0
     p.mouth_state = "smirk"
-    p.right_wrist_target = (p.root_x + 36.0 * s, p.root_y + 4.0 * s)
+    p.right_wrist_target = (p.root_x + 22.0 * s, p.root_y - 8.0 * s)
     p.right_hand_angle_deg = 65.0
     p.right_hand_pose = "relaxed"
-    p.left_wrist_target = (p.root_x - 38.0 * s, p.root_y + 2.0 * s)
+    p.left_wrist_target = (p.root_x - 24.0 * s, p.root_y - 10.0 * s)
     p.left_hand_angle_deg = 75.0
     p.left_hand_pose = "relaxed"
     return p

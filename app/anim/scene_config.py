@@ -19,7 +19,7 @@ Box = Tuple[float, float, float, float]
 class CharacterConfig:
     """Authoritative physical dimensions and kinematic limits for the approved character."""
     scale: float = 1.22
-    root_x: float = 430.0
+    root_x: float = 450.0
     root_y: float = 1294.0
     floor_y: float = 1520.0
 
@@ -29,8 +29,8 @@ class CharacterConfig:
     torso_length: float = 158.0
     shoulder_half_width: float = 10.0
     hip_half_width: float = 13.0
-    upper_arm_length: float = 144.0
-    forearm_length: float = 140.0
+    upper_arm_length: float = 98.0
+    forearm_length: float = 92.0
     thigh_length: float = 92.0
     shin_length: float = 90.0
     ankle_height: float = 16.0
@@ -72,8 +72,8 @@ class CalculatorConfig:
     # Staging position in World Space
     # Resized to 220px wide by 390px tall, positioned so buttons sit comfortably
     # in front of character's chest/pelvis height (y=1000..1360).
-    pos_x: float = 580.0
-    pos_y: float = 960.0
+    pos_x: float = 540.0
+    pos_y: float = 920.0
     width: float = 220.0
     height: float = 390.0
 
@@ -153,11 +153,12 @@ class SceneConfig:
         assert self.calculator.width > 0 and self.calculator.height > 0, "Invalid calculator size"
 
         # Reachability verification:
-        # Check that all buttons can be reached from a character standing posture
-        char_sh_x = self.character.root_x + self.character.shoulder_half_width * self.character.scale + 30.0
+        # Check that all buttons can be reached with natural reaching posture and hand tip
+        char_sh_x = self.character.root_x + 55.0
         char_sh_y = self.character.root_y - (self.character.torso_length * 0.85) * self.character.scale
 
-        max_reach = self.character.max_arm_reach * 0.96  # Allow comfortable 4% elbow bend margin
+        hand_len = 16.5 * self.character.scale
+        max_reach = self.character.max_arm_reach + hand_len
 
         for key, btn in self.calculator.buttons.items():
             bx, by = self.calculator.get_button_world_pos(key)

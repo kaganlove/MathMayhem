@@ -73,8 +73,8 @@ def build_poc_timeline(scale: float = 1.22, root_x: float = 400.0, floor_y: floa
     p_step_planted.left_foot_planted = True
     p_step_planted.torso_lean_deg = 4.0
 
-    # Reach pose targeting unseen object at (720.0, 1150.0)
-    reach_target = (720.0, 1150.0)
+    # Reach pose targeting unseen object at (680.0, 1140.0)
+    reach_target = (680.0, 1140.0)
     p_reach_anticipate = create_neutral_idle_pose(scale=scale, root_x=p_step_planted.root_x, floor_y=floor_y)
     p_reach_anticipate.right_ankle_target = p_step_planted.right_ankle_target
     p_reach_anticipate.root_x -= 8.0 * scale

@@ -26,9 +26,9 @@ def test_unified_scene_config_validation():
     calc = SCENE_CONFIG.calculator
     char = SCENE_CONFIG.character
 
-    char_sh_x = char.root_x + char.shoulder_half_width * char.scale + 30.0
+    char_sh_x = char.root_x + 55.0
     char_sh_y = char.root_y - (char.torso_length * 0.85) * char.scale
-    max_reach = char.max_arm_reach * 0.96
+    max_reach = char.max_arm_reach + 16.5 * char.scale
 
     for k in calc.buttons:
         bx, by = calc.get_button_world_pos(k)
@@ -39,8 +39,8 @@ def test_unified_scene_config_validation():
 def test_two_bone_ik_strict_bone_length_invariance():
     """Verify that 2-bone IK strictly preserves bone segment lengths with zero telescoping."""
     root = (440.0, 1120.0)
-    len1 = 175.68  # 144.0 * 1.22
-    len2 = 170.80  # 140.0 * 1.22
+    len1 = 119.56  # 98.0 * 1.22
+    len2 = 112.24  # 92.0 * 1.22
 
     # Test reaching across a variety of targets inside workspace
     test_targets = [

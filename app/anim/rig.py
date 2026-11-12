@@ -79,7 +79,7 @@ class RigPose:
     right_foot_roll_deg: float = 0.0
     left_foot_planted: bool = True
     right_foot_planted: bool = True
-    left_knee_pole: int = 1
+    left_knee_pole: int = -1
     right_knee_pole: int = -1
 
     # Facial acting (100% silent, on-model)
