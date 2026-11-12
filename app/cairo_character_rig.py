@@ -57,6 +57,15 @@ class OptionCCharacterSpec:
     arm_widths: Tuple[float, float, float] = (15.5, 12.2, 9.8)
     outline_width: float = 6.8
 
+    # Canonical facial dimensions (at scale=1.0) for 100% symmetry
+    lens_canonical_width: float = 46.0
+    lens_canonical_height: float = 32.0
+    lens_corner_radius: float = 5.5
+    glasses_bridge_gap: float = 8.5
+    brow_canonical_length: float = 38.0
+    brow_canonical_arch: float = 4.5
+    brow_neutral_baseline_y: float = 10.5
+
     # Guardrail invariants
     has_blank_lens_glasses: bool = True
     has_pupils: bool = False
@@ -503,26 +512,50 @@ def _draw_hand(
     
     Guarantees 100% attachment integrity with zero gap under any wrist rotation.
     The hand base circle matches the forearm wrist disc radius exactly.
+    Supports recognizable cartoon poses: 'relaxed', 'point', 'reach_open', 'fist'.
     """
     ctx.save()
     ctx.translate(wrist[0], wrist[1])
     ctx.rotate(math.radians(angle_deg))
 
     r_base = (wrist_width * scale) * 0.5
-    hand_len = 14.0 * scale
-    r_tip = r_base * 0.85
-
     ctx.new_path()
     # Semi-circular base centered at wrist joint (0, 0) matching forearm end cap
     ctx.arc(0.0, 0.0, r_base, math.pi * 0.5, math.pi * 1.5)
-    # Tapered upper edge to tip
-    ctx.line_to(hand_len - r_tip, -r_tip)
-    # Rounded fingerless tip
-    ctx.arc(hand_len - r_tip, 0.0, r_tip, -math.pi * 0.5, math.pi * 0.5)
-    # Lower edge back to wrist base
-    ctx.line_to(0.0, r_base)
-    ctx.close_path()
 
+    if pose == "point":
+        # Extended pointing index digit tip with thumb contour underneath
+        hand_len = 16.5 * scale
+        r_tip = r_base * 0.65
+        ctx.line_to(hand_len - r_tip, -r_tip * 1.1)
+        ctx.arc(hand_len - r_tip, -r_tip * 0.2, r_tip, -math.pi * 0.45, math.pi * 0.45)
+        ctx.curve_to(
+            hand_len * 0.55, r_tip * 0.8,
+            hand_len * 0.35, r_base * 1.15,
+            0.0, r_base,
+        )
+    elif pose == "reach_open":
+        # Flared open-handed reaching capsule
+        hand_len = 15.5 * scale
+        r_tip = r_base * 1.10
+        ctx.curve_to(hand_len * 0.4, -r_base * 1.15, hand_len * 0.8, -r_tip, hand_len - r_tip * 0.5, -r_tip * 0.5)
+        ctx.arc(hand_len - r_tip * 0.5, 0.0, r_tip * 0.75, -math.pi * 0.5, math.pi * 0.5)
+        ctx.curve_to(hand_len * 0.8, r_tip, hand_len * 0.4, r_base * 1.15, 0.0, r_base)
+    elif pose in ("fist", "clench"):
+        # Compact rounded clenched fist
+        hand_len = 10.0 * scale
+        r_tip = r_base * 0.95
+        ctx.line_to(hand_len - r_tip, -r_tip)
+        ctx.arc(hand_len - r_tip, 0.0, r_tip, -math.pi * 0.5, math.pi * 0.5)
+        ctx.line_to(0.0, r_base)
+    else:  # "relaxed" / "resting"
+        hand_len = 14.0 * scale
+        r_tip = r_base * 0.85
+        ctx.line_to(hand_len - r_tip, -r_tip)
+        ctx.arc(hand_len - r_tip, 0.0, r_tip, -math.pi * 0.5, math.pi * 0.5)
+        ctx.line_to(0.0, r_base)
+
+    ctx.close_path()
     ctx.set_source_rgb(*fill_rgb)
     ctx.fill()
     ctx.restore()
@@ -733,63 +766,87 @@ def draw_option_c_character(
     _set_ink(ctx, ink, outline_w * 0.90)
     ctx.stroke()
 
-    # 5e. Blank Rectangular Glasses (NO pupils) + Expressive Eyebrows
+    # 5e. Canonical Blank Rectangular Glasses (100% Symmetrical Geometry)
+    canonical_w = spec.lens_canonical_width * s
+    canonical_h = spec.lens_canonical_height * s
+    r_corner = spec.lens_corner_radius * s
+    bridge_gap = spec.glasses_bridge_gap * s
     lens_y = -head_r * 0.16 + nod_y * 0.55 + state.glasses_slip_px * s
-    lens_h = head_r * 0.42
-    abs_yaw = abs(state.yaw_factor)
-    if abs_yaw < 0.08:
-        left_w = head_r * 0.60
-        right_w = head_r * 0.60
-    elif state.yaw_factor >= 0:
-        left_w = head_r * max(0.36, 0.62 - abs_yaw * 0.55)
-        right_w = head_r * 0.64
-    else:
-        left_w = head_r * 0.64
-        right_w = head_r * max(0.36, 0.62 - abs_yaw * 0.55)
-    bridge_gap = head_r * (0.12 if abs_yaw < 0.30 else 0.09)
 
-    lx = yaw_px * 0.62 - bridge_gap * 0.5 - left_w
-    rx = yaw_px * 0.62 + bridge_gap * 0.5
+    # Perspective yaw transformation: in neutral (yaw=0), left_w == right_w == canonical_w
+    yaw_factor = state.yaw_factor
+    abs_yaw = abs(yaw_factor)
+    if abs_yaw < 0.04:
+        left_w = canonical_w
+        right_w = canonical_w
+    elif yaw_factor > 0:
+        left_w = canonical_w * max(0.45, 1.0 - abs_yaw * 0.85)
+        right_w = canonical_w * (1.0 - abs_yaw * 0.10)
+    else:
+        left_w = canonical_w * (1.0 - abs_yaw * 0.10)
+        right_w = canonical_w * max(0.45, 1.0 - abs_yaw * 0.85)
+
+    lx = yaw_px * 0.65 - bridge_gap * 0.5 - left_w
+    rx = yaw_px * 0.65 + bridge_gap * 0.5
 
     # Temple arms (both sides visible in front view; back temple visible in 3/4 and side views)
     ctx.new_path()
-    if state.yaw_factor >= -0.10:
-        ctx.move_to(-head_r * 0.98, lens_y + lens_h * 0.36)
-        ctx.line_to(lx, lens_y + lens_h * 0.40)
-    if state.yaw_factor <= 0.10:
-        ctx.move_to(rx + right_w, lens_y + lens_h * 0.40)
-        ctx.line_to(head_r * 0.98, lens_y + lens_h * 0.36)
+    if yaw_factor >= -0.15:
+        ctx.move_to(-head_r * 0.98, lens_y + canonical_h * 0.38)
+        ctx.line_to(lx, lens_y + canonical_h * 0.40)
+    if yaw_factor <= 0.15:
+        ctx.move_to(rx + right_w, lens_y + canonical_h * 0.40)
+        ctx.line_to(head_r * 0.98, lens_y + canonical_h * 0.38)
     _set_ink(ctx, ink, outline_w * 0.80)
     ctx.stroke()
 
+    # Draw both lenses using single identical routine
     for box_x, box_w in ((lx, left_w), (rx, right_w)):
-        r_corner = 5.5 * s
         ctx.new_path()
-        ctx.arc(box_x + box_w - r_corner, lens_y + r_corner, r_corner, -math.pi / 2, 0)
-        ctx.arc(box_x + box_w - r_corner, lens_y + lens_h - r_corner, r_corner, 0, math.pi / 2)
-        ctx.arc(box_x + r_corner, lens_y + lens_h - r_corner, r_corner, math.pi / 2, math.pi)
-        ctx.arc(box_x + r_corner, lens_y + r_corner, r_corner, math.pi, 3 * math.pi / 2)
+        rc = min(r_corner, box_w * 0.25)
+        ctx.arc(box_x + box_w - rc, lens_y + rc, rc, -math.pi / 2, 0)
+        ctx.arc(box_x + box_w - rc, lens_y + canonical_h - rc, rc, 0, math.pi / 2)
+        ctx.arc(box_x + rc, lens_y + canonical_h - rc, rc, math.pi / 2, math.pi)
+        ctx.arc(box_x + rc, lens_y + rc, rc, math.pi, 3 * math.pi / 2)
         ctx.close_path()
         ctx.set_source_rgb(1.0, 1.0, 1.0)
         ctx.fill_preserve()
         _set_ink(ctx, ink, outline_w * 0.85)
         ctx.stroke()
 
+    # Nose Bridge
     ctx.new_path()
-    ctx.move_to(lx + left_w, lens_y + lens_h * 0.38)
-    ctx.line_to(rx, lens_y + lens_h * 0.38)
+    ctx.move_to(lx + left_w, lens_y + canonical_h * 0.38)
+    ctx.line_to(rx, lens_y + canonical_h * 0.38)
     _set_ink(ctx, ink, outline_w * 0.85)
     ctx.stroke()
 
-    # Expressive Eyebrows (driven by `left_brow_raise_px`, `right_brow_raise_px`, `brow_slant_deg`)
+    # 5f. Canonical Symmetrical Eyebrows
+    # In neutral (raise=0, slant=0, yaw=0), both brows share identical length, thickness, arch, and baseline.
+    baseline_y = lens_y - spec.brow_neutral_baseline_y * s
     slant_shift = math.sin(math.radians(state.brow_slant_deg)) * 6.5 * s
-    ly_b = lens_y - (10.0 + state.left_brow_raise_px) * s
-    ry_b = lens_y - (11.0 + state.right_brow_raise_px) * s
+    ly_b = baseline_y - state.left_brow_raise_px * s
+    ry_b = baseline_y - state.right_brow_raise_px * s
+
+    # Left Eyebrow (centered over left lens)
+    lb_len = min(spec.brow_canonical_length * s, left_w * 0.88)
+    lb_cx = lx + left_w * 0.5
     ctx.new_path()
-    ctx.move_to(lx + 4 * s, ly_b + slant_shift)
-    ctx.curve_to(lx + left_w * 0.5, ly_b - 6 * s, lx + left_w * 0.8, ly_b - 4 * s, lx + left_w - 2 * s, ly_b - slant_shift)
-    ctx.move_to(rx + 2 * s, ry_b - slant_shift)
-    ctx.curve_to(rx + right_w * 0.4, ry_b - 7 * s, rx + right_w * 0.75, ry_b - 6 * s, rx + right_w - 3 * s, ry_b + slant_shift)
+    ctx.move_to(lb_cx - lb_len * 0.5, ly_b + slant_shift)
+    ctx.curve_to(
+        lb_cx - lb_len * 0.15, ly_b - spec.brow_canonical_arch * s,
+        lb_cx + lb_len * 0.20, ly_b - spec.brow_canonical_arch * s * 0.85,
+        lb_cx + lb_len * 0.5, ly_b - slant_shift,
+    )
+    # Right Eyebrow (centered over right lens, identically defined)
+    rb_len = min(spec.brow_canonical_length * s, right_w * 0.88)
+    rb_cx = rx + right_w * 0.5
+    ctx.move_to(rb_cx - rb_len * 0.5, ry_b - slant_shift)
+    ctx.curve_to(
+        rb_cx - rb_len * 0.20, ry_b - spec.brow_canonical_arch * s * 0.85,
+        rb_cx + rb_len * 0.15, ry_b - spec.brow_canonical_arch * s,
+        rb_cx + rb_len * 0.5, ry_b + slant_shift,
+    )
     _set_ink(ctx, ink, outline_w * 0.72)
     ctx.stroke()
 
