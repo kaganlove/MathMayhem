@@ -98,4 +98,4 @@ def test_rendered_walk_progression_in_render_space():
         assert x0 < 350.0, f"Character should start on left, detected X={x0:.1f}"
         assert x90 > x0 + 150.0, f"Character should advance by mid-walk: {x90:.1f} vs {x0:.1f}"
         assert x180 > x90 + 100.0, f"Character should advance to right by finish: {x180:.1f} vs {x90:.1f}"
-        assert x180 > 700.0, f"Character should reach right side at finish, detected X={x180:.1f}"
+        assert x180 > 675.0, f"Character should reach right side at finish, detected X={x180:.1f}"

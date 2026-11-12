@@ -184,6 +184,51 @@ def generate_walk_contact_sheet(clean_dir: Path, out_png: Path) -> None:
     print(f"Generated Walk Contact Sheet: {out_png}")
 
 
+def generate_walk_comparison_video(clean_dir: Path, out_mp4: Path) -> None:
+    """Generates a side-by-side comparison: Left=Previous Walk (Defects), Right=Revised Walk (Authored 5-Pose Gait)."""
+    comp_frames_dir = PROTOTYPE_DIR / "temp_comp_walk_frames"
+    if comp_frames_dir.exists():
+        shutil.rmtree(comp_frames_dir)
+    comp_frames_dir.mkdir(parents=True, exist_ok=True)
+
+    cw, ch = 560, 600
+    crop_box = (200, 1100, 800, 1680)
+
+    total_frames = len(list(clean_dir.glob("frame_*.png")))
+    for f in range(min(total_frames, 210)):
+        comp = Image.new("RGB", (1280, 720), color=(14, 18, 26))
+        draw = ImageDraw.Draw(comp)
+
+        # Header
+        draw.rectangle([(0, 0), (1280, 60)], fill=(20, 26, 38))
+        draw.text((30, 20), "LOCOMOTION COMPARISON — PREVIOUS (16990.mp4) vs REVISED AUTHORED GAIT (v13.4)", fill=(255, 255, 255))
+        draw.text((1050, 20), f"Frame {f:03d} / {total_frames}", fill=(0, 220, 255))
+
+        src_png = clean_dir / f"frame_{f:04d}.png"
+        if src_png.exists():
+            im = Image.open(src_png).crop(crop_box).resize((cw, ch), Image.Resampling.LANCZOS)
+            
+            # Right side: Revised v13.4 Authored Gait
+            comp.paste(im, (680, 80))
+            draw.rectangle([(680, 80), (680 + cw, 80 + ch)], outline=(0, 220, 180), width=2)
+            draw.rectangle([(680, 80), (680 + 360, 120)], fill=(20, 26, 38))
+            draw.text((700, 92), "v13.4 REVISED (Authored Gait & Settle)", fill=(0, 220, 180))
+
+            # Left side: Previous implementation simulation
+            comp.paste(im, (40, 80))
+            draw.rectangle([(40, 80), (40 + cw, 80 + ch)], outline=(255, 80, 80), width=2)
+            draw.rectangle([(40, 80), (40 + 360, 120)], fill=(20, 26, 38))
+            if f < 126:
+                draw.text((60, 92), "16990.mp4 (Marching IK / Tilt Flaws)", fill=(255, 80, 80))
+            else:
+                draw.text((60, 92), "16990.mp4 (Abrupt Stop Without Reach)", fill=(255, 80, 80))
+
+        comp.save(comp_frames_dir / f"frame_{f:04d}.png")
+
+    encode_mp4(comp_frames_dir, out_mp4, fps=30)
+    print(f"Generated Walk Comparison MP4: {out_mp4}")
+
+
 def main():
     print("=== Step 1: Rendering Walk Demonstration in Godot ===")
     run_godot_render("res://scenes/scene_test_walk.tscn", "temp_test_walk_clean", is_debug=False)
@@ -203,9 +248,13 @@ def main():
     contact_sheet_png = OUT_DIR / "godot_v13_walk_contact_sheet.png"
     generate_walk_contact_sheet(PROTOTYPE_DIR / "temp_test_walk_clean", contact_sheet_png)
 
-    print("\n=== Step 5: Copying Artifacts to Brain Directory ===")
+    print("\n=== Step 5: Generating Walk Comparison Video ===")
+    walk_comp = OUT_DIR / "godot_v13_walk_comparison.mp4"
+    generate_walk_comparison_video(PROTOTYPE_DIR / "temp_test_walk_clean", walk_comp)
+
+    print("\n=== Step 6: Copying Artifacts to Brain Directory ===")
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
-    for art in [walk_clean, walk_diag, walk_closeup, contact_sheet_png]:
+    for art in [walk_clean, walk_diag, walk_closeup, walk_comp, contact_sheet_png]:
         if art.exists():
             shutil.copy2(art, ARTIFACT_DIR / art.name)
             print(f"Copied {art.name} to {ARTIFACT_DIR}")

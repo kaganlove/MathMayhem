@@ -35,11 +35,13 @@
 ---
 
 ## Last Verified Checkpoint
-- **Checkpoint ID:** `CHK-007-PHASE4-FULL-EPISODE-001`
-- **Timestamp:** 2026-11-11T17:14:00-06:00
+- **Checkpoint ID:** `CHK-013-4-EP001-PILOT-BLOCKING`
+- **Timestamp:** 2026-11-12T15:35:00-06:00
 - **Completed:**
-  1. Owner approved Phase 3R interaction upgrade and selected **Option A (`option_a_orchestral_cartoon` — Playful Orchestral Cartoon Comedy, 132 BPM)** (`DEC-009`, `DEC-010`).
-  2. Implemented the 10-stage AI Production Agent Pipeline (`app/production_agents.py`) with structured `AgentStageLog` records, `CostLedgerEntry` tracking (`$0.00` total cost), and `request_episode_revision` immutable version progression.
-  3. Produced the complete **24.0-second (`720 frames @ 30fps`, `1080x1920`) Episode 001 ("Never Divide by Zero")** (`renders/previews/ep001_full_24s_1080x1920.mp4` + `renders/previews/ep001_full_24s_contact_sheet.png`) across 8 scenes and **20 physical calculator button contacts** (`10÷2=5`, `10÷1=10`, `10÷0=UNDEFINED`, explicitly tagged cartoon void metaphor, physical `C` clear press resetting reality, glasses adjustment, and `0÷0=UNDEFINED` cliffhanger) scored with **Option A** (`assets/audio/ep001_full_24s_option_a_mix.wav`) and packaged in `renders/packages/EP001_v2/`.
-  4. Verified all `37/37` automated tests pass (`tests/test_phase4_agents.py`).
-- **Next Action:** **Stop and await owner review of Phase 4 (`EP001_v2` Full 24.0s Episode & 10-Stage Agent Pipeline) before starting Phase 5 (Remote Phone Control).**
+  1. Corrected all walking and locomotion weaknesses from `16990.mp4` (5-pose authored gait, stance foot locking with strictly $0.0\text{px}$ drift, $20.0\text{px}$ swing clearance arc, dynamic pelvis bobbing, counter-oscillating arm swing, stabilized upright head carriage). Deliverables: `godot_v13_walk_clean.mp4`, `godot_v13_walk_diagnostic.mp4`, `godot_v13_walk_comparison.mp4`.
+  2. Restored Episode 001 ("Never Divide by Zero") canonical 10-second proof-of-concept pilot (`1080x1920 @ 30fps`, 300 frames).
+  3. Built deterministic interactive 4x4 pedestal calculator (`InteractiveCalculator`) with authoritative keypad geometry, 3D button depression ($-4.0\text{px}$), and real-time LCD state updates.
+  4. Implemented full stepped blocking pilot scene (`scene_ep001_pilot.gd` and `.tscn`) covering all 5 narrative beats: Intro, Discovery, $10 \div 2 = 5$, $10 \div 1 = 10$, and $10 \div 0 = \text{UNDEFINED}$ with physical shock recoil freeze.
+  5. Verified 100% physical button contact accuracy ($< 3.4\text{px}$ error on all 17 button presses; zero false inputs).
+  6. Verified all 32 automated tests pass (`pytest tests/test_v13_*.py tests/test_ep001_*.py`).
+- **Next Action:** **Stop and await owner review of Episode 001 Stepped Blocking Pilot deliverables (`godot_ep001_stepped_blocking_clean.mp4`, `ep001_storyboard_sheet.png`, `ep001_calculator_interaction_sheet.png`) before final polished rendering.**

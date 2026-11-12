@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ep001_pilot_scene_uid"]
+
+[ext_resource type="Script" path="res://scripts/scene_ep001_pilot.gd" id="1_ep001"]
+
+[node name="SceneEp001Pilot" type="Node2D"]
+script = ExtResource("1_ep001")
