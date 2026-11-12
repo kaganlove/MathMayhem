@@ -99,25 +99,34 @@ func _evaluate_state_at(t: float) -> void:
 		rig.right_brow_raise_px = 6.0
 		rig.left_brow_raise_px = 2.0
 
-	# Beat 3: Explosive Recoil & Shock Freeze (2.5s - 4.0s)
+	# Beat 3: Anticipation Dip & Explosive Recoil (2.5s - 4.0s)
 	elif t < 4.0:
-		debug_layer.current_action_label = "Test C: 3. SHOCK RECOIL (Full body recoil, glasses slip, braced rear foot)"
-		var p_rec = clampf((t - 2.5) / 0.28, 0.0, 1.0)
-		var ease_rec = ease(p_rec, 0.2)
 		rig.clear_gaze_target()
-		# Pelvis snaps backward and sinks down into rear brace (zero float)
-		rig.root_pos = Vector2(lerpf(530.0, 495.0, ease_rec), 1285.8 + ease_rec * 6.0)
-		rig.torso_lean_deg = lerpf(6.0, -18.0, ease_rec)
-		rig.shoulder_shrug_px = lerpf(0.0, 26.0, ease_rec)
-		rig.glasses_slip_px = lerpf(0.0, 8.0, ease_rec)
-		rig.hair_lag_deg = lerpf(0.0, -30.0, ease_rec)
-		rig.set_expression("surprised", 1.0)
-		rig.right_hand_pose = "recoil"
-		rig.left_hand_pose = "recoil"
-		rig.right_shoulder_deg = lerpf(8.0, -22.0, ease_rec)
-		rig.right_elbow_deg = lerpf(24.0, 85.0, ease_rec)
-		rig.left_shoulder_deg = lerpf(6.0, -18.0, ease_rec)
-		rig.left_elbow_deg = lerpf(20.0, 78.0, ease_rec)
+		if t < 2.58:
+			# 2-frame (0.08s) quick anticipation squash into the disturbance
+			debug_layer.current_action_label = "Test C: 3. ANTICIPATION DIP (Torso squash, brief freeze before blast)"
+			var p_dip = (t - 2.5) / 0.08
+			rig.torso_squash = lerpf(1.0, 0.94, p_dip)
+			rig.torso_lean_deg = lerpf(6.0, 8.5, p_dip)
+			rig.set_expression("surprised", 0.7)
+		else:
+			debug_layer.current_action_label = "Test C: 3. SHOCK RECOIL (Full body recoil, glasses slip, braced rear foot)"
+			var p_rec = clampf((t - 2.58) / 0.26, 0.0, 1.0)
+			var ease_rec = ease(p_rec, 0.2)
+			rig.torso_squash = lerpf(0.94, 1.02, ease_rec)
+			# Pelvis snaps backward and sinks down into rear brace (zero float)
+			rig.root_pos = Vector2(lerpf(530.0, 495.0, ease_rec), 1285.8 + ease_rec * 6.0)
+			rig.torso_lean_deg = lerpf(8.5, -18.0, ease_rec)
+			rig.shoulder_shrug_px = lerpf(0.0, 26.0, ease_rec)
+			rig.glasses_slip_px = lerpf(0.0, 8.0, ease_rec)
+			rig.hair_lag_deg = lerpf(0.0, -30.0, ease_rec)
+			rig.set_expression("surprised", 1.0)
+			rig.right_hand_pose = "recoil"
+			rig.left_hand_pose = "recoil"
+			rig.right_shoulder_deg = lerpf(8.0, -22.0, ease_rec)
+			rig.right_elbow_deg = lerpf(24.0, 85.0, ease_rec)
+			rig.left_shoulder_deg = lerpf(6.0, -18.0, ease_rec)
+			rig.left_elbow_deg = lerpf(20.0, 78.0, ease_rec)
 
 	# Beat 4: Hesitant Recovery & Glasses Push (4.0s - 5.5s)
 	elif t < 5.5:

@@ -153,7 +153,7 @@ func _process(_delta: float) -> void:
 func get_button_contact_pos() -> Vector2:
 	var s: float = character_scale
 	var depress: float = clampf(button_depress_px, 0.0, 10.0) * s
-	return Vector2(button_pedestal_pos.x, button_pedestal_pos.y - 8.0 * s + depress)
+	return Vector2(button_pedestal_pos.x, button_pedestal_pos.y - 6.0 * s + depress)
 
 func get_right_fingertip_pos() -> Vector2:
 	return solved_right_fingertip
@@ -793,8 +793,9 @@ func _draw_head_and_face(s: float, d: float, outline_w: float) -> void:
 	_draw_rounded_lens(Rect2(lx, lens_y, canonical_w, canonical_h), LENS_CORNER_RADIUS * s, outline_w * 0.85)
 	_draw_rounded_lens(Rect2(rx, lens_y, canonical_w, canonical_h), LENS_CORNER_RADIUS * s, outline_w * 0.85)
 	
-	# Symmetrical Eyebrows
-	var baseline_y: float = lens_y - BROW_BASELINE_Y * s
+	# Symmetrical Eyebrows (Anchored anatomically to forehead, independent of glasses slip)
+	var forehead_y: float = -head_r * 0.16 + nod_y * 0.55
+	var baseline_y: float = forehead_y - BROW_BASELINE_Y * s
 	var slant_shift: float = sin(deg_to_rad(brow_slant_deg)) * 5.0 * s
 	var brow_len: float = BROW_LENGTH * s
 	

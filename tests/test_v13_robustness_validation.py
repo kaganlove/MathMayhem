@@ -266,17 +266,17 @@ def test_five_distinct_reachable_button_locations():
             pelvis[0] + spine_len * math.sin(lean_rad) + 15.0,
             pelvis[1] - spine_len * math.cos(lean_rad)
         )
-        contact_pos = (button_pos[0], button_pos[1] - 14.0)
+        contact_pos = (button_pos[0], button_pos[1] - 10.2)
         sol = solve_arm_ik(shoulder, contact_pos, u_arm, f_arm, hand_len)
         
         # Verify reachable and contact error < 0.05 px
         assert sol["is_reachable"] is True, f"{name} not reachable"
         assert sol["error"] < 0.05, f"{name} contact error too high: {sol['error']}"
         
-        # Simulate geometric contact validation
-        contact_tolerance = 12.0
-        contact_dist = math.hypot(sol["fingertip_pos"][0] - contact_pos[0], sol["fingertip_pos"][1] - contact_pos[1])
-        valid_contact = (contact_dist <= contact_tolerance)
+        # Simulate tightened geometric contact validation (vertical <= 3.5px, horizontal <= 24px)
+        dx = abs(sol["fingertip_pos"][0] - contact_pos[0])
+        dy = abs(sol["fingertip_pos"][1] - contact_pos[1])
+        valid_contact = (dx <= 24.0 and dy <= 3.5)
         assert valid_contact is True
 
 def test_unreachable_button_location_and_deliberate_miss():
@@ -291,23 +291,20 @@ def test_unreachable_button_location_and_deliberate_miss():
     sol_unreach = solve_arm_ik(shoulder, unreachable_button, u_arm, f_arm, hand_len)
     assert sol_unreach["is_reachable"] is False
     assert sol_unreach["error"] > 300.0 # Huge gap
-    # Button must not activate when contact dist > 12.0
-    assert sol_unreach["error"] > 12.0
+    # Button must not activate when contact dist > 3.5 px
+    assert sol_unreach["error"] > 3.5
     
-    # 2. Deliberate miss (hand reaches 40 px above button)
+    # 2. Deliberate miss (hand reaches 50 px above button)
     valid_button = (760.0, 1220.0)
     deliberate_miss_target = (valid_button[0], valid_button[1] - 50.0)
     sol_miss = solve_arm_ik(shoulder, deliberate_miss_target, u_arm, f_arm, hand_len)
     
     # Fingertip reached the miss target, but did not contact button surface!
-    button_contact_surface = (valid_button[0], valid_button[1] - 14.0)
-    dist_to_button = math.hypot(
-        sol_miss["fingertip_pos"][0] - button_contact_surface[0],
-        sol_miss["fingertip_pos"][1] - button_contact_surface[1]
-    )
-    assert dist_to_button > 30.0 # Missed contact threshold of 12.0 px
+    button_contact_surface = (valid_button[0], valid_button[1] - 10.2)
+    dy = abs(sol_miss["fingertip_pos"][1] - button_contact_surface[1])
+    assert dy > 30.0 # Missed contact threshold of 3.5 px
     # Activation must be rejected
-    button_activates = (dist_to_button <= 12.0)
+    button_activates = (dy <= 3.5)
     assert button_activates is False
 
 # ============================================================================

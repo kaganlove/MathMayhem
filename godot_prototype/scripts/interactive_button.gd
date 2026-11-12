@@ -17,7 +17,7 @@ signal button_released()
 
 @export var pedestal_pos: Vector2 = Vector2(760.0, 1220.0)
 @export var button_radius: float = 38.0
-@export var button_height: float = 14.0
+@export var button_height: float = 10.2 # Matches visible cap top: 6.0 * character_scale (1.7)
 @export var max_depress_px: float = 8.0
 
 var current_depression: float = 0.0
@@ -28,7 +28,7 @@ func get_approach_pos() -> Vector2:
 	return Vector2(pedestal_pos.x - 220.0, pedestal_pos.y + 65.8)
 
 func get_pre_contact_pos() -> Vector2:
-	return Vector2(pedestal_pos.x, pedestal_pos.y - 42.0)
+	return Vector2(pedestal_pos.x, pedestal_pos.y - 38.0)
 
 func get_contact_pos() -> Vector2:
 	return Vector2(pedestal_pos.x, pedestal_pos.y - button_height + current_depression)
@@ -49,10 +49,11 @@ func set_depression(depress_px: float) -> void:
 		button_released.emit()
 
 ## Physical contact validation: only depresses if hand end-effector is within contact threshold
-func attempt_press(hand_pos: Vector2, depress_px: float, tolerance: float = 12.0) -> bool:
+func attempt_press(hand_pos: Vector2, depress_px: float, vertical_tolerance: float = 3.5, horizontal_tolerance: float = 24.0) -> bool:
 	var c_pos = get_contact_pos()
-	var dist = hand_pos.distance_to(c_pos)
-	if dist <= tolerance:
+	var dx = absf(hand_pos.x - c_pos.x)
+	var dy = absf(hand_pos.y - c_pos.y)
+	if dx <= horizontal_tolerance and dy <= vertical_tolerance:
 		set_depression(depress_px)
 		contact_established.emit(hand_pos)
 		return true

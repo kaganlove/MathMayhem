@@ -95,10 +95,11 @@ func _evaluate_state_at(t: float) -> void:
 
 	# Beat 2: Crouch & Reach (1.2s - 3.0s)
 	elif t < 3.0:
-		debug_layer.current_action_label = "Test B: 2. SQUAT & REACH (Pelvis lowers, knee IK flexes, hand reaches floor item)"
+		debug_layer.current_action_label = "Test B: 2. SQUAT & REACH (Pelvis sits back into counterbalance, knee IK flexes)"
 		var p_crouch = (t - 1.2) / 1.8
 		var ease_crouch = ease(p_crouch, 0.4)
-		rig.root_pos = Vector2(510.0, lerpf(1285.8, 1375.0, ease_crouch))
+		# Pelvis sits back to 485px to maintain center-of-mass balance over support feet
+		rig.root_pos = Vector2(lerpf(510.0, 485.0, ease_crouch), lerpf(1285.8, 1375.0, ease_crouch))
 		rig.torso_lean_deg = lerpf(8.0, 32.0, ease_crouch)
 		rig.look_at_target(floor_item_target)
 		# 2-bone IK reaches down to item
@@ -110,7 +111,7 @@ func _evaluate_state_at(t: float) -> void:
 	# Beat 3: Grasp Item (3.0s - 3.8s)
 	elif t < 3.8:
 		debug_layer.current_action_label = "Test B: 3. GRASP (Hand establishes contact, item attaches)"
-		rig.root_pos = Vector2(510.0, 1375.0)
+		rig.root_pos = Vector2(485.0, 1375.0)
 		rig.torso_lean_deg = 32.0
 		rig.reach_hand_to(floor_item_target, true)
 		rig.right_hand_pose = "point"
@@ -119,10 +120,10 @@ func _evaluate_state_at(t: float) -> void:
 
 	# Beat 4: Rise Upright with Item (3.8s - 5.2s)
 	elif t < 5.2:
-		debug_layer.current_action_label = "Test B: 4. RISE UPRIGHT (Pelvis returns to baseline, lifts item to chest)"
+		debug_layer.current_action_label = "Test B: 4. RISE UPRIGHT (Pelvis returns forward to baseline, lifts item to chest)"
 		var p_rise = (t - 3.8) / 1.4
 		var ease_rise = ease(p_rise, 0.5)
-		rig.root_pos = Vector2(510.0, lerpf(1375.0, 1285.8, ease_rise))
+		rig.root_pos = Vector2(lerpf(485.0, 510.0, ease_rise), lerpf(1375.0, 1285.8, ease_rise))
 		rig.torso_lean_deg = lerpf(32.0, 4.0, ease_rise)
 		# Hand brings item up to chest height
 		var chest_hold_pos = Vector2(575.0, 1140.0)
