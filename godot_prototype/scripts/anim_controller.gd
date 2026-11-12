@@ -17,7 +17,16 @@ var clip_duration: float = 8.0
 const STANDING_Y: float = 1293.6
 const TARGET_OBJ_POS: Vector2 = Vector2(740.0, 1220.0)
 
+const PoseLibrary = preload("res://scripts/pose_library.gd")
+
 const CLIP_DURATIONS: Dictionary = {
+	"six_poses": 6.0,
+	"intensity_study": 9.0,
+	"test_c_curiosity": 3.0,
+	"test_d_surprise": 3.0,
+	"test_e_confusion_satisfaction": 4.5,
+	"combined_acting": 11.0,
+	# Backward compatible clips:
 	"test_a_walk": 2.5,
 	"test_b_reach": 2.5,
 	"test_c_acting": 2.5,
@@ -26,18 +35,30 @@ const CLIP_DURATIONS: Dictionary = {
 
 func _ready() -> void:
 	if active_clip == "":
-		set_clip("full_poc")
+		set_clip("combined_acting")
 
 func set_clip(clip_name: String) -> void:
 	active_clip = clip_name
-	clip_duration = CLIP_DURATIONS.get(clip_name, 8.0)
+	clip_duration = CLIP_DURATIONS.get(clip_name, 11.0)
 	current_time = 0.0
 
 func evaluate_at(t: float) -> void:
 	if rig == null:
 		return
 		
-	if active_clip == "test_a_walk":
+	if active_clip == "six_poses":
+		_evaluate_six_poses(t)
+	elif active_clip == "intensity_study":
+		_evaluate_intensity_study(t)
+	elif active_clip == "test_c_curiosity":
+		_evaluate_test_c_curiosity(t)
+	elif active_clip == "test_d_surprise":
+		_evaluate_test_d_surprise(t)
+	elif active_clip == "test_e_confusion_satisfaction":
+		_evaluate_test_e_confusion_satisfaction(t)
+	elif active_clip == "combined_acting":
+		_evaluate_combined_acting(t)
+	elif active_clip == "test_a_walk":
 		_evaluate_test_a_walk(t)
 	elif active_clip == "test_b_reach":
 		_evaluate_test_b_reach(t)
@@ -50,8 +71,216 @@ func evaluate_at(t: float) -> void:
 		debug_overlay.set("current_time_sec", t)
 
 # ===========================================================================
-# 1. Classical 5-Pose Walk Cycle Engine (Animator's Survival Kit Standard)
+# 0. v10 Expressive Acting Clips & Authored Pose Evaluations
 # ===========================================================================
+func _evaluate_six_poses(t: float) -> void:
+	rig.set("show_target_object", false)
+	var pose_idx: int = clampi(int(floor(t)), 0, 5)
+	var pose_names: Array = ["neutral", "curiosity", "concentration", "surprise", "confusion", "satisfaction"]
+	var p_data: Dictionary = PoseLibrary.get_pose(pose_names[pose_idx], 2)
+	PoseLibrary.apply_pose_to_rig(rig, p_data)
+	_set_action("Pose %d: %s" % [pose_idx + 1, p_data["name"]], true, true)
+
+func _evaluate_intensity_study(t: float) -> void:
+	rig.set("show_target_object", false)
+	var sec: int = clampi(int(floor(t)), 0, 8)
+	var emotion: String
+	var level: int = (sec % 3) + 1
+	if sec < 3:
+		emotion = "curiosity"
+	elif sec < 6:
+		emotion = "surprise"
+	else:
+		emotion = "satisfaction"
+	var p_data: Dictionary = PoseLibrary.get_pose(emotion, level)
+	PoseLibrary.apply_pose_to_rig(rig, p_data)
+	var lvl_names = ["Subtle", "Readable", "Exaggerated"]
+	_set_action("%s — Level %d (%s)" % [p_data["name"], level, lvl_names[level - 1]], true, true)
+
+func _evaluate_test_c_curiosity(t: float) -> void:
+	rig.set("show_target_object", false)
+	var p_neut = PoseLibrary.get_pose("neutral", 2)
+	var p_cur = PoseLibrary.get_pose("curiosity", 2)
+	
+	if t < 0.5:
+		# 0.0 - 0.5s: Neutral start
+		_set_action("Curiosity Test — Neutral Baseline", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_neut)
+	elif t < 1.3:
+		# 0.5 - 1.3s: Notice attention shift & lean in
+		_set_action("Curiosity Test — Notice & Lean In", true, true)
+		var p: float = _ease_in_out((t - 0.5) / 0.8)
+		var blended = PoseLibrary.blend_poses(p_neut, p_cur, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 2.2:
+		# 1.3 - 2.2s: Comedic curiosity hold
+		_set_action("Curiosity Test — Comedic Hold & Study", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_cur)
+	else:
+		# 2.2 - 3.0s: Organic recovery back to neutral
+		_set_action("Curiosity Test — Organic Recovery", true, true)
+		var p: float = _ease_in_out((t - 2.2) / 0.8)
+		var blended = PoseLibrary.blend_poses(p_cur, p_neut, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+
+func _evaluate_test_d_surprise(t: float) -> void:
+	rig.set("show_target_object", false)
+	var p_neut = PoseLibrary.get_pose("neutral", 2)
+	var p_sur = PoseLibrary.get_pose("surprise", 3) # Exaggerated surprise
+	
+	if t < 0.6:
+		# 0.0 - 0.6s: Neutral with subtle forward anticipation
+		_set_action("Surprise Test — Neutral Anticipation", true, true)
+		var p_sub = PoseLibrary.blend_poses(p_neut, PoseLibrary.get_pose("curiosity", 1), t / 0.6)
+		PoseLibrary.apply_pose_to_rig(rig, p_sub)
+	elif t < 1.1:
+		# 0.6 - 1.1s: Sudden explosive startle recoil
+		_set_action("Surprise Test — Explosive Recoil & Gasp", false, true)
+		var snap: float = _elastic_out((t - 0.6) / 0.45)
+		var blended = PoseLibrary.blend_poses(p_neut, p_sur, snap)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 2.0:
+		# 1.1 - 2.0s: Comedic shocked freeze hold
+		_set_action("Surprise Test — Shock Freeze Hold", false, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_sur)
+	else:
+		# 2.0 - 3.0s: Staggered organic recovery
+		_set_action("Surprise Test — Staggered Recovery", true, true)
+		var p_rec: float = _ease_in_out((t - 2.0) / 1.0)
+		var blended = PoseLibrary.blend_poses(p_sur, p_neut, p_rec)
+		# Secondary detail: glasses slide back onto bridge smoothly
+		blended["glasses_slip_px"] = lerpf(5.5, 0.0, p_rec)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+
+func _evaluate_test_e_confusion_satisfaction(t: float) -> void:
+	rig.set("show_target_object", false)
+	var p_neut = PoseLibrary.get_pose("neutral", 2)
+	var p_conf = PoseLibrary.get_pose("confusion", 2)
+	var p_sat = PoseLibrary.get_pose("satisfaction", 2)
+	
+	if t < 0.4:
+		# 0.0 - 0.4s: Neutral baseline
+		_set_action("Confusion -> Satisfaction — Baseline", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_neut)
+	elif t < 1.4:
+		# 0.4 - 1.4s: Transition into confusion
+		_set_action("Confusion -> Satisfaction — Puzzled Shrug", true, true)
+		var p: float = _ease_in_out((t - 0.4) / 1.0)
+		var blended = PoseLibrary.blend_poses(p_neut, p_conf, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 2.3:
+		# 1.4 - 2.3s: Comedic confusion hold
+		_set_action("Confusion -> Satisfaction — Confused Hold", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_conf)
+	elif t < 2.9:
+		# 2.3 - 2.9s: "Aha!" realization pop
+		_set_action("Confusion -> Satisfaction — Aha! Realization", true, true)
+		var p: float = _elastic_out((t - 2.3) / 0.6)
+		var blended = PoseLibrary.blend_poses(p_conf, p_sat, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 3.8:
+		# 2.9 - 3.8s: Triumphant satisfaction pose hold
+		_set_action("Confusion -> Satisfaction — Triumphant Hold", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_sat)
+	else:
+		# 3.8 - 4.5s: Follow-through and settle into comfortable stance
+		_set_action("Confusion -> Satisfaction — Confident Settle", true, true)
+		var p: float = _ease_in_out((t - 3.8) / 0.7)
+		var blended = PoseLibrary.blend_poses(p_sat, p_neut, p)
+		blended["mouth_state"] = "smirk"
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+
+func _evaluate_combined_acting(t: float) -> void:
+	rig.set("show_target_object", false)
+	var p_neut = PoseLibrary.get_pose("neutral", 2)
+	var p_cur = PoseLibrary.get_pose("curiosity", 2)
+	var p_conc = PoseLibrary.get_pose("concentration", 2)
+	var p_sur = PoseLibrary.get_pose("surprise", 3)
+	var p_conf = PoseLibrary.get_pose("confusion", 2)
+	var p_sat = PoseLibrary.get_pose("satisfaction", 2)
+	
+	# -----------------------------------------------------------------------
+	# 0.0s - 2.0s: Neutral & Curiosity (Section 17.1)
+	# -----------------------------------------------------------------------
+	if t < 0.7:
+		_set_action("Phase 1: Neutral Standing", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_neut)
+	elif t < 2.0:
+		_set_action("Phase 1: Notice & Curious Lean", true, true)
+		var p: float = _ease_in_out((t - 0.7) / 1.1)
+		var blended = PoseLibrary.blend_poses(p_neut, p_cur, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+		
+	# -----------------------------------------------------------------------
+	# 2.0s - 4.0s: Investigation & Deep Concentration (Section 17.2)
+	# -----------------------------------------------------------------------
+	elif t < 2.9:
+		_set_action("Phase 2: Hand-to-Chin Concentration", true, true)
+		var p: float = _ease_in_out((t - 2.0) / 0.9)
+		var blended = PoseLibrary.blend_poses(p_cur, p_conc, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 4.0:
+		_set_action("Phase 2: Deep Analytical Hold", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_conc)
+		
+	# -----------------------------------------------------------------------
+	# 4.0s - 6.0s: Sudden Surprise & Recoil (Section 17.3)
+	# -----------------------------------------------------------------------
+	elif t < 4.5:
+		_set_action("Phase 3: Explosive Recoil & Gasp", false, true)
+		var snap: float = _elastic_out((t - 4.0) / 0.45)
+		var blended = PoseLibrary.blend_poses(p_conc, p_sur, snap)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 5.5:
+		_set_action("Phase 3: Comedic Shock Freeze Hold", false, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_sur)
+	elif t < 6.0:
+		_set_action("Phase 3: Shock Dissipation", true, true)
+		var p: float = _ease_in_out((t - 5.5) / 0.5)
+		var blended = PoseLibrary.blend_poses(p_sur, p_conf, p * 0.4)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+		
+	# -----------------------------------------------------------------------
+	# 6.0s - 8.0s: Confusion & Head Scratch (Section 17.4)
+	# -----------------------------------------------------------------------
+	elif t < 6.8:
+		_set_action("Phase 4: Asymmetrical Confusion Shrug", true, true)
+		var p: float = _ease_in_out((t - 6.0) / 0.8)
+		var blended = PoseLibrary.blend_poses(p_sur, p_conf, p)
+		blended["glasses_slip_px"] = lerpf(5.5, 0.0, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 8.0:
+		_set_action("Phase 4: Puzzled Investigation Hold", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_conf)
+		
+	# -----------------------------------------------------------------------
+	# 8.0s - 9.5s: "Aha!" Realization (Section 17.5)
+	# -----------------------------------------------------------------------
+	elif t < 8.7:
+		_set_action("Phase 5: Aha! Sudden Realization", true, true)
+		var p: float = _elastic_out((t - 8.0) / 0.6)
+		var blended = PoseLibrary.blend_poses(p_conf, p_sat, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	elif t < 9.5:
+		_set_action("Phase 5: Confident Chest Expansion", true, true)
+		PoseLibrary.apply_pose_to_rig(rig, p_sat)
+		
+	# -----------------------------------------------------------------------
+	# 9.5s - 11.0s: Triumphant Satisfaction & Settle (Section 17.6)
+	# -----------------------------------------------------------------------
+	elif t < 10.3:
+		_set_action("Phase 6: Triumphant Fist Pump", true, true)
+		var p_sat_ex = PoseLibrary.get_pose("satisfaction", 3)
+		var p: float = _ease_in_out((t - 9.5) / 0.6)
+		var blended = PoseLibrary.blend_poses(p_sat, p_sat_ex, p)
+		PoseLibrary.apply_pose_to_rig(rig, blended)
+	else:
+		_set_action("Phase 6: Confident Smirk Settle", true, true)
+		var p: float = _ease_in_out((t - 10.3) / 0.7)
+		var blended = PoseLibrary.blend_poses(p_sat, p_neut, p * 0.7)
+		blended["mouth_state"] = "smirk"
+		blended["right_brow_raise_px"] = 3.0
+		PoseLibrary.apply_pose_to_rig(rig, blended)
 # Returns a dictionary of leg angles and pelvis vertical offset for a single step cycle [0.0, 1.0]
 # Leading leg strikes first, trailing leg follows
 func _sample_walk_cycle(cycle_t: float, is_right_leading: bool) -> Dictionary:

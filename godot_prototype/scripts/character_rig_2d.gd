@@ -69,7 +69,7 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 @export var left_brow_raise_px: float = 0.0
 @export var right_brow_raise_px: float = 0.0
 @export var brow_slant_deg: float = 0.0
-@export_enum("neutral", "curious_o", "open_gasp", "smirk", "firm") var mouth_state: String = "neutral"
+@export_enum("neutral", "curious_o", "open_gasp", "smirk", "firm", "concentrating", "confused", "satisfied") var mouth_state: String = "neutral"
 
 @export_group("Left Leg (Back)")
 @export var left_thigh_deg: float = 14.0
@@ -85,13 +85,13 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 @export var left_shoulder_deg: float = 4.0
 @export var left_elbow_deg: float = 12.0
 @export var left_wrist_deg: float = 5.0
-@export_enum("relaxed", "reach_open", "point", "fist") var left_hand_pose: String = "relaxed"
+@export_enum("relaxed", "reach_open", "point", "fist", "chin_touch", "shrug_open") var left_hand_pose: String = "relaxed"
 
 @export_group("Right Arm (Front)")
 @export var right_shoulder_deg: float = 6.0
 @export var right_elbow_deg: float = 12.0
 @export var right_wrist_deg: float = 5.0
-@export_enum("relaxed", "reach_open", "point", "fist") var right_hand_pose: String = "relaxed"
+@export_enum("relaxed", "reach_open", "point", "fist", "chin_touch", "shrug_open") var right_hand_pose: String = "relaxed"
 
 # Solved joint landmarks (in screen space) for debugging and verification
 var solved_pelvis: Vector2
@@ -367,6 +367,43 @@ func _draw_hand(wrist: Vector2, angle_deg: float, pose: String, s: float, wrist_
 			Vector2(0, r_base)
 		]
 		draw_colored_polygon(pts, BODY_FILL)
+	elif pose == "fist":
+		hand_len = 12.0 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.9),
+			Vector2(hand_len * 0.7, -r_base * 0.9),
+			Vector2(hand_len, -r_base * 0.3),
+			Vector2(hand_len, r_base * 0.4),
+			Vector2(hand_len * 0.6, r_base * 0.9),
+			Vector2(0, r_base * 0.9)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len * 0.5, 0), r_base * 0.75, BODY_FILL)
+	elif pose == "chin_touch":
+		hand_len = 16.0 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.7),
+			Vector2(hand_len, -r_base * 0.2),
+			Vector2(hand_len, r_base * 0.1),
+			Vector2(hand_len * 0.45, r_base * 0.9),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len, 0), r_base * 0.4, BODY_FILL)
+	elif pose == "shrug_open":
+		hand_len = 16.0 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.6),
+			Vector2(hand_len * 0.8, -r_base * 1.2),
+			Vector2(hand_len, -r_base * 0.5),
+			Vector2(hand_len * 0.9, r_base * 0.8),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len * 0.8, -r_base * 0.5), r_base * 0.5, BODY_FILL)
 	else: # "relaxed"
 		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
 		var pts: PackedVector2Array = [
@@ -414,7 +451,22 @@ func _draw_head_and_face(s: float, d: float, outline_w: float) -> void:
 	elif mouth_state == "open_gasp":
 		draw_circle(Vector2(mx, my), 10.5 * s, Color(0.18, 0.08, 0.12))
 		draw_arc(Vector2(mx, my), 10.5 * s, 0, TAU, 32, INK_COLOR, outline_w * 0.55, true)
-	elif mouth_state == "smirk":
+	elif mouth_state == "concentrating" or mouth_state == "firm":
+		var conc_pts: PackedVector2Array = [
+			Vector2(mx - head_r * 0.11, my + 2.0 * s),
+			Vector2(mx, my + 0.5 * s),
+			Vector2(mx + head_r * 0.11, my + 2.0 * s)
+		]
+		draw_polyline(conc_pts, INK_COLOR, outline_w * 0.80, true)
+	elif mouth_state == "confused":
+		var conf_pts: PackedVector2Array = [
+			Vector2(mx - head_r * 0.14, my + 3.0 * s),
+			Vector2(mx - head_r * 0.04, my - 1.5 * s),
+			Vector2(mx + head_r * 0.06, my + 2.5 * s),
+			Vector2(mx + head_r * 0.15, my - 0.5 * s)
+		]
+		draw_polyline(conf_pts, INK_COLOR, outline_w * 0.75, true)
+	elif mouth_state == "smirk" or mouth_state == "satisfied":
 		var smirk_pts: PackedVector2Array = [
 			Vector2(mx - head_r * 0.12, my),
 			Vector2(mx, my + 4.5 * s),
