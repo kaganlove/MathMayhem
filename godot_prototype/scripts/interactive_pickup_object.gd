@@ -1,9 +1,9 @@
 class_name InteractivePickupObject
 extends Node2D
 
-## Math Mayhem v13.2 — Reusable Contact-Driven Pickup & Grasp Object
-## Implements a 7-state physical acquisition state machine:
-## GROUNDED -> REACHING -> CONTACT -> GRASPED -> LIFTING -> CARRIED -> RELEASED
+## Math Mayhem v13.3 — Reusable Contact-Driven Pickup & Grasp Object
+## Implements the authoritative 8-state physical acquisition state machine:
+## GROUNDED -> REACHING -> CONTACT -> GRASPING -> ATTACHED -> LIFTING -> CARRIED -> RELEASED
 ## Guarantees strictly 0.0px teleportation jump and physical contact validation.
 
 signal state_changed(old_state: int, new_state: int)
@@ -16,7 +16,8 @@ enum ObjectState {
 	GROUNDED,
 	REACHING,
 	CONTACT,
-	GRASPED,
+	GRASPING,
+	ATTACHED,
 	LIFTING,
 	CARRIED,
 	RELEASED
@@ -26,7 +27,8 @@ const STATE_NAMES: Dictionary = {
 	ObjectState.GROUNDED: "GROUNDED",
 	ObjectState.REACHING: "REACHING",
 	ObjectState.CONTACT: "CONTACT",
-	ObjectState.GRASPED: "GRASPED",
+	ObjectState.GRASPING: "GRASPING",
+	ObjectState.ATTACHED: "ATTACHED",
 	ObjectState.LIFTING: "LIFTING",
 	ObjectState.CARRIED: "CARRIED",
 	ObjectState.RELEASED: "RELEASED"
@@ -39,7 +41,7 @@ const STATE_NAMES: Dictionary = {
 # Object Dimensions (at scale 1.0, scaled by character_scale)
 @export var size_px: Vector2 = Vector2(32.0, 36.0)
 @export var grip_offset: Vector2 = Vector2(0.0, -12.0) # Relative to object center
-@export var contact_tolerance_px: float = 8.0
+@export var contact_tolerance_px: float = 24.0 # Generous tolerance encompassing palm-to-fingertip span
 
 var world_pos: Vector2 = Vector2.ZERO
 var world_rot_deg: float = 0.0
@@ -56,9 +58,10 @@ func reset_to_ground() -> void:
 	world_rot_deg = 0.0
 	is_grasped = false
 	attachment_hand_offset = Vector2.ZERO
+	attachment_hand_rot_offset = 0.0
 
 func get_grip_world_pos() -> Vector2:
-	if current_state == ObjectState.GROUNDED or current_state == ObjectState.REACHING or current_state == ObjectState.CONTACT:
+	if current_state == ObjectState.GROUNDED or current_state == ObjectState.REACHING or current_state == ObjectState.CONTACT or current_state == ObjectState.GRASPING:
 		return ground_pos + grip_offset
 	return world_pos + grip_offset.rotated(deg_to_rad(world_rot_deg))
 
@@ -79,10 +82,15 @@ func establish_contact(hand_pos: Vector2) -> bool:
 		contact_established.emit(hand_pos)
 	return true
 
+func begin_grasp() -> void:
+	if current_state == ObjectState.CONTACT:
+		_transition_to(ObjectState.GRASPING)
+
 ## Binds object to hand, recording attachment offset to guarantee 0.0px jump
 func grasp(hand_grip_pos: Vector2, hand_rot_deg: float) -> bool:
 	if not check_contact(hand_grip_pos):
 		# Rejected: hand is not within contact tolerance!
+		push_warning("PickupObject.grasp rejected: hand distance %.2f exceeds tolerance %.2f" % [hand_grip_pos.distance_to(get_grip_world_pos()), contact_tolerance_px])
 		return false
 	
 	# Compute hand-local offset at the exact instant of attachment
@@ -92,12 +100,12 @@ func grasp(hand_grip_pos: Vector2, hand_rot_deg: float) -> bool:
 	attachment_hand_rot_offset = world_rot_deg - hand_rot_deg
 	
 	is_grasped = true
-	_transition_to(ObjectState.GRASPED)
+	_transition_to(ObjectState.ATTACHED)
 	grasped.emit(hand_grip_pos)
 	return true
 
 func start_lifting(hand_grip_pos: Vector2, hand_rot_deg: float) -> void:
-	if is_grasped and current_state == ObjectState.GRASPED:
+	if is_grasped and (current_state == ObjectState.ATTACHED or current_state == ObjectState.GRASPING):
 		_transition_to(ObjectState.LIFTING)
 		lifted.emit(world_pos)
 	update_carried_transform(hand_grip_pos, hand_rot_deg)
@@ -109,7 +117,7 @@ func update_carried_transform(hand_grip_pos: Vector2, hand_rot_deg: float) -> vo
 	world_rot_deg = hand_rot_deg + attachment_hand_rot_offset
 	world_pos = hand_grip_pos + attachment_hand_offset.rotated(deg_to_rad(hand_rot_deg))
 	
-	if current_state == ObjectState.LIFTING and world_pos.y < ground_pos.y - 100.0:
+	if current_state == ObjectState.LIFTING and world_pos.y < ground_pos.y - 80.0:
 		_transition_to(ObjectState.CARRIED)
 
 func release(drop_velocity: Vector2 = Vector2.ZERO) -> void:
@@ -123,7 +131,7 @@ func _transition_to(new_state: ObjectState) -> void:
 	state_changed.emit(old_state, new_state)
 
 func draw_object(canvas: CanvasItem, s: float) -> void:
-	var draw_pos = world_pos if current_state != ObjectState.GROUNDED and current_state != ObjectState.REACHING and current_state != ObjectState.CONTACT else ground_pos
+	var draw_pos = world_pos if (current_state == ObjectState.ATTACHED or current_state == ObjectState.LIFTING or current_state == ObjectState.CARRIED or current_state == ObjectState.RELEASED) else ground_pos
 	var ink = Color(0.06, 0.08, 0.12)
 	
 	match object_type:

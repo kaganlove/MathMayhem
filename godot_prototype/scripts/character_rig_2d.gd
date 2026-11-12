@@ -63,6 +63,7 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 
 @export_group("Head & Face")
 @export var head_tilt_deg: float = 1.5
+@export var expression_tilt_offset_deg: float = 0.0
 @export var head_nod_px: float = 0.0
 @export var head_squash: float = 1.0
 @export var yaw_factor: float = 0.22
@@ -116,6 +117,7 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 @export var right_arm_ik_enabled: bool = false
 @export var right_arm_ik_target: Vector2 = Vector2.ZERO
 @export var right_arm_ik_elbow_down: bool = true
+@export var right_arm_ik_target_is_grip: bool = false
 
 @export var left_arm_ik_enabled: bool = false
 @export var left_arm_ik_target: Vector2 = Vector2.ZERO
@@ -242,18 +244,21 @@ func solve_kinematics() -> void:
 		-(NECK_LENGTH * s) * cos(neck_rad)
 	)
 	
-	# Optional Gaze Target Solver
+	# Authoritative Gaze Target Solver (Decoupled from expression, continuous pitch)
 	if gaze_target_enabled and gaze_target_pos != Vector2.ZERO:
 		var gaze_delta: Vector2 = gaze_target_pos - solved_neck
-		var gaze_angle: float = atan2(gaze_delta.y, gaze_delta.x * d)
-		head_tilt_deg = clampf(rad_to_deg(gaze_angle) * 0.35, -25.0, 25.0)
-		yaw_factor = clampf(gaze_delta.x / 450.0 * d, -0.38, 0.38)
+		var gaze_angle_rad: float = atan2(gaze_delta.y, gaze_delta.x * d)
+		var gaze_pitch_world: float = rad_to_deg(gaze_angle_rad) - 90.0
+		var rel_tilt: float = gaze_pitch_world - torso_lean_deg
+		head_tilt_deg = clampf(rel_tilt * 0.45, -25.0, 30.0)
+		yaw_factor = clampf(gaze_delta.x / 450.0 * d, -0.35, 0.35)
 
 	var head_r: float = HEAD_RADIUS * s
-	var head_rad: float = lean_rad + deg_to_rad(head_tilt_deg)
+	var total_head_deg: float = (torso_lean_deg + spine_arch_deg * 0.25) * d + (head_tilt_deg + expression_tilt_offset_deg) * d
+	var head_world_rad: float = deg_to_rad(total_head_deg)
 	solved_head_center = solved_neck + Vector2(
-		(head_r * 0.94) * sin(head_rad),
-		-(head_r * 0.94) * cos(head_rad)
+		(head_r * 0.94) * sin(head_world_rad),
+		-(head_r * 0.94) * cos(head_world_rad)
 	)
 	
 	# Legs Kinematics (FK or Planted-Foot IK)
@@ -326,7 +331,8 @@ func solve_kinematics() -> void:
 		var r_delta: Vector2 = right_arm_ik_target - solved_right_shoulder
 		var r_dist: float = r_delta.length()
 		var r_reach_dir: Vector2 = (r_delta / r_dist) if r_dist > 0.001 else Vector2(0.0, 1.0)
-		var r_wrist_target: Vector2 = right_arm_ik_target - r_reach_dir * r_hand_len
+		var grip_ratio: float = 0.65 if right_arm_ik_target_is_grip else 1.0
+		var r_wrist_target: Vector2 = right_arm_ik_target - r_reach_dir * (r_hand_len * grip_ratio)
 		var ik_r_arm = solve_ik_2bone(solved_right_shoulder, r_wrist_target, u_arm, f_arm, not right_arm_ik_elbow_down)
 		right_shoulder_deg = ik_r_arm["joint1_deg"] * d
 		right_elbow_deg = ik_r_arm["joint2_deg"] * d
@@ -423,12 +429,13 @@ func _draw_floor_item(s: float) -> void:
 
 func get_right_grip_pos() -> Vector2:
 	solve_kinematics()
-	var s: float = character_scale
-	var hand_len: float = 16.0 * s
-	var hand_rad: float = deg_to_rad(right_shoulder_deg + right_elbow_deg + right_wrist_deg)
-	return solved_right_wrist + Vector2(hand_len * 0.65 * cos(hand_rad), hand_len * 0.65 * sin(hand_rad))
+	return solved_right_wrist.lerp(solved_right_fingertip, 0.65)
 
 func get_right_hand_rot_deg() -> float:
+	solve_kinematics()
+	var hand_vec: Vector2 = solved_right_fingertip - solved_right_wrist
+	if hand_vec.length_squared() > 0.01:
+		return rad_to_deg(atan2(hand_vec.y, hand_vec.x))
 	return right_shoulder_deg + right_elbow_deg + right_wrist_deg
 
 func _draw_button_pedestal(s: float) -> void:
@@ -769,7 +776,9 @@ func _draw_head_and_face(s: float, d: float, outline_w: float) -> void:
 	var nod_y: float = head_nod_px * s
 	
 	var h_sq: float = clampf(head_squash, 0.7, 1.4)
-	draw_set_transform(Vector2(hx, hy), deg_to_rad(head_tilt_deg), Vector2(1.02 * (1.0 / sqrt(h_sq)), 0.99 * h_sq))
+	var total_head_deg: float = (torso_lean_deg + spine_arch_deg * 0.25) * d + (head_tilt_deg + expression_tilt_offset_deg) * d
+	var head_world_rad: float = deg_to_rad(total_head_deg)
+	draw_set_transform(Vector2(hx, hy), head_world_rad, Vector2(1.02 * (1.0 / sqrt(h_sq)), 0.99 * h_sq))
 	
 	# Head Cranium
 	draw_circle(Vector2.ZERO, head_r, HEAD_FILL)
@@ -934,13 +943,16 @@ func unlock_foot(side: String) -> void:
 		right_foot_locked = false
 
 ## Directs right hand to target position via 2-bone analytical IK.
-func reach_hand_to(world_pos: Vector2, elbow_down: bool = true) -> void:
+## If target_is_grip is true, places the palm grip center exactly at world_pos.
+func reach_hand_to(world_pos: Vector2, elbow_down: bool = true, target_is_grip: bool = false) -> void:
 	right_arm_ik_enabled = true
 	right_arm_ik_target = world_pos
 	right_arm_ik_elbow_down = elbow_down
+	right_arm_ik_target_is_grip = target_is_grip
 
 func release_hand_ik() -> void:
 	right_arm_ik_enabled = false
+	right_arm_ik_target_is_grip = false
 	hand_contact_constrained = false
 
 ## Couples right hand to moving button contact point.
@@ -961,86 +973,115 @@ func look_at_target(world_pos: Vector2) -> void:
 func clear_gaze_target() -> void:
 	gaze_target_enabled = false
 
-## Reusable silent-acting expression library (Phase 6).
+## Reusable silent-acting expression library (Decoupled from head tilt).
 func set_expression(expr_name: String, intensity: float = 1.0) -> void:
 	match expr_name.to_lower():
 		"curious":
-			head_tilt_deg = lerpf(0.0, 4.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, 2.0, intensity)
 			right_brow_raise_px = lerpf(0.0, 6.0, intensity)
 			left_brow_raise_px = lerpf(0.0, -1.0, intensity)
 			brow_slant_deg = lerpf(0.0, 1.5, intensity)
 			mouth_state = "curious_o"
 		"confused":
-			head_tilt_deg = lerpf(0.0, 8.5, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, 3.5, intensity)
 			right_brow_raise_px = lerpf(0.0, 7.0, intensity)
 			left_brow_raise_px = lerpf(0.0, -3.0, intensity)
 			brow_slant_deg = lerpf(0.0, 3.0, intensity)
 			mouth_state = "neutral"
 		"suspicious":
-			head_tilt_deg = lerpf(0.0, -3.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, -2.0, intensity)
 			right_brow_raise_px = lerpf(0.0, -3.5, intensity)
 			left_brow_raise_px = lerpf(0.0, -3.5, intensity)
 			brow_slant_deg = lerpf(0.0, 2.0, intensity)
 			mouth_state = "firm"
 		"confident":
-			head_tilt_deg = lerpf(0.0, -2.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, -1.5, intensity)
 			right_brow_raise_px = lerpf(0.0, 3.5, intensity)
 			left_brow_raise_px = lerpf(0.0, 1.0, intensity)
 			brow_slant_deg = lerpf(0.0, 1.0, intensity)
 			mouth_state = "smirk"
 		"hesitant":
-			head_tilt_deg = lerpf(0.0, 10.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, 3.0, intensity)
 			right_brow_raise_px = lerpf(0.0, 6.0, intensity)
 			left_brow_raise_px = lerpf(0.0, -2.0, intensity)
 			brow_slant_deg = lerpf(0.0, 3.5, intensity)
 			mouth_state = "neutral"
 		"surprised":
-			head_tilt_deg = lerpf(0.0, 15.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, 5.0, intensity)
 			right_brow_raise_px = lerpf(0.0, 12.0, intensity)
 			left_brow_raise_px = lerpf(0.0, 12.0, intensity)
 			brow_slant_deg = 0.0
 			glasses_slip_px = lerpf(0.0, 7.0, intensity)
 			mouth_state = "open_gasp"
 		"frustrated":
-			head_tilt_deg = lerpf(0.0, -5.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, -2.5, intensity)
 			right_brow_raise_px = lerpf(0.0, -4.0, intensity)
 			left_brow_raise_px = lerpf(0.0, -4.0, intensity)
 			brow_slant_deg = lerpf(0.0, -3.5, intensity)
 			mouth_state = "firm"
 		"satisfied":
-			head_tilt_deg = lerpf(0.0, -3.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, -1.5, intensity)
 			right_brow_raise_px = lerpf(0.0, 4.0, intensity)
 			left_brow_raise_px = lerpf(0.0, 1.0, intensity)
 			brow_slant_deg = lerpf(0.0, 2.0, intensity)
 			mouth_state = "smirk"
 		"embarrassed":
-			head_tilt_deg = lerpf(0.0, -5.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, -2.0, intensity)
 			right_brow_raise_px = lerpf(0.0, 2.0, intensity)
 			left_brow_raise_px = lerpf(0.0, 2.0, intensity)
 			brow_slant_deg = lerpf(0.0, -2.0, intensity)
 			glasses_slip_px = lerpf(0.0, 4.0, intensity)
 			mouth_state = "neutral"
 		"thoughtful":
-			head_tilt_deg = lerpf(0.0, 6.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, 2.5, intensity)
 			right_brow_raise_px = lerpf(0.0, 3.0, intensity)
 			left_brow_raise_px = lerpf(0.0, -1.0, intensity)
 			brow_slant_deg = lerpf(0.0, 1.5, intensity)
 			mouth_state = "concentrating"
 		"disappointed":
-			head_tilt_deg = lerpf(0.0, -8.0, intensity)
+			expression_tilt_offset_deg = lerpf(0.0, -3.0, intensity)
 			right_brow_raise_px = lerpf(0.0, -2.0, intensity)
 			left_brow_raise_px = lerpf(0.0, -2.0, intensity)
 			brow_slant_deg = lerpf(0.0, -2.5, intensity)
 			shoulder_shrug_px = lerpf(0.0, -6.0, intensity)
 			mouth_state = "neutral"
 		"neutral", _:
-			head_tilt_deg = 0.0
+			expression_tilt_offset_deg = 0.0
 			right_brow_raise_px = 0.0
 			left_brow_raise_px = 0.0
 			brow_slant_deg = 0.0
 			glasses_slip_px = 0.0
 			shoulder_shrug_px = 0.0
 			mouth_state = "neutral"
+
+## Continuous expression blending between any two facial presets
+func set_expression_blend(from_expr: String, to_expr: String, weight: float) -> void:
+	var w: float = clampf(weight, 0.0, 1.0)
+	set_expression(from_expr, 1.0)
+	var from_tilt: float = expression_tilt_offset_deg
+	var from_rb: float = right_brow_raise_px
+	var from_lb: float = left_brow_raise_px
+	var from_slant: float = brow_slant_deg
+	var from_slip: float = glasses_slip_px
+	var from_shrug: float = shoulder_shrug_px
+	var from_mouth: String = mouth_state
+	
+	set_expression(to_expr, 1.0)
+	var to_tilt: float = expression_tilt_offset_deg
+	var to_rb: float = right_brow_raise_px
+	var to_lb: float = left_brow_raise_px
+	var to_slant: float = brow_slant_deg
+	var to_slip: float = glasses_slip_px
+	var to_shrug: float = shoulder_shrug_px
+	var to_mouth: String = mouth_state
+	
+	expression_tilt_offset_deg = lerpf(from_tilt, to_tilt, w)
+	right_brow_raise_px = lerpf(from_rb, to_rb, w)
+	left_brow_raise_px = lerpf(from_lb, to_lb, w)
+	brow_slant_deg = lerpf(from_slant, to_slant, w)
+	glasses_slip_px = lerpf(from_slip, to_slip, w)
+	shoulder_shrug_px = lerpf(from_shrug, to_shrug, w)
+	mouth_state = to_mouth if w >= 0.5 else from_mouth
 
 ## Robustness & Verification Metrics API
 func get_ik_error(limb: String) -> Dictionary:

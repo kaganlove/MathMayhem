@@ -129,8 +129,8 @@ func _evaluate_state_at(t: float) -> void:
 		rig.root_pos = Vector2(lerpf(510.0, 485.0, ease_reach), lerpf(1320.0, 1475.0, ease_reach))
 		rig.torso_lean_deg = lerpf(12.0, 54.0, ease_reach)
 		rig.look_at_target(item_grip_target)
-		# 2-bone IK directly reaches the stationary item grip point
-		rig.reach_hand_to(item_grip_target, true)
+		# 2-bone IK directly reaches the stationary item grip point with palm alignment
+		rig.reach_hand_to(item_grip_target, true, true)
 		rig.right_hand_pose = "reach_open"
 		rig.left_shoulder_deg = lerpf(6.0, 24.0, ease_reach)
 		rig.left_elbow_deg = lerpf(14.0, 50.0, ease_reach)
@@ -142,9 +142,10 @@ func _evaluate_state_at(t: float) -> void:
 		debug_layer.current_action_label = "Test B: 4. CONTACT (Hand arrives at grip point, cups object boundary)"
 		rig.root_pos = Vector2(485.0, 1475.0)
 		rig.torso_lean_deg = 54.0
-		rig.reach_hand_to(item_grip_target, true)
+		rig.reach_hand_to(item_grip_target, true, true)
 		rig.right_hand_pose = "grasp_contact"
-		pickup_obj.establish_contact(rig.solved_right_fingertip)
+		pickup_obj.establish_contact(rig.get_right_grip_pos())
+		rig.look_at_target(item_grip_target)
 
 	# -----------------------------------------------------------------------
 	# Phase E: Grasp (3.5s - 3.9s, Frames 105-117)
@@ -153,11 +154,16 @@ func _evaluate_state_at(t: float) -> void:
 		debug_layer.current_action_label = "Test B: 5. GRASP (Hand closes into firm grip, 0.0px attachment continuity)"
 		rig.root_pos = Vector2(485.0, 1475.0)
 		rig.torso_lean_deg = 54.0
-		rig.reach_hand_to(item_grip_target, true)
+		rig.reach_hand_to(item_grip_target, true, true)
 		rig.right_hand_pose = "grip_closed"
+		pickup_obj.begin_grasp()
 		if not pickup_obj.is_grasped:
-			pickup_obj.grasp(rig.get_right_grip_pos(), rig.get_right_hand_rot_deg())
-		rig.set_expression("confident", 0.8)
+			var success = pickup_obj.grasp(rig.get_right_grip_pos(), rig.get_right_hand_rot_deg())
+			if not success:
+				printerr("Test B Grasp Failed: Hand grip distance %.2f px" % [rig.get_right_grip_pos().distance_to(pickup_obj.get_grip_world_pos())])
+		var p_e = (t - 3.5) / 0.4
+		rig.set_expression_blend("curious", "confident", p_e)
+		rig.look_at_target(item_grip_target)
 
 	# -----------------------------------------------------------------------
 	# Phase F: Lift (3.9s - 4.7s, Frames 117-141)
@@ -170,10 +176,11 @@ func _evaluate_state_at(t: float) -> void:
 		rig.torso_lean_deg = lerpf(54.0, 22.0, ease_lift)
 		# Hand drives object upward
 		var lift_target = item_grip_target.lerp(Vector2(610.0, 1300.0), ease_lift)
-		rig.reach_hand_to(lift_target, true)
+		rig.reach_hand_to(lift_target, true, true)
 		rig.right_hand_pose = "grip_closed"
 		pickup_obj.start_lifting(rig.get_right_grip_pos(), rig.get_right_hand_rot_deg())
 		rig.look_at_target(pickup_obj.world_pos)
+		rig.set_expression_blend("confident", "thoughtful", p_lift)
 
 	# -----------------------------------------------------------------------
 	# Phase G: Rise & Inspect (4.7s - 5.8s, Frames 141-174)
@@ -186,7 +193,7 @@ func _evaluate_state_at(t: float) -> void:
 		rig.torso_lean_deg = lerpf(22.0, 4.0, ease_stand)
 		var chest_pos = Vector2(575.0, 1140.0)
 		var cur_hand = Vector2(610.0, 1300.0).lerp(chest_pos, ease_stand)
-		rig.reach_hand_to(cur_hand, true)
+		rig.reach_hand_to(cur_hand, true, true)
 		rig.right_hand_pose = "carry_grip"
 		pickup_obj.update_carried_transform(rig.get_right_grip_pos(), rig.get_right_hand_rot_deg())
 		rig.look_at_target(pickup_obj.world_pos)
@@ -203,10 +210,11 @@ func _evaluate_state_at(t: float) -> void:
 		rig.torso_lean_deg = 4.0
 		var float_y = sin((t - 5.8) * PI * 2.0) * 3.0
 		var hold_pos = Vector2(575.0, 1140.0 + float_y)
-		rig.reach_hand_to(hold_pos, true)
+		rig.reach_hand_to(hold_pos, true, true)
 		rig.right_hand_pose = "carry_grip"
 		pickup_obj.update_carried_transform(rig.get_right_grip_pos(), rig.get_right_hand_rot_deg())
 		rig.look_at_target(pickup_obj.world_pos)
-		rig.set_expression("satisfied", 1.0)
+		var p_smirk = clampf((t - 5.8) / 0.5, 0.0, 1.0)
+		rig.set_expression_blend("thoughtful", "satisfied", p_smirk)
 		rig.left_shoulder_deg = 12.0
 		rig.left_elbow_deg = 65.0
