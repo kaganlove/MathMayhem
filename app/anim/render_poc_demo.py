@@ -62,7 +62,7 @@ def build_poc_timeline(scale: float = 1.22, root_x: float = 400.0, floor_y: floa
     p_curious = create_curiosity_pose(p_neutral)
 
     # Step poses
-    stride_px = 68.0 * scale
+    stride_px = 56.0 * scale
     p_step_prep = create_step_prep_pose(p_curious)
     p_step_contact = create_step_contact_pose(p_curious, stride_px=stride_px)
     
@@ -71,15 +71,15 @@ def build_poc_timeline(scale: float = 1.22, root_x: float = 400.0, floor_y: floa
     p_step_planted.right_ankle_target = (p_neutral.right_ankle_target[0] + stride_px, p_neutral.right_ankle_target[1])
     p_step_planted.right_foot_planted = True
     p_step_planted.left_foot_planted = True
-    p_step_planted.torso_lean_deg = 4.0
+    p_step_planted.torso_lean_deg = 3.5
 
-    # Reach pose targeting unseen object at (680.0, 1140.0)
-    reach_target = (680.0, 1140.0)
+    # Reach pose targeting object at (620.0, 1140.0) within proportional arm reach envelope
+    reach_target = (620.0, 1140.0)
     p_reach_anticipate = create_neutral_idle_pose(scale=scale, root_x=p_step_planted.root_x, floor_y=floor_y)
     p_reach_anticipate.right_ankle_target = p_step_planted.right_ankle_target
-    p_reach_anticipate.root_x -= 8.0 * scale
+    p_reach_anticipate.root_x -= 6.0 * scale
     p_reach_anticipate.torso_lean_deg = 2.0
-    p_reach_anticipate.right_wrist_target = (p_reach_anticipate.root_x + 10.0 * scale, p_reach_anticipate.root_y - 10.0 * scale)
+    p_reach_anticipate.right_wrist_target = (p_reach_anticipate.root_x + 16.0 * scale, p_reach_anticipate.root_y - 28.0 * scale)
 
     p_reach_extend = create_reach_extend_pose(p_step_planted, reach_target=reach_target)
 

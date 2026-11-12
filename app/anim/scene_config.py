@@ -29,8 +29,8 @@ class CharacterConfig:
     torso_length: float = 158.0
     shoulder_half_width: float = 10.0
     hip_half_width: float = 13.0
-    upper_arm_length: float = 98.0
-    forearm_length: float = 92.0
+    upper_arm_length: float = 72.0
+    forearm_length: float = 68.0
     thigh_length: float = 92.0
     shin_length: float = 90.0
     ankle_height: float = 16.0
@@ -72,8 +72,8 @@ class CalculatorConfig:
     # Staging position in World Space
     # Resized to 220px wide by 390px tall, positioned so buttons sit comfortably
     # in front of character's chest/pelvis height (y=1000..1360).
-    pos_x: float = 540.0
-    pos_y: float = 920.0
+    pos_x: float = 450.0
+    pos_y: float = 930.0
     width: float = 220.0
     height: float = 390.0
 

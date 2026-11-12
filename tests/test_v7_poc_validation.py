@@ -82,3 +82,64 @@ def test_hand_poses_zero_gap_attachment():
         p.right_hand_pose = pose_name
         st = p.to_cairo_rig_state()
         assert st.right_hand_pose == pose_name
+
+
+def test_arms_proportional_to_torso():
+    """Verify that arm length is strictly proportional to torso (no ape-like excess length)."""
+    spec = OptionCCharacterSpec()
+    total_arm = spec.upper_arm_length + spec.forearm_length
+    assert total_arm <= spec.torso_length, f"Arms too long ({total_arm}px > {spec.torso_length}px)"
+    assert total_arm >= spec.torso_length * 0.80, f"Arms too short ({total_arm}px < 0.80 * torso)"
+
+
+def test_arms_hang_naturally_no_chicken_wing():
+    """Verify that in neutral idle, neither elbow sticks out > 40px behind the body."""
+    spec = OptionCCharacterSpec()
+    pose = create_neutral_idle_pose()
+    state = pose.to_cairo_rig_state()
+    anat = solve_cairo_anatomy(spec, state)
+
+    left_elbow_rear_offset = anat.left_shoulder[0] - anat.left_elbow[0]
+    right_elbow_rear_offset = anat.right_shoulder[0] - anat.right_elbow[0]
+
+    assert left_elbow_rear_offset < 40.0, f"Left elbow jutting behind back: {left_elbow_rear_offset}px"
+    assert right_elbow_rear_offset < 40.0, f"Right elbow jutting behind back: {right_elbow_rear_offset}px"
+
+
+def test_legs_parallel_no_bow_leggedness():
+    """Verify that legs drop straight down from hips in neutral stance with zero bow-legged splay."""
+    spec = OptionCCharacterSpec()
+    pose = create_neutral_idle_pose()
+    state = pose.to_cairo_rig_state()
+    anat = solve_cairo_anatomy(spec, state)
+
+    left_lateral_drift = abs(anat.left_ankle[0] - anat.left_hip[0])
+    right_lateral_drift = abs(anat.right_ankle[0] - anat.right_hip[0])
+
+    assert left_lateral_drift < 6.0, f"Left leg bowed laterally: drift={left_lateral_drift}px"
+    assert right_lateral_drift < 6.0, f"Right leg bowed laterally: drift={right_lateral_drift}px"
+
+    hip_spread = abs(anat.right_hip[0] - anat.left_hip[0])
+    ankle_spread = abs(anat.right_ankle[0] - anat.left_ankle[0])
+    assert abs(ankle_spread - hip_spread) < 6.0, f"Ankles splayed apart vs hips: {ankle_spread} vs {hip_spread}"
+
+
+def test_shoulders_locked_to_torso_across_timeline():
+    """Verify that shoulders remain locked to the clavicle axis of the torso across all timeline frames."""
+    spec = OptionCCharacterSpec()
+    timeline = build_poc_timeline(scale=1.22, root_x=420.0, floor_y=1520.0)
+
+    for step in range(51):
+        t = (step / 50.0) * 5.20
+        pose = timeline.evaluate(t)
+        state = pose.to_cairo_rig_state()
+        anat = solve_cairo_anatomy(spec, state)
+
+        # Distance from shoulder center to left and right shoulders should never exceed clavicle span
+        l_dist = math.hypot(anat.left_shoulder[0] - anat.shoulder_center[0], anat.left_shoulder[1] - anat.shoulder_center[1])
+        r_dist = math.hypot(anat.right_shoulder[0] - anat.shoulder_center[0], anat.right_shoulder[1] - anat.shoulder_center[1])
+
+        max_clavicle = 25.0 * 1.22
+        assert l_dist <= max_clavicle, f"Left shoulder detached at t={t}s: {l_dist}px > {max_clavicle}px"
+        assert r_dist <= max_clavicle, f"Right shoulder detached at t={t}s: {r_dist}px > {max_clavicle}px"
+

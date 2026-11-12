@@ -44,8 +44,8 @@ class OptionCCharacterSpec:
     torso_length: float = 158.0
     hip_half_width: float = 13.0
     shoulder_half_width: float = 10.0
-    upper_arm_length: float = 98.0
-    forearm_length: float = 92.0
+    upper_arm_length: float = 72.0
+    forearm_length: float = 68.0
     thigh_length: float = 92.0
     shin_length: float = 90.0
     ankle_height: float = 16.0
@@ -263,9 +263,18 @@ def solve_cairo_anatomy(spec: OptionCCharacterSpec, state: CairoRigState) -> Sol
 
     left_hip: Point = (pelvis[0] - hip_dx, pelvis[1])
     right_hip: Point = (pelvis[0] + hip_dx, pelvis[1])
-    protract_dx = max(-4.0, min(8.0, state.right_shoulder_protract_px * 0.25)) * s * state.facing
-    left_shoulder: Point = (shoulder_center[0] - sh_dx, shoulder_center[1] + 2.0 * s)
-    right_shoulder: Point = (shoulder_center[0] + sh_dx + protract_dx, shoulder_center[1] + 2.0 * s)
+    protract_dx = max(-3.0, min(6.0, state.right_shoulder_protract_px * 0.20)) * s * state.facing
+    # Clavicle axis aligned perpendicular to the spine column
+    cos_lean = math.cos(lean_rad)
+    sin_lean = math.sin(lean_rad)
+    left_shoulder: Point = (
+        shoulder_center[0] - sh_dx * cos_lean,
+        shoulder_center[1] - sh_dx * sin_lean,
+    )
+    right_shoulder: Point = (
+        shoulder_center[0] + (sh_dx + protract_dx) * cos_lean,
+        shoulder_center[1] + (sh_dx + protract_dx) * sin_lean,
+    )
 
     # Neck & Head Center
     neck_rad = lean_rad + math.radians(state.spine_arch_deg * 0.25 * state.facing)
@@ -855,6 +864,16 @@ def draw_option_c_character(
     ctx.restore()
 
     # 6. Front Arm & Hand (drawn in front of torso/head so glasses adjustment & reaches read cleanly in foreground)
+    # Foreground clavicle/shoulder socket bridge locks the arm 100% firmly to the torso at the top
+    _draw_articulated_limb(
+        ctx,
+        anat.shoulder_center,
+        ((anat.shoulder_center[0] + anat.right_shoulder[0]) * 0.5, (anat.shoulder_center[1] + anat.right_shoulder[1]) * 0.5),
+        anat.right_shoulder,
+        spine_w[0] * 0.88,
+        arm_w[0] * 1.15,
+        arm_w[0],
+    )
     _draw_articulated_limb(ctx, anat.right_shoulder, anat.right_elbow, anat.right_wrist, *arm_w)
     _draw_hand(
         ctx,
