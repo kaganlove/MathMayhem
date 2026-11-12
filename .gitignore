@@ -24,6 +24,8 @@ backups/*.zip
 backups/*.bak
 renders/tmp/
 renders/previews/*.mp4
+renders/episodes/*.mp4
+renders/episodes/*.wav
 
 # Local Binary Tools (if portable FFmpeg is stored locally)
 tools/
