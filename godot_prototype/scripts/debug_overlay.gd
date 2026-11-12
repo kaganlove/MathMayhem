@@ -109,6 +109,20 @@ func _draw() -> void:
 	draw_line(Vector2(p.x - 14, p.y), Vector2(p.x + 14, p.y), ROOT_COLOR, 2.5)
 	draw_line(Vector2(p.x, p.y - 14), Vector2(p.x, p.y + 14), ROOT_COLOR, 2.5)
 	
+	# 4b. Foot Anchor Lock Boxes & Arm IK Targets
+	if r.left_foot_locked:
+		draw_rect(Rect2(r.left_foot_lock_pos.x - 8, r.left_foot_lock_pos.y - 8, 16, 16), Color(0.0, 1.0, 0.4, 0.5), false, 2.0)
+		draw_string(ThemeDB.fallback_font, Vector2(r.left_foot_lock_pos.x - 24, r.left_foot_lock_pos.y - 12), "L_LOCK", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.0, 1.0, 0.4))
+	if r.right_foot_locked:
+		draw_rect(Rect2(r.right_foot_lock_pos.x - 8, r.right_foot_lock_pos.y - 8, 16, 16), Color(0.0, 1.0, 0.4, 0.5), false, 2.0)
+		draw_string(ThemeDB.fallback_font, Vector2(r.right_foot_lock_pos.x - 24, r.right_foot_lock_pos.y - 12), "R_LOCK", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.0, 1.0, 0.4))
+	if r.right_arm_ik_enabled:
+		draw_circle(r.right_arm_ik_target, 5.0, Color(1.0, 0.5, 0.0, 0.9))
+		draw_dashed_line(r.solved_right_shoulder, r.right_arm_ik_target, Color(1.0, 0.5, 0.0, 0.5), 1.5, 4.0)
+	if r.gaze_target_enabled:
+		draw_dashed_line(r.solved_head_center, r.gaze_target_pos, Color(0.2, 0.8, 1.0, 0.6), 1.5, 6.0)
+		draw_circle(r.gaze_target_pos, 4.0, Color(0.2, 0.8, 1.0, 0.8))
+
 	# 5. Estimated Center of Mass (COM)
 	var com: Vector2 = (r.solved_pelvis * 0.40 + r.solved_shoulder_center * 0.35 + r.solved_head_center * 0.25)
 	draw_circle(com, 8.0, COM_COLOR)

@@ -101,6 +101,24 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 @export var right_wrist_deg: float = 5.0
 @export_enum("relaxed", "reach_open", "point", "fist", "chin_touch", "shrug_open") var right_hand_pose: String = "relaxed"
 
+@export_group("Kinematic Constraints & Inverse Kinematics")
+@export var left_foot_locked: bool = false
+@export var left_foot_lock_pos: Vector2 = Vector2.ZERO
+@export var right_foot_locked: bool = false
+@export var right_foot_lock_pos: Vector2 = Vector2.ZERO
+
+@export var right_arm_ik_enabled: bool = false
+@export var right_arm_ik_target: Vector2 = Vector2.ZERO
+@export var right_arm_ik_elbow_down: bool = true
+
+@export var left_arm_ik_enabled: bool = false
+@export var left_arm_ik_target: Vector2 = Vector2.ZERO
+@export var left_arm_ik_elbow_down: bool = true
+
+@export var gaze_target_enabled: bool = false
+@export var gaze_target_pos: Vector2 = Vector2.ZERO
+@export var hand_contact_constrained: bool = false
+
 # Solved joint landmarks (in screen space) for debugging and verification
 var solved_pelvis: Vector2
 var solved_shoulder_center: Vector2
@@ -138,6 +156,47 @@ func get_right_fingertip_pos() -> Vector2:
 func get_fingertip_contact_distance() -> float:
 	return solved_right_fingertip.distance_to(get_button_contact_pos())
 
+# ===========================================================================
+# Analytical 2-Bone Inverse Kinematics Solver
+# ===========================================================================
+static func solve_ik_2bone(origin: Vector2, target: Vector2, l1: float, l2: float, bend_positive: bool = true) -> Dictionary:
+	var delta: Vector2 = target - origin
+	var dist: float = delta.length()
+	var min_reach: float = absf(l1 - l2) + 0.001
+	var max_reach: float = l1 + l2 - 0.001
+	var d: float = clampf(dist, min_reach, max_reach)
+	
+	# Angle from +Y (vertical down)
+	var theta: float = atan2(delta.x, delta.y)
+	
+	var cos_alpha: float = clampf((l1 * l1 + d * d - l2 * l2) / (2.0 * l1 * d), -1.0, 1.0)
+	var alpha: float = acos(cos_alpha)
+	
+	var cos_beta: float = clampf((l1 * l1 + l2 * l2 - d * d) / (2.0 * l1 * l2), -1.0, 1.0)
+	var beta: float = acos(cos_beta)
+	
+	var joint1_rad: float
+	var joint2_rel_rad: float
+	
+	if bend_positive:
+		joint1_rad = theta + alpha
+		joint2_rel_rad = -(PI - beta)
+	else:
+		joint1_rad = theta - alpha
+		joint2_rel_rad = (PI - beta)
+		
+	var joint1_pos: Vector2 = origin + Vector2(l1 * sin(joint1_rad), l1 * cos(joint1_rad))
+	var joint2_pos: Vector2 = joint1_pos + Vector2(l2 * sin(joint1_rad + joint2_rel_rad), l2 * cos(joint1_rad + joint2_rel_rad))
+	
+	return {
+		"joint1_rad": joint1_rad,
+		"joint2_rel_rad": joint2_rel_rad,
+		"joint1_deg": rad_to_deg(joint1_rad),
+		"joint2_deg": rad_to_deg(joint2_rel_rad),
+		"joint1_pos": joint1_pos,
+		"joint2_pos": joint2_pos
+	}
+
 func solve_kinematics() -> void:
 	var s: float = character_scale
 	var d: float = float(facing)
@@ -174,6 +233,13 @@ func solve_kinematics() -> void:
 		-(NECK_LENGTH * s) * cos(neck_rad)
 	)
 	
+	# Optional Gaze Target Solver
+	if gaze_target_enabled and gaze_target_pos != Vector2.ZERO:
+		var gaze_delta: Vector2 = gaze_target_pos - solved_neck
+		var gaze_angle: float = atan2(gaze_delta.y, gaze_delta.x * d)
+		head_tilt_deg = clampf(rad_to_deg(gaze_angle) * 0.35, -25.0, 25.0)
+		yaw_factor = clampf(gaze_delta.x / 450.0 * d, -0.38, 0.38)
+
 	var head_r: float = HEAD_RADIUS * s
 	var head_rad: float = lean_rad + deg_to_rad(head_tilt_deg)
 	solved_head_center = solved_neck + Vector2(
@@ -181,7 +247,7 @@ func solve_kinematics() -> void:
 		-(head_r * 0.94) * cos(head_rad)
 	)
 	
-	# Legs Forward Kinematics
+	# Legs Kinematics (FK or Planted-Foot IK)
 	var thigh_l: float = THIGH_LENGTH * s
 	var shin_l: float = SHIN_LENGTH * s
 	
@@ -189,41 +255,84 @@ func solve_kinematics() -> void:
 	solved_right_hip = solved_pelvis + Vector2(hip_dx, 0.0)
 	
 	# Left Leg
-	var l_thigh_rad: float = deg_to_rad(left_thigh_deg * d)
-	solved_left_knee = solved_left_hip + Vector2(thigh_l * sin(l_thigh_rad), thigh_l * cos(l_thigh_rad))
-	var l_shin_rad: float = l_thigh_rad + deg_to_rad(left_shin_deg * d)
-	solved_left_ankle = solved_left_knee + Vector2(shin_l * sin(l_shin_rad), shin_l * cos(l_shin_rad))
+	if left_foot_locked and left_foot_lock_pos != Vector2.ZERO:
+		var ik_left = solve_ik_2bone(solved_left_hip, left_foot_lock_pos, thigh_l, shin_l, true)
+		left_thigh_deg = ik_left["joint1_deg"] * d
+		left_shin_deg = ik_left["joint2_deg"] * d
+		solved_left_knee = ik_left["joint1_pos"]
+		solved_left_ankle = left_foot_lock_pos
+	else:
+		var l_thigh_rad: float = deg_to_rad(left_thigh_deg * d)
+		solved_left_knee = solved_left_hip + Vector2(thigh_l * sin(l_thigh_rad), thigh_l * cos(l_thigh_rad))
+		var l_shin_rad: float = l_thigh_rad + deg_to_rad(left_shin_deg * d)
+		solved_left_ankle = solved_left_knee + Vector2(shin_l * sin(l_shin_rad), shin_l * cos(l_shin_rad))
 	
 	# Right Leg
-	var r_thigh_rad: float = deg_to_rad(right_thigh_deg * d)
-	solved_right_knee = solved_right_hip + Vector2(thigh_l * sin(r_thigh_rad), thigh_l * cos(r_thigh_rad))
-	var r_shin_rad: float = r_thigh_rad + deg_to_rad(right_shin_deg * d)
-	solved_right_ankle = solved_right_knee + Vector2(shin_l * sin(r_shin_rad), shin_l * cos(r_shin_rad))
+	if right_foot_locked and right_foot_lock_pos != Vector2.ZERO:
+		var ik_right = solve_ik_2bone(solved_right_hip, right_foot_lock_pos, thigh_l, shin_l, true)
+		right_thigh_deg = ik_right["joint1_deg"] * d
+		right_shin_deg = ik_right["joint2_deg"] * d
+		solved_right_knee = ik_right["joint1_pos"]
+		solved_right_ankle = right_foot_lock_pos
+	else:
+		var r_thigh_rad: float = deg_to_rad(right_thigh_deg * d)
+		solved_right_knee = solved_right_hip + Vector2(thigh_l * sin(r_thigh_rad), thigh_l * cos(r_thigh_rad))
+		var r_shin_rad: float = r_thigh_rad + deg_to_rad(right_shin_deg * d)
+		solved_right_ankle = solved_right_knee + Vector2(shin_l * sin(r_shin_rad), shin_l * cos(r_shin_rad))
 	
-	# Arms Forward Kinematics
+	# Arms Kinematics (FK or Target Reaching IK)
 	var u_arm: float = UPPER_ARM_LENGTH * s
 	var f_arm: float = FOREARM_LENGTH * s
+	var r_hand_len: float = (17.5 if (right_hand_pose == "press" or right_hand_pose == "point") else 14.5) * s
+	var l_hand_len: float = 14.5 * s
 	
 	# Left Arm (Back)
-	var l_sh_rad: float = deg_to_rad(left_shoulder_deg * d)
-	solved_left_elbow = solved_left_shoulder + Vector2(u_arm * sin(l_sh_rad), u_arm * cos(l_sh_rad))
-	var l_el_rad: float = l_sh_rad + deg_to_rad(left_elbow_deg * d)
-	solved_left_wrist = solved_left_elbow + Vector2(f_arm * sin(l_el_rad), f_arm * cos(l_el_rad))
+	if left_arm_ik_enabled and left_arm_ik_target != Vector2.ZERO:
+		var l_delta: Vector2 = left_arm_ik_target - solved_left_shoulder
+		var l_dist: float = l_delta.length()
+		var l_wrist_target: Vector2 = left_arm_ik_target
+		if l_dist > 0.001:
+			l_wrist_target = left_arm_ik_target - (l_delta / l_dist) * l_hand_len
+		var ik_l_arm = solve_ik_2bone(solved_left_shoulder, l_wrist_target, u_arm, f_arm, not left_arm_ik_elbow_down)
+		left_shoulder_deg = ik_l_arm["joint1_deg"] * d
+		left_elbow_deg = ik_l_arm["joint2_deg"] * d
+		solved_left_elbow = ik_l_arm["joint1_pos"]
+		solved_left_wrist = ik_l_arm["joint2_pos"]
+		solved_left_fingertip = left_arm_ik_target
+	else:
+		var l_sh_rad: float = deg_to_rad(left_shoulder_deg * d)
+		solved_left_elbow = solved_left_shoulder + Vector2(u_arm * sin(l_sh_rad), u_arm * cos(l_sh_rad))
+		var l_el_rad: float = l_sh_rad + deg_to_rad(left_elbow_deg * d)
+		solved_left_wrist = solved_left_elbow + Vector2(f_arm * sin(l_el_rad), f_arm * cos(l_el_rad))
+		var l_hand_rad: float = deg_to_rad(left_shoulder_deg + left_elbow_deg + left_wrist_deg)
+		solved_left_fingertip = solved_left_wrist + Vector2(l_hand_len * cos(l_hand_rad), l_hand_len * sin(l_hand_rad))
 	
+	# Hand Contact Coupling
+	if hand_contact_constrained and show_button_pedestal:
+		right_arm_ik_enabled = true
+		right_arm_ik_target = get_button_contact_pos()
+		right_hand_pose = "press"
+
 	# Right Arm (Front)
-	var r_sh_rad: float = deg_to_rad(right_shoulder_deg * d)
-	solved_right_elbow = solved_right_shoulder + Vector2(u_arm * sin(r_sh_rad), u_arm * cos(r_sh_rad))
-	var r_el_rad: float = r_sh_rad + deg_to_rad(right_elbow_deg * d)
-	solved_right_wrist = solved_right_elbow + Vector2(f_arm * sin(r_el_rad), f_arm * cos(r_el_rad))
-
-	# Fingertip landmarks (in screen space)
-	var r_hand_len: float = (17.5 if (right_hand_pose == "press" or right_hand_pose == "point") else 14.5) * s
-	var r_hand_rad: float = deg_to_rad(right_shoulder_deg + right_elbow_deg + right_wrist_deg)
-	solved_right_fingertip = solved_right_wrist + Vector2(r_hand_len * cos(r_hand_rad), r_hand_len * sin(r_hand_rad))
-
-	var l_hand_len: float = 14.5 * s
-	var l_hand_rad: float = deg_to_rad(left_shoulder_deg + left_elbow_deg + left_wrist_deg)
-	solved_left_fingertip = solved_left_wrist + Vector2(l_hand_len * cos(l_hand_rad), l_hand_len * sin(l_hand_rad))
+	if right_arm_ik_enabled and right_arm_ik_target != Vector2.ZERO:
+		var r_delta: Vector2 = right_arm_ik_target - solved_right_shoulder
+		var r_dist: float = r_delta.length()
+		var r_wrist_target: Vector2 = right_arm_ik_target
+		if r_dist > 0.001:
+			r_wrist_target = right_arm_ik_target - (r_delta / r_dist) * r_hand_len
+		var ik_r_arm = solve_ik_2bone(solved_right_shoulder, r_wrist_target, u_arm, f_arm, not right_arm_ik_elbow_down)
+		right_shoulder_deg = ik_r_arm["joint1_deg"] * d
+		right_elbow_deg = ik_r_arm["joint2_deg"] * d
+		solved_right_elbow = ik_r_arm["joint1_pos"]
+		solved_right_wrist = ik_r_arm["joint2_pos"]
+		solved_right_fingertip = right_arm_ik_target
+	else:
+		var r_sh_rad: float = deg_to_rad(right_shoulder_deg * d)
+		solved_right_elbow = solved_right_shoulder + Vector2(u_arm * sin(r_sh_rad), u_arm * cos(r_sh_rad))
+		var r_el_rad: float = r_sh_rad + deg_to_rad(right_elbow_deg * d)
+		solved_right_wrist = solved_right_elbow + Vector2(f_arm * sin(r_el_rad), f_arm * cos(r_el_rad))
+		var r_hand_rad: float = deg_to_rad(right_shoulder_deg + right_elbow_deg + right_wrist_deg)
+		solved_right_fingertip = solved_right_wrist + Vector2(r_hand_len * cos(r_hand_rad), r_hand_len * sin(r_hand_rad))
 
 func _draw() -> void:
 	solve_kinematics()
@@ -708,3 +817,132 @@ func _draw_rounded_lens(rect: Rect2, rc: float, stroke_w: float) -> void:
 	draw_colored_polygon(pts, Color.WHITE)
 	pts.append(pts[0]) # Close loop for outline
 	draw_polyline(pts, INK_COLOR, stroke_w, true)
+
+# ===========================================================================
+# Kinematic Control & Acting API (Milestone 1, 2, 3)
+# ===========================================================================
+
+## Locks foot in world space. Pelvis motion automatically flexes knee with 0.0px drift.
+func lock_foot(side: String, world_pos: Vector2 = Vector2.ZERO) -> void:
+	if side.to_lower() == "left":
+		left_foot_locked = true
+		left_foot_lock_pos = world_pos if world_pos != Vector2.ZERO else solved_left_ankle
+	elif side.to_lower() == "right":
+		right_foot_locked = true
+		right_foot_lock_pos = world_pos if world_pos != Vector2.ZERO else solved_right_ankle
+
+func unlock_foot(side: String) -> void:
+	if side.to_lower() == "left":
+		left_foot_locked = false
+	elif side.to_lower() == "right":
+		right_foot_locked = false
+
+## Directs right hand to target position via 2-bone analytical IK.
+func reach_hand_to(world_pos: Vector2, elbow_down: bool = true) -> void:
+	right_arm_ik_enabled = true
+	right_arm_ik_target = world_pos
+	right_arm_ik_elbow_down = elbow_down
+
+func release_hand_ik() -> void:
+	right_arm_ik_enabled = false
+	hand_contact_constrained = false
+
+## Couples right hand to moving button contact point.
+func attach_hand_to_button() -> void:
+	hand_contact_constrained = true
+	right_arm_ik_enabled = true
+	right_hand_pose = "press"
+
+func detach_hand_from_button() -> void:
+	hand_contact_constrained = false
+	right_arm_ik_enabled = false
+
+## Orients head and eyes toward target position.
+func look_at_target(world_pos: Vector2) -> void:
+	gaze_target_enabled = true
+	gaze_target_pos = world_pos
+
+func clear_gaze_target() -> void:
+	gaze_target_enabled = false
+
+## Reusable silent-acting expression library (Phase 6).
+func set_expression(expr_name: String, intensity: float = 1.0) -> void:
+	match expr_name.to_lower():
+		"curious":
+			head_tilt_deg = lerpf(0.0, 4.0, intensity)
+			right_brow_raise_px = lerpf(0.0, 6.0, intensity)
+			left_brow_raise_px = lerpf(0.0, -1.0, intensity)
+			brow_slant_deg = lerpf(0.0, 1.5, intensity)
+			mouth_state = "curious_o"
+		"confused":
+			head_tilt_deg = lerpf(0.0, 8.5, intensity)
+			right_brow_raise_px = lerpf(0.0, 7.0, intensity)
+			left_brow_raise_px = lerpf(0.0, -3.0, intensity)
+			brow_slant_deg = lerpf(0.0, 3.0, intensity)
+			mouth_state = "neutral"
+		"suspicious":
+			head_tilt_deg = lerpf(0.0, -3.0, intensity)
+			right_brow_raise_px = lerpf(0.0, -3.5, intensity)
+			left_brow_raise_px = lerpf(0.0, -3.5, intensity)
+			brow_slant_deg = lerpf(0.0, 2.0, intensity)
+			mouth_state = "firm"
+		"confident":
+			head_tilt_deg = lerpf(0.0, -2.0, intensity)
+			right_brow_raise_px = lerpf(0.0, 3.5, intensity)
+			left_brow_raise_px = lerpf(0.0, 1.0, intensity)
+			brow_slant_deg = lerpf(0.0, 1.0, intensity)
+			mouth_state = "smirk"
+		"hesitant":
+			head_tilt_deg = lerpf(0.0, 10.0, intensity)
+			right_brow_raise_px = lerpf(0.0, 6.0, intensity)
+			left_brow_raise_px = lerpf(0.0, -2.0, intensity)
+			brow_slant_deg = lerpf(0.0, 3.5, intensity)
+			mouth_state = "neutral"
+		"surprised":
+			head_tilt_deg = lerpf(0.0, 15.0, intensity)
+			right_brow_raise_px = lerpf(0.0, 12.0, intensity)
+			left_brow_raise_px = lerpf(0.0, 12.0, intensity)
+			brow_slant_deg = 0.0
+			glasses_slip_px = lerpf(0.0, 7.0, intensity)
+			mouth_state = "open_gasp"
+		"frustrated":
+			head_tilt_deg = lerpf(0.0, -5.0, intensity)
+			right_brow_raise_px = lerpf(0.0, -4.0, intensity)
+			left_brow_raise_px = lerpf(0.0, -4.0, intensity)
+			brow_slant_deg = lerpf(0.0, -3.5, intensity)
+			mouth_state = "firm"
+		"satisfied":
+			head_tilt_deg = lerpf(0.0, -3.0, intensity)
+			right_brow_raise_px = lerpf(0.0, 4.0, intensity)
+			left_brow_raise_px = lerpf(0.0, 1.0, intensity)
+			brow_slant_deg = lerpf(0.0, 2.0, intensity)
+			mouth_state = "smirk"
+		"embarrassed":
+			head_tilt_deg = lerpf(0.0, -5.0, intensity)
+			right_brow_raise_px = lerpf(0.0, 2.0, intensity)
+			left_brow_raise_px = lerpf(0.0, 2.0, intensity)
+			brow_slant_deg = lerpf(0.0, -2.0, intensity)
+			glasses_slip_px = lerpf(0.0, 4.0, intensity)
+			mouth_state = "neutral"
+		"thoughtful":
+			head_tilt_deg = lerpf(0.0, 6.0, intensity)
+			right_brow_raise_px = lerpf(0.0, 3.0, intensity)
+			left_brow_raise_px = lerpf(0.0, -1.0, intensity)
+			brow_slant_deg = lerpf(0.0, 1.5, intensity)
+			mouth_state = "concentrating"
+		"disappointed":
+			head_tilt_deg = lerpf(0.0, -8.0, intensity)
+			right_brow_raise_px = lerpf(0.0, -2.0, intensity)
+			left_brow_raise_px = lerpf(0.0, -2.0, intensity)
+			brow_slant_deg = lerpf(0.0, -2.5, intensity)
+			shoulder_shrug_px = lerpf(0.0, -6.0, intensity)
+			mouth_state = "neutral"
+		"neutral", _:
+			head_tilt_deg = 0.0
+			right_brow_raise_px = 0.0
+			left_brow_raise_px = 0.0
+			brow_slant_deg = 0.0
+			glasses_slip_px = 0.0
+			shoulder_shrug_px = 0.0
+			mouth_state = "neutral"
+
