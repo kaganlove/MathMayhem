@@ -81,8 +81,9 @@ const SHADOW_COLOR: Color = Color(0.89, 0.91, 0.94)
 
 @export_group("Interactive Floor Item")
 @export var show_floor_item: bool = false
-@export var floor_item_pos: Vector2 = Vector2(700.0, 1600.0)
+@export var floor_item_pos: Vector2 = Vector2(660.0, 1575.0)
 @export var is_item_held: bool = false
+@export var pickup_object: Node2D = null
 
 @export_group("Left Leg (Back)")
 @export var left_thigh_deg: float = 14.0
@@ -402,6 +403,9 @@ func _draw() -> void:
 		_draw_floor_item(s)
 
 func _draw_floor_item(s: float) -> void:
+	if pickup_object != null and is_instance_valid(pickup_object):
+		pickup_object.draw_object(self, s)
+		return
 	var item_pos: Vector2 = solved_right_fingertip if is_item_held else floor_item_pos
 	# Draw glowing golden prism / octahedron
 	var sz: float = 16.0 * s
@@ -416,6 +420,16 @@ func _draw_floor_item(s: float) -> void:
 	# Inner facet highlights
 	draw_line(item_pos + Vector2(0.0, -sz), item_pos + Vector2(0.0, sz * 0.6), INK_COLOR, 2.0 * s)
 	draw_line(item_pos + Vector2(-sz * 0.8, -sz * 0.2), item_pos + Vector2(sz * 0.8, -sz * 0.2), INK_COLOR, 2.0 * s)
+
+func get_right_grip_pos() -> Vector2:
+	solve_kinematics()
+	var s: float = character_scale
+	var hand_len: float = 16.0 * s
+	var hand_rad: float = deg_to_rad(right_shoulder_deg + right_elbow_deg + right_wrist_deg)
+	return solved_right_wrist + Vector2(hand_len * 0.65 * cos(hand_rad), hand_len * 0.65 * sin(hand_rad))
+
+func get_right_hand_rot_deg() -> float:
+	return right_shoulder_deg + right_elbow_deg + right_wrist_deg
 
 func _draw_button_pedestal(s: float) -> void:
 	var bx: float = button_pedestal_pos.x
@@ -612,7 +626,62 @@ func _draw_hand(wrist: Vector2, angle_deg: float, pose: String, s: float, wrist_
 		]
 		draw_colored_polygon(pts, BODY_FILL)
 		draw_circle(Vector2(hand_len, -r_base * 0.3), r_base * 0.45, BODY_FILL)
-	elif pose == "recoil" or pose == "startled" or pose == "reach_open":
+	elif pose == "grasp_contact":
+		# Grasping hand cupped around object boundary
+		hand_len = 16.5 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.9),
+			Vector2(hand_len * 0.6, -r_base * 1.2),
+			Vector2(hand_len, -r_base * 0.6),
+			Vector2(hand_len * 0.95, r_base * 0.4),
+			Vector2(hand_len * 0.5, r_base * 0.9),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len, -r_base * 0.6), r_base * 0.4, BODY_FILL)
+	elif pose == "grip_closed":
+		# Firm closed clamp around object handle/apex
+		hand_len = 14.5 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.9),
+			Vector2(hand_len * 0.75, -r_base * 0.9),
+			Vector2(hand_len, -r_base * 0.3),
+			Vector2(hand_len * 0.9, r_base * 0.6),
+			Vector2(hand_len * 0.5, r_base * 0.9),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len * 0.7, 0.0), r_base * 0.6, BODY_FILL)
+	elif pose == "carry_grip":
+		# Cradling hand holding object securely at chest
+		hand_len = 16.0 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.8),
+			Vector2(hand_len * 0.7, -r_base * 0.8),
+			Vector2(hand_len, -r_base * 0.2),
+			Vector2(hand_len * 0.85, r_base * 0.7),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len * 0.85, 0.0), r_base * 0.5, BODY_FILL)
+	elif pose == "reach_open":
+		# Extended reach with open fingers
+		hand_len = 17.5 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 1.0),
+			Vector2(hand_len * 0.6, -r_base * 1.1),
+			Vector2(hand_len, -r_base * 0.4),
+			Vector2(hand_len * 0.9, r_base * 0.4),
+			Vector2(hand_len * 0.6, r_base * 0.8),
+			Vector2(0, r_base * 0.9)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len, -r_base * 0.3), r_base * 0.35, BODY_FILL)
+	elif pose == "recoil" or pose == "startled":
 		# 5. Startled recoil hand (wide open splayed reflex)
 		hand_len = 17.0 * s
 		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
