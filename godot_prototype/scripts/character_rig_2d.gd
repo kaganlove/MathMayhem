@@ -118,12 +118,25 @@ var solved_left_elbow: Vector2
 var solved_left_wrist: Vector2
 var solved_right_elbow: Vector2
 var solved_right_wrist: Vector2
+var solved_right_fingertip: Vector2
+var solved_left_fingertip: Vector2
 
 func _ready() -> void:
 	queue_redraw()
 
 func _process(_delta: float) -> void:
 	queue_redraw()
+
+func get_button_contact_pos() -> Vector2:
+	var s: float = character_scale
+	var depress: float = clampf(button_depress_px, 0.0, 10.0) * s
+	return Vector2(button_pedestal_pos.x, button_pedestal_pos.y - 8.0 * s + depress)
+
+func get_right_fingertip_pos() -> Vector2:
+	return solved_right_fingertip
+
+func get_fingertip_contact_distance() -> float:
+	return solved_right_fingertip.distance_to(get_button_contact_pos())
 
 func solve_kinematics() -> void:
 	var s: float = character_scale
@@ -202,6 +215,15 @@ func solve_kinematics() -> void:
 	solved_right_elbow = solved_right_shoulder + Vector2(u_arm * sin(r_sh_rad), u_arm * cos(r_sh_rad))
 	var r_el_rad: float = r_sh_rad + deg_to_rad(right_elbow_deg * d)
 	solved_right_wrist = solved_right_elbow + Vector2(f_arm * sin(r_el_rad), f_arm * cos(r_el_rad))
+
+	# Fingertip landmarks (in screen space)
+	var r_hand_len: float = (17.5 if (right_hand_pose == "press" or right_hand_pose == "point") else 14.5) * s
+	var r_hand_rad: float = deg_to_rad(right_shoulder_deg + right_elbow_deg + right_wrist_deg)
+	solved_right_fingertip = solved_right_wrist + Vector2(r_hand_len * cos(r_hand_rad), r_hand_len * sin(r_hand_rad))
+
+	var l_hand_len: float = 14.5 * s
+	var l_hand_rad: float = deg_to_rad(left_shoulder_deg + left_elbow_deg + left_wrist_deg)
+	solved_left_fingertip = solved_left_wrist + Vector2(l_hand_len * cos(l_hand_rad), l_hand_len * sin(l_hand_rad))
 
 func _draw() -> void:
 	solve_kinematics()
@@ -295,22 +317,22 @@ func _draw_button_pedestal(s: float) -> void:
 	draw_line(Vector2(bx - cap_w + 2.0 * s, cap_top_y + 1.5 * s), Vector2(bx + cap_w - 2.0 * s, cap_top_y + 1.5 * s), Color(1.0, 0.55, 0.55), 2.0 * s)
 	draw_rect(cap_rect, INK_COLOR, false, 2.5 * s)
 	
-	# 5. Energy Blast / Flash Burst on activation
+	# 5. Energy Blast / Flash Burst on activation (Controlled non-obscuring pulse)
 	var glow: float = clampf(button_glow_alpha, 0.0, 1.0)
 	if glow > 0.01:
-		var burst_r: float = 38.0 * s * (1.0 + glow * 0.8)
-		# Outer glow corona
-		draw_circle(Vector2(bx, by), burst_r * 1.5, Color(1.0, 0.85, 0.2, glow * 0.35))
-		# Inner brilliant flash
-		draw_circle(Vector2(bx, by), burst_r, Color(1.0, 0.95, 0.6, glow * 0.75))
-		# Flash shockwave ring
-		draw_arc(Vector2(bx, by), burst_r * 1.8, 0, TAU, 32, Color(1.0, 1.0, 1.0, glow * 0.9), 4.0 * s, true)
-		# Radial energy spikes
-		for ang_deg in [0, 45, 90, 135, 180, 225, 270, 315]:
+		# Illuminate button cap with internal warm energy glow
+		var glow_cap_col: Color = Color(0.92, 0.18, 0.22).lerp(Color(1.0, 0.85, 0.3), glow * 0.75)
+		draw_rect(cap_rect, glow_cap_col)
+		draw_rect(cap_rect, INK_COLOR, false, 2.5 * s)
+		# Expanding clean fine shockwave ring around button base
+		var pulse_r: float = 24.0 * s + glow * 22.0 * s
+		draw_arc(Vector2(bx, by), pulse_r, 0, TAU, 32, Color(1.0, 0.85, 0.2, glow * 0.85), 2.5 * s, true)
+		# Clean radiant energy sparks radiating outward away from bezel
+		for ang_deg in [25, 70, 115, 205, 250, 295]:
 			var a_rad: float = deg_to_rad(float(ang_deg))
-			var p_start: Vector2 = Vector2(bx, by) + Vector2(cos(a_rad), sin(a_rad)) * (burst_r * 0.7)
-			var p_end: Vector2 = Vector2(bx, by) + Vector2(cos(a_rad), sin(a_rad)) * (burst_r * 2.2)
-			draw_line(p_start, p_end, Color(1.0, 0.9, 0.3, glow * 0.8), 3.0 * s)
+			var p_start: Vector2 = Vector2(bx, by) + Vector2(cos(a_rad), sin(a_rad)) * (bezel_w * 1.05)
+			var p_end: Vector2 = Vector2(bx, by) + Vector2(cos(a_rad), sin(a_rad)) * (bezel_w * 1.05 + 16.0 * s * glow)
+			draw_line(p_start, p_end, Color(1.0, 0.9, 0.3, glow * 0.9), 2.2 * s)
 
 func _draw_interactive_target(s: float) -> void:
 	var tx = target_object_pos.x
@@ -407,31 +429,82 @@ func _draw_boot(ankle: Vector2, angle_deg: float, length: float, height: float, 
 func _draw_hand(wrist: Vector2, angle_deg: float, pose: String, s: float, wrist_width: float) -> void:
 	draw_set_transform(wrist, deg_to_rad(angle_deg), Vector2.ONE)
 	var r_base: float = (wrist_width * s) * 0.5
-	var hand_len: float = 14.0 * s
+	var hand_len: float = 14.5 * s
 	
-	if pose == "point":
-		hand_len = 16.5 * s
+	if pose == "press" or pose == "point":
+		# 4. Index-finger press (clearly distinct fingertip contacting surface)
+		hand_len = 17.5 * s
 		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
-		var pts: PackedVector2Array = [
-			Vector2(0, -r_base * 0.7),
+		var palm_pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.8),
+			Vector2(hand_len * 0.45, -r_base * 0.9),
+			Vector2(hand_len * 0.55, r_base * 0.7),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(palm_pts, BODY_FILL)
+		# Tapered extended index finger pointing along action axis
+		var finger_pts: PackedVector2Array = [
+			Vector2(hand_len * 0.35, -r_base * 0.35),
 			Vector2(hand_len, -r_base * 0.2),
-			Vector2(hand_len, r_base * 0.3),
-			Vector2(hand_len * 0.4, r_base),
-			Vector2(0, r_base)
+			Vector2(hand_len, r_base * 0.2),
+			Vector2(hand_len * 0.35, r_base * 0.35)
 		]
-		draw_colored_polygon(pts, BODY_FILL)
-		draw_circle(Vector2(hand_len, 0), r_base * 0.4, BODY_FILL)
-	elif pose == "reach_open":
-		hand_len = 15.5 * s
+		draw_colored_polygon(finger_pts, BODY_FILL)
+		draw_circle(Vector2(hand_len, 0), r_base * 0.35, BODY_FILL)
+	elif pose == "hesitant" or pose == "hesitant_reach":
+		# 3. Hesitant hovering hand
+		hand_len = 16.0 * s
 		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
 		var pts: PackedVector2Array = [
-			Vector2(0, -r_base),
-			Vector2(hand_len * 0.8, -r_base * 1.1),
-			Vector2(hand_len, 0),
-			Vector2(hand_len * 0.8, r_base * 1.1),
-			Vector2(0, r_base)
+			Vector2(0, -r_base * 0.8),
+			Vector2(hand_len * 0.65, -r_base * 0.9),
+			Vector2(hand_len, -r_base * 0.25),
+			Vector2(hand_len * 0.8, r_base * 0.6),
+			Vector2(0, r_base * 0.7)
 		]
 		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len, -r_base * 0.15), r_base * 0.4, BODY_FILL)
+	elif pose == "curious" or pose == "curious_gesture":
+		# 2. Curious inquiring hand (fingers curved gently upward)
+		hand_len = 16.0 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.8),
+			Vector2(hand_len * 0.6, -r_base * 1.1),
+			Vector2(hand_len, -r_base * 0.4),
+			Vector2(hand_len * 0.8, r_base * 0.7),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len, -r_base * 0.3), r_base * 0.45, BODY_FILL)
+	elif pose == "recoil" or pose == "startled" or pose == "reach_open":
+		# 5. Startled recoil hand (wide open splayed reflex)
+		hand_len = 17.0 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 1.1),
+			Vector2(hand_len * 0.75, -r_base * 1.4),
+			Vector2(hand_len, -r_base * 0.5),
+			Vector2(hand_len * 0.95, r_base * 0.6),
+			Vector2(hand_len * 0.7, r_base * 1.3),
+			Vector2(0, r_base * 1.0)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len, -r_base * 0.5), r_base * 0.4, BODY_FILL)
+		draw_circle(Vector2(hand_len * 0.75, -r_base * 1.2), r_base * 0.35, BODY_FILL)
+	elif pose == "amused":
+		# 6. Amused gesture hand
+		hand_len = 15.0 * s
+		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
+		var pts: PackedVector2Array = [
+			Vector2(0, -r_base * 0.8),
+			Vector2(hand_len * 0.7, -r_base * 0.7),
+			Vector2(hand_len, 0),
+			Vector2(hand_len * 0.6, r_base * 0.8),
+			Vector2(0, r_base * 0.8)
+		]
+		draw_colored_polygon(pts, BODY_FILL)
+		draw_circle(Vector2(hand_len * 0.8, 0), r_base * 0.45, BODY_FILL)
 	elif pose == "fist":
 		hand_len = 12.0 * s
 		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
@@ -470,6 +543,7 @@ func _draw_hand(wrist: Vector2, angle_deg: float, pose: String, s: float, wrist_
 		draw_colored_polygon(pts, BODY_FILL)
 		draw_circle(Vector2(hand_len * 0.8, -r_base * 0.5), r_base * 0.5, BODY_FILL)
 	else: # "relaxed"
+		# 1. Relaxed hand
 		draw_circle(Vector2.ZERO, r_base, BODY_FILL)
 		var pts: PackedVector2Array = [
 			Vector2(0, -r_base * 0.8),
@@ -480,6 +554,7 @@ func _draw_hand(wrist: Vector2, angle_deg: float, pose: String, s: float, wrist_
 		]
 		draw_colored_polygon(pts, BODY_FILL)
 		draw_circle(Vector2(hand_len - r_base * 0.4, 0), r_base * 0.8, BODY_FILL)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _draw_head_and_face(s: float, d: float, outline_w: float) -> void:

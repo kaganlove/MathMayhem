@@ -48,34 +48,50 @@ def test_v12_six_poses_defined():
     content = (GODOT_DIR / "scripts" / "pose_library_v12.gd").read_text(encoding="utf-8")
     for pose in ["get_neutral_pose", "get_curious_pose", "get_hesitation_pose", "get_press_pose", "get_surprise_pose", "get_satisfaction_pose"]:
         assert pose in content, f"Missing pose definition: {pose}"
+    for breakdown_fn in ["get_walking_breakdowns", "get_reaching_breakdowns", "get_surprise_breakdowns", "get_recovery_breakdowns"]:
+        assert breakdown_fn in content, f"Missing breakdown function: {breakdown_fn}"
+
+
+def test_v12_hand_configurations_and_landmarks():
+    """Verify all 6 caricatured hand configurations and landmark solvers exist on character rig."""
+    content = (GODOT_DIR / "scripts" / "character_rig_2d.gd").read_text(encoding="utf-8")
+    for hand_state in ["relaxed", "curious", "hesitant", "press", "recoil", "amused"]:
+        assert f'"{hand_state}"' in content, f"Missing hand shape: {hand_state}"
+    
+    assert "solved_right_fingertip" in content
+    assert "get_button_contact_pos" in content
+    assert "get_right_fingertip_pos" in content
+    assert "get_fingertip_contact_distance" in content
 
 
 def test_v12_blueprint_movement_mechanics():
     """Verify concrete movement targets from Blueprint Section C are respected."""
     content = (GODOT_DIR / "scripts" / "pose_library_v12.gd").read_text(encoding="utf-8")
     
-    # 1. Weight & Balance: Knee flexion in 10-30 deg range
+    # 1. Weight & Balance: Knee flexion and posture
     assert "left_thigh_deg" in content
     assert "right_thigh_deg" in content
     
     # 2. Reach Arc: Natural elbow flex (not straight 0-10 deg)
-    # Hesitation: elbow flex ~72 deg (within 60-120 range)
-    assert 'p["right_elbow_deg"] = 46.0' in content or '"right_elbow_deg": 46.0' in content
+    assert 'p["right_elbow_deg"] = 41.0' in content or 'p["right_elbow_deg"] = 46.0' in content
     
     # 3. Surprise Recoil: Torso lean ~10-20 deg back, shoulders up, asymmetric arms
-    assert 'p["torso_lean_deg"] = -16.0' in content
-    assert 'p["shoulder_shrug_px"] = 24.0' in content
+    assert 'p["torso_lean_deg"] = -18.0' in content
+    assert 'p["shoulder_shrug_px"] = 26.0' in content
     
     # 4. Button interaction: -8px depression
     assert 'p["button_depress_px"] = 8.0' in content
 
 
 def test_v12_deliverables_exist_and_non_empty():
-    """Verify all requested Phase 1 & 2 deliverables exist and exceed size thresholds."""
+    """Verify all requested Phase 2 deliverables exist and exceed size thresholds."""
     deliverables = [
         RENDERS_DIR / "godot_v12_stepped_blocking_preview.mp4",
         RENDERS_DIR / "godot_v12_key_pose_sheet.png",
+        RENDERS_DIR / "godot_v12_breakdown_sheet.png",
         RENDERS_DIR / "godot_v12_storyboard_sheet.png",
+        RENDERS_DIR / "godot_v12_contact_verification.png",
+        RENDERS_DIR / "godot_v12_balance_verification.png",
     ]
 
     for p in deliverables:

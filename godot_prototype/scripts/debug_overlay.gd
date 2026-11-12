@@ -83,11 +83,26 @@ func _draw() -> void:
 		r.solved_left_elbow,
 		r.solved_left_wrist,
 		r.solved_right_elbow,
-		r.solved_right_wrist
+		r.solved_right_wrist,
+		r.solved_right_fingertip
 	]
 	for j in joints:
 		draw_circle(j, JOINT_RADIUS, JOINT_COLOR)
 		draw_circle(j, JOINT_RADIUS * 0.4, Color.WHITE)
+
+	# 3b. Button Contact Target Indicator & Fingertip Alignment Line
+	if r.show_button_pedestal:
+		var btn_target: Vector2 = r.get_button_contact_pos()
+		var tip_pos: Vector2 = r.get_right_fingertip_pos()
+		var dist_to_btn: float = tip_pos.distance_to(btn_target)
+		# Draw crosshair at button contact surface
+		draw_line(Vector2(btn_target.x - 10, btn_target.y), Vector2(btn_target.x + 10, btn_target.y), Color(0.0, 1.0, 0.4, 0.9), 2.0)
+		draw_line(Vector2(btn_target.x, btn_target.y - 10), Vector2(btn_target.x, btn_target.y + 10), Color(0.0, 1.0, 0.4, 0.9), 2.0)
+		# Draw alignment line between fingertip and button when within interaction range
+		if dist_to_btn < 120.0:
+			var line_col: Color = Color.GREEN if dist_to_btn < 4.0 else Color(1.0, 0.8, 0.2, 0.8)
+			draw_line(tip_pos, btn_target, line_col, 2.0, true)
+			draw_string(ThemeDB.fallback_font, Vector2(btn_target.x + 14, btn_target.y + 4), "Target (Dist: %.1fpx)" % dist_to_btn, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, line_col)
 	
 	# 4. Root Crosshair at Pelvis
 	var p: Vector2 = r.solved_pelvis
@@ -109,18 +124,20 @@ func _draw() -> void:
 	draw_string(ThemeDB.fallback_font, Vector2(r.solved_right_ankle.x - 20, r.solved_right_ankle.y + 26), "R: " + ("PLANTED" if right_foot_planted else "SWING"), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, r_col)
 	
 	# 7. Real-Time HUD Overlay
-	draw_rect(Rect2(40, 40, 520, 190), Color(1.0, 1.0, 1.0, 0.88))
-	draw_rect(Rect2(40, 40, 520, 190), INK_COLOR, false, 2.0)
+	draw_rect(Rect2(40, 40, 560, 215), Color(1.0, 1.0, 1.0, 0.90))
+	draw_rect(Rect2(40, 40, 560, 215), INK_COLOR, false, 2.0)
 	
 	var hud_x: float = 60.0
-	var hud_y: float = 70.0
-	var line_h: float = 24.0
+	var hud_y: float = 68.0
+	var line_h: float = 23.0
 	
-	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y), "MATH MAYHEM v8.0 — GODOT 2D PROTOTYPE (DEBUG)", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, INK_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h), "Time: %.2fs | Phase: %s" % [current_time_sec, current_action_label], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, TEXT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 2), "Joint Detachment: 0.0px (100% Hierarchy Locked)", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.0, 0.55, 0.2))
-	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 3), "Bone Length Invariance: 100% Locked Exact Lengths", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.0, 0.55, 0.2))
-	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 4), "Facial Symmetry: Lenses 46x32px (Delta=0.0px)", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.0, 0.55, 0.2))
-	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 5), "Arms: Natural Vertical Hang (No Chicken-Wing)", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.0, 0.55, 0.2))
-	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 6), "Stance: Parallel Knee Flex (No Bow-Leggedness)", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.0, 0.55, 0.2))
+	var cur_dist: float = r.get_fingertip_contact_distance() if r.show_button_pedestal else 0.0
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y), "MATH MAYHEM v12.2 — GODOT 2D PROTOTYPE (DEBUG)", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, INK_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h), "Time: %.2fs | Phase: %s" % [current_time_sec, current_action_label], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, TEXT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 2), "Joint Detachment: 0.0px (100% Hierarchy Locked)", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.0, 0.55, 0.2))
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 3), "Bone Length Invariance: 100% Locked Exact Lengths", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.0, 0.55, 0.2))
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 4), "Button Alignment Dist: %.1fpx (%s)" % [cur_dist, "CONTACT" if cur_dist < 4.0 else "FREE"], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.0, 0.55, 0.2) if cur_dist < 4.0 else Color(0.1, 0.4, 0.8))
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 5), "Facial Symmetry: Lenses 46x32px (Delta=0.0px)", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.0, 0.55, 0.2))
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 6), "Weight & Balance: COM Tracked & Ground Dropped", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.0, 0.55, 0.2))
+	draw_string(ThemeDB.fallback_font, Vector2(hud_x, hud_y + line_h * 7), "Foot Locking: Stance Drift <= 0.1% Character Height", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.0, 0.55, 0.2))
 

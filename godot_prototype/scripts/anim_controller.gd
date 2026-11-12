@@ -26,7 +26,8 @@ var anim_player: AnimationPlayer = null
 
 const CLIP_DURATIONS: Dictionary = {
 	"v12_six_poses": 6.0,
-	"v12_stepped_blocking": 11.5,
+	"v12_breakdowns": 22.0,
+	"v12_stepped_blocking": 11.0,
 	"mysterious_button": 10.0,
 	"mysterious_button_stepped": 10.0,
 	"six_poses": 6.0,
@@ -81,6 +82,8 @@ func evaluate_at(t: float) -> void:
 		
 	if active_clip == "v12_six_poses":
 		_evaluate_v12_six_poses(t)
+	elif active_clip == "v12_breakdowns":
+		_evaluate_v12_breakdowns(t)
 	elif active_clip == "v12_stepped_blocking":
 		_evaluate_v12_stepped_blocking(t)
 	elif active_clip == "mysterious_button":
@@ -146,7 +149,7 @@ func _evaluate_mysterious_button(t: float, is_stepped: bool) -> void:
 		debug_overlay.set("right_foot_planted", right_plant)
 
 # ===========================================================================
-# 0. v12.1 Canonical 6 Reference Poses & Stepped Blocking
+# 0. v12.2 Canonical 6 Reference Poses, Breakdowns & Stepped Blocking
 # ===========================================================================
 func _evaluate_v12_six_poses(t: float) -> void:
 	var poses = PoseLibraryV12.get_all_six_poses()
@@ -155,39 +158,58 @@ func _evaluate_v12_six_poses(t: float) -> void:
 	PoseLibraryV12.apply_pose_to_rig(rig, p_data)
 	_set_action(p_data["label"], true, true)
 
+func _evaluate_v12_breakdowns(t: float) -> void:
+	var all_breakdowns: Array[Dictionary] = []
+	all_breakdowns.append_array(PoseLibraryV12.get_walking_breakdowns())
+	all_breakdowns.append_array(PoseLibraryV12.get_reaching_breakdowns())
+	all_breakdowns.append_array(PoseLibraryV12.get_surprise_breakdowns())
+	all_breakdowns.append_array(PoseLibraryV12.get_recovery_breakdowns())
+	
+	var idx: int = clampi(int(floor(t)), 0, all_breakdowns.size() - 1)
+	var p_data: Dictionary = all_breakdowns[idx]
+	PoseLibraryV12.apply_pose_to_rig(rig, p_data)
+	_set_action(p_data["name"], true, true)
+
 func _evaluate_v12_stepped_blocking(t: float) -> void:
 	_setup_animation_player()
 	anim_player.play("v12_stepped_blocking")
 	anim_player.seek(t, true)
 	
 	var label: String
-	if t < 1.5:
-		label = "Beat 1: Discovery (Notice, head turn, lean)"
-	elif t < 3.0:
-		label = "Beat 2: Approach (Balanced steps to button)"
+	if t < 1.2:
+		label = "Beat 1: Establish & Notice (Head leads, eye dart)"
+	elif t < 2.8:
+		label = "Beat 2: Approach (6-phase walk sequence to button)"
 	elif t < 4.0:
-		label = "Beat 3: Hesitation (Hand hovers above button, doubt)"
-	elif t < 5.0:
-		label = "Beat 4: Press (Commit & press, button -8px)"
-	elif t < 5.5:
-		label = "Beat 5: Activation (Energy burst flash)"
-	elif t < 7.0:
-		label = "Beat 6: Surprise (Recoil back, rear weight, wide arms gasp)"
+		label = "Beat 3: Hesitation (Hand hovers 28px above button, doubt)"
+	elif t < 4.8:
+		label = "Beat 4: Decision & Press (Commit, contact, button -8px)"
+	elif t < 5.2:
+		label = "Beat 5: Activation (Energy burst pulse, hand releases)"
+	elif t < 6.8:
+		label = "Beat 6: Surprise (Startle, recoil snap, rear catch, peak hold)"
 	elif t < 9.0:
-		label = "Beat 7: Recovery (Settle balance, push glasses up)"
+		label = "Beat 7: Recovery (Weight shift, shoulder settle, glasses push-up)"
 	else:
-		label = "Beat 8: Payoff (Amused smirk, appealing finish)"
+		label = "Beat 8: Amused Payoff (Smirk, intentional button gesture)"
 		
 	if debug_overlay != null:
 		debug_overlay.set("current_action_label", label)
 		var left_plant: bool = true
 		var right_plant: bool = true
-		if t >= 1.5 and t < 2.7:
-			var step_t = t - 1.5
-			if step_t < 0.6:
+		if t >= 1.2 and t < 2.6:
+			var step_t = t - 1.2
+			if step_t < 0.25:
 				right_plant = false
-			elif step_t < 1.0:
+			elif step_t < 0.55:
 				left_plant = false
+			elif step_t < 0.85:
+				right_plant = false
+			elif step_t < 1.15:
+				left_plant = false
+		elif t >= 5.2 and t < 5.65:
+			# During explosive recoil snap, right foot kicks forward (unweighted)
+			right_plant = false
 		debug_overlay.set("left_foot_planted", left_plant)
 		debug_overlay.set("right_foot_planted", right_plant)
 

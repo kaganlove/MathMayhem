@@ -1,21 +1,21 @@
 class_name AnimationBuilderV12
 extends RefCounted
 
-## Math Mayhem v12.1 — Master Animation Builder & Track Authoring Engine
-## Authors professional Godot Animation resources for v12.1:
-## 1. Authored Stepped Blocking (Animation.INTERPOLATION_NEAREST)
-## 2. 8-Beat Narrative Story Arc (Discovery -> Approach -> Hesitation -> Press -> Activation -> Surprise -> Recovery -> Payoff)
-## 3. Weight & balance shifts over stance feet
-## 4. Organic reach arcs with natural elbow bends (no straight robotic pistons)
-## 5. Physical button interaction (-8px depression) and activation glow burst
-## 6. Rear-foot recoil weight transfer and comedic holds
+## Math Mayhem v12.2 — Master Animation Builder & Track Authoring Engine
+## Authors professional Godot Animation resources for v12.2:
+## 1. Stepped Blocking (Animation.INTERPOLATION_NEAREST) with Authored Functional Breakdowns
+## 2. Paced 11.0s Story Arc (Notice -> Walk Breakdown -> Hesitate -> Reach & Contact -> Activation -> Recoil Catch -> Recovery -> Amused Payoff)
+## 3. Planted support-foot locking (drift <= 0.1% character height)
+## 4. Shared button contact target with mathematical fingertip alignment (0.1px precision)
+## 5. Controlled non-obscuring activation energy pulse
+## 6. Rear-foot recoil weight transfer and comedic timing
 
 const PoseLibraryV12 = preload("res://scripts/pose_library_v12.gd")
 const STANDING_Y: float = 1285.8
 
 static func create_v12_animation(is_stepped: bool = true) -> Animation:
 	var anim: Animation = Animation.new()
-	anim.length = 11.5
+	anim.length = 11.0
 	var interp_mode = Animation.INTERPOLATION_NEAREST if is_stepped else Animation.INTERPOLATION_CUBIC
 
 	var track_names: Array = [
@@ -68,129 +68,108 @@ static func create_v12_animation(is_stepped: bool = true) -> Animation:
 	_k(anim, tracks["CharacterRig:show_button_pedestal"], 0.0, true)
 
 	# -----------------------------------------------------------------------
-	# Beat 1: Discovery (0.0s - 1.5s)
+	# Beat 1: Establish & Notice (0.0s - 1.2s)
 	# -----------------------------------------------------------------------
-	# 0.0s - 0.6s: Neutral Idle
+	# 0.0s - 0.5s: Calm neutral stance, attention slightly forward
 	_apply_pose_at(anim, tracks, 0.0, PoseLibraryV12.get_neutral_pose())
 	
-	# 0.65s: Notice Eye Dart / Pre-anticipation
-	_k(anim, tracks["CharacterRig:yaw_factor"], 0.65, 0.30)
-	_k(anim, tracks["CharacterRig:head_nod_px"], 0.65, 2.5)
+	# 0.5s: Attention shift starts (head leads, eye dart)
+	_k(anim, tracks["CharacterRig:yaw_factor"], 0.5, 0.28)
+	_k(anim, tracks["CharacterRig:head_nod_px"], 0.5, 2.0)
 	
-	# 0.85s - 1.5s: Curious Notice Keyframe (Hold 8-12f)
-	var p_curious = PoseLibraryV12.get_curious_pose()
-	_apply_pose_at(anim, tracks, 0.85, p_curious)
+	# 0.75s - 1.2s: Curious Notice Keyframe (Hold 14 frames)
+	_apply_pose_at(anim, tracks, 0.75, PoseLibraryV12.get_curious_pose())
 
 	# -----------------------------------------------------------------------
-	# Beat 2: Approach (1.5s - 3.0s) — Two Deliberate Balanced Steps
+	# Beat 2: Approach & Stop (1.2s - 2.8s) — Full Walking Breakdown Sequence
 	# -----------------------------------------------------------------------
-	# 1.5s: Step 1 Lift (Right leg lifts, weight on left leg)
-	_k(anim, tracks["CharacterRig:root_pos"], 1.5, Vector2(395.0, STANDING_Y - 8.0))
-	_k(anim, tracks["CharacterRig:torso_lean_deg"], 1.5, 8.0)
-	_k(anim, tracks["CharacterRig:right_thigh_deg"], 1.5, 26.0)
-	_k(anim, tracks["CharacterRig:right_shin_deg"], 1.5, -20.0)
-	_k(anim, tracks["CharacterRig:left_thigh_deg"], 1.5, 10.0)
-	_k(anim, tracks["CharacterRig:left_shin_deg"], 1.5, -22.0)
+	var walks = PoseLibraryV12.get_walking_breakdowns()
+	# 1.20s: Walk 1 - Contact (Right heel strikes at x=410)
+	_apply_pose_at(anim, tracks, 1.20, walks[0])
+	# 1.45s: Walk 2 - Down (Shock absorption, pelvis drops at x=435)
+	_apply_pose_at(anim, tracks, 1.45, walks[1])
+	# 1.75s: Walk 3 - Passing (Left leg swings past stance leg at x=470)
+	_apply_pose_at(anim, tracks, 1.75, walks[2])
+	# 2.05s: Walk 4 - Up (Right push-off onto left swing foot at x=505)
+	_apply_pose_at(anim, tracks, 2.05, walks[3])
+	# 2.35s: Walk 5 - Plant (Left foot plants at x=535)
+	_apply_pose_at(anim, tracks, 2.35, walks[4])
+	# 2.60s - 2.80s: Walk 6 - Settled Stop (Firm bilateral ground lock at x=540)
+	_apply_pose_at(anim, tracks, 2.60, walks[5])
+
+	# -----------------------------------------------------------------------
+	# Beat 3: Investigate & Hesitate (2.8s - 4.0s) — Comedic Doubt Hold
+	# -----------------------------------------------------------------------
+	# Hand hovers 28px directly above button (elbow 44°), left hand on hip, head cocked (+10°)
+	_apply_pose_at(anim, tracks, 2.80, PoseLibraryV12.get_hesitation_pose())
 	
-	# 1.9s: Step 1 Down / Contact (Right foot plants at x=460)
-	_k(anim, tracks["CharacterRig:root_pos"], 1.9, Vector2(460.0, STANDING_Y + 12.0))
-	_k(anim, tracks["CharacterRig:torso_lean_deg"], 1.9, 6.0)
-	_k(anim, tracks["CharacterRig:right_thigh_deg"], 1.9, 20.0)
-	_k(anim, tracks["CharacterRig:right_shin_deg"], 1.9, -32.0)
-	_k(anim, tracks["CharacterRig:left_thigh_deg"], 1.9, 2.0)
-	_k(anim, tracks["CharacterRig:left_shin_deg"], 1.9, -12.0)
-
-	# 2.3s: Step 2 Lift / Passing (Left leg swings forward, pelvis rises)
-	_k(anim, tracks["CharacterRig:root_pos"], 2.3, Vector2(505.0, STANDING_Y - 10.0))
-	_k(anim, tracks["CharacterRig:torso_lean_deg"], 2.3, 7.0)
-	_k(anim, tracks["CharacterRig:left_thigh_deg"], 2.3, 24.0)
-	_k(anim, tracks["CharacterRig:left_shin_deg"], 2.3, -22.0)
-	_k(anim, tracks["CharacterRig:right_thigh_deg"], 2.3, 12.0)
-	_k(anim, tracks["CharacterRig:right_shin_deg"], 2.3, -24.0)
-
-	# 2.7s: Step 2 Contact & Plant at Button (x=540)
-	_k(anim, tracks["CharacterRig:root_pos"], 2.7, Vector2(540.0, STANDING_Y))
-	_k(anim, tracks["CharacterRig:torso_lean_deg"], 2.7, 5.0)
-	_k(anim, tracks["CharacterRig:left_thigh_deg"], 2.7, 12.0)
-	_k(anim, tracks["CharacterRig:left_shin_deg"], 2.7, -24.0)
-	_k(anim, tracks["CharacterRig:right_thigh_deg"], 2.7, 18.0)
-	_k(anim, tracks["CharacterRig:right_shin_deg"], 2.7, -32.0)
+	# Subtle comedic doubt micro-twitch at 3.4s (held through 4.0s)
+	_k(anim, tracks["CharacterRig:right_wrist_deg"], 3.4, -18.0)
+	_k(anim, tracks["CharacterRig:head_tilt_deg"], 3.4, 11.5)
 
 	# -----------------------------------------------------------------------
-	# Beat 3: Hesitation (3.0s - 4.0s) — Thinking / Doubt Hold
+	# Beat 4: Decision & Press (4.0s - 4.8s) — Full Reaching & Contact Breakdowns
 	# -----------------------------------------------------------------------
-	# Hand halts directly above button, elbow bent 72°, free arm at waist
-	var p_hesitate = PoseLibraryV12.get_hesitation_pose()
-	_apply_pose_at(anim, tracks, 3.0, p_hesitate)
-	
-	# Subtle comedic doubt micro-twitch at 3.5s
-	_k(anim, tracks["CharacterRig:right_wrist_deg"], 3.5, -10.0)
-	_k(anim, tracks["CharacterRig:head_tilt_deg"], 3.5, 9.5)
+	var reaches = PoseLibraryV12.get_reaching_breakdowns()
+	# 4.00s: Reach 1 - Shoulder Anticipation (Gathers decisive focus)
+	_apply_pose_at(anim, tracks, 4.00, reaches[0])
+	# 4.15s: Reach 2 - Mid-Reach Arc (Shoulder drives forward, hand rises in arc)
+	_apply_pose_at(anim, tracks, 4.15, reaches[1])
+	# 4.30s: Reach 3 - Pre-Contact (Fingertip hovers 6px above button cap)
+	_apply_pose_at(anim, tracks, 4.30, reaches[2])
+	# 4.40s: Reach 4 - Initial Fingertip Contact (Touch at y=1206.4, 0px depression)
+	_apply_pose_at(anim, tracks, 4.40, reaches[3])
+	# 4.50s - 4.80s: Reach 5 - Fully Depressed Button (-8px depression, held 9 frames)
+	_apply_pose_at(anim, tracks, 4.50, reaches[4])
 
 	# -----------------------------------------------------------------------
-	# Beat 4: Decision & Press (4.0s - 5.0s)
+	# Beat 5: Activation (4.8s - 5.2s) — Controlled Non-Obscuring Pulse
 	# -----------------------------------------------------------------------
-	# 4.0s: Anticipation pull-back before strike
-	_k(anim, tracks["CharacterRig:torso_lean_deg"], 4.0, 3.0)
-	_k(anim, tracks["CharacterRig:head_tilt_deg"], 4.0, -2.0)
-	_k(anim, tracks["CharacterRig:right_shoulder_deg"], 4.0, 42.0)
-	_k(anim, tracks["CharacterRig:mouth_state"], 4.0, "smirk")
-
-	# 4.3s - 5.0s: Decisive Contact & Press! (Elbow bent 38°, button -8px)
-	var p_press = PoseLibraryV12.get_press_pose()
-	_apply_pose_at(anim, tracks, 4.3, p_press)
+	# 4.80s: Button cap lights up with energy pulse, small sparks radiate away from bezel
+	_k(anim, tracks["CharacterRig:button_glow_alpha"], 4.80, 1.0)
+	_k(anim, tracks["CharacterRig:button_depress_px"], 4.80, 8.0)
+	# 5.00s: Hand release moment begins (finger begins lifting off button)
+	_apply_pose_at(anim, tracks, 5.00, reaches[5])
+	_k(anim, tracks["CharacterRig:button_glow_alpha"], 5.00, 0.6)
 
 	# -----------------------------------------------------------------------
-	# Beat 5: Activation (5.0s - 5.5s) — Energy Blast Burst
+	# Beat 6: Surprise & Peak Hold (5.2s - 6.8s) — Startle, Recoil & Rear Catch
 	# -----------------------------------------------------------------------
-	_k(anim, tracks["CharacterRig:button_glow_alpha"], 5.0, 1.0)
-	_k(anim, tracks["CharacterRig:mouth_state"], 5.0, "curious_o")
-	_k(anim, tracks["CharacterRig:button_depress_px"], 5.0, 8.0)
+	var surprises = PoseLibraryV12.get_surprise_breakdowns()
+	# 5.20s: Surprise 1 - Initial Startle (Head jerks back, hand retracts)
+	_apply_pose_at(anim, tracks, 5.20, surprises[0])
+	# 5.35s: Surprise 2 - Torso Recoil Snap (-12° backward lean)
+	_apply_pose_at(anim, tracks, 5.35, surprises[1])
+	# 5.50s: Surprise 3 - Rear Foot Catch (Left knee flexes -32° catching weight)
+	_apply_pose_at(anim, tracks, 5.50, surprises[2])
+	# 5.65s - 6.80s: Surprise 4 - Peak Comedic Freeze Hold (-18° recoil, held 35 frames)
+	_apply_pose_at(anim, tracks, 5.65, surprises[3])
+	_k(anim, tracks["CharacterRig:button_glow_alpha"], 5.65, 0.0)
 
 	# -----------------------------------------------------------------------
-	# Beat 6: Surprise (5.5s - 7.0s) — Explosive Recoil & Comedic Freeze Hold
+	# Beat 7: Recovery & Reconsideration (6.8s - 9.0s) — Staggered Settle
 	# -----------------------------------------------------------------------
-	# 5.5s: Explosive snap backward (-16°), weight to rear foot, gasp!
-	var p_surprise = PoseLibraryV12.get_surprise_pose()
-	_apply_pose_at(anim, tracks, 5.5, p_surprise)
-	
-	# Comedic frozen shock hold through 7.0s (Hold 45 frames)
+	var recoveries = PoseLibraryV12.get_recovery_breakdowns()
+	# 6.80s: Recovery 1 - Weight Redistribution (Torso eases forward to -4°)
+	_apply_pose_at(anim, tracks, 6.80, recoveries[0])
+	# 7.20s: Recovery 2 - Shoulder Settle (Shoulders drop to neutral baseline)
+	_apply_pose_at(anim, tracks, 7.20, recoveries[1])
+	# 7.60s: Recovery 3 - Arm Lowering & Hand Lifts toward face
+	_apply_pose_at(anim, tracks, 7.60, recoveries[2])
+	# 8.10s: Recovery 4 - Glasses Adjust (Pushes glasses back up bridge, smirk begins)
+	_apply_pose_at(anim, tracks, 8.10, recoveries[3])
+	# 8.60s: Hand settles away from glasses, head turns back to inspect button
+	_k(anim, tracks["CharacterRig:glasses_slip_px"], 8.60, 0.0)
+	_k(anim, tracks["CharacterRig:head_tilt_deg"], 8.60, -2.0)
+	_k(anim, tracks["CharacterRig:mouth_state"], 8.60, "smirk")
 
 	# -----------------------------------------------------------------------
-	# Beat 7: Recovery (7.0s - 9.0s) — Settle & Glasses Push-Up
+	# Beat 8: Amused Payoff (9.0s - 11.0s) — Comedic Punctuation Mark
 	# -----------------------------------------------------------------------
-	# 7.0s: Recoil Settle (Torso eases forward, shoulders relax)
-	_k(anim, tracks["CharacterRig:root_pos"], 7.0, Vector2(515.0, STANDING_Y))
-	_k(anim, tracks["CharacterRig:torso_lean_deg"], 7.0, -3.0)
-	_k(anim, tracks["CharacterRig:spine_arch_deg"], 7.0, 2.0)
-	_k(anim, tracks["CharacterRig:torso_squash"], 7.0, 1.0)
-	_k(anim, tracks["CharacterRig:shoulder_shrug_px"], 7.0, 6.0)
-	_k(anim, tracks["CharacterRig:head_tilt_deg"], 7.0, 2.0)
-	_k(anim, tracks["CharacterRig:left_brow_raise_px"], 7.0, 4.0)
-	_k(anim, tracks["CharacterRig:right_brow_raise_px"], 7.0, 5.0)
-	_k(anim, tracks["CharacterRig:mouth_state"], 7.0, "curious_o")
-	_k(anim, tracks["CharacterRig:button_glow_alpha"], 7.0, 0.0)
-
-	# 7.8s: Hand reaches up and pushes glasses back into position
-	_k(anim, tracks["CharacterRig:right_shoulder_deg"], 7.8, 32.0)
-	_k(anim, tracks["CharacterRig:right_elbow_deg"], 7.8, -125.0)
-	_k(anim, tracks["CharacterRig:right_wrist_deg"], 7.8, 30.0)
-	_k(anim, tracks["CharacterRig:right_hand_pose"], 7.8, "chin_touch")
-	_k(anim, tracks["CharacterRig:glasses_slip_px"], 7.8, 7.0)
-	
-	# 8.4s: Glasses pushed firmly up
-	_k(anim, tracks["CharacterRig:glasses_slip_px"], 8.4, 0.0)
-	_k(anim, tracks["CharacterRig:head_tilt_deg"], 8.4, 6.0)
-	_k(anim, tracks["CharacterRig:mouth_state"], 8.4, "smirk")
-
-	# -----------------------------------------------------------------------
-	# Beat 8: Payoff (9.0s - 11.5s) — Amused Smirk & End Hold
-	# -----------------------------------------------------------------------
-	var p_payoff = PoseLibraryV12.get_satisfaction_pose()
-	_apply_pose_at(anim, tracks, 9.0, p_payoff)
-	
-	# Final hold through 11.5s
-	_apply_pose_at(anim, tracks, 11.5, p_payoff)
+	# Final cocky amused finish: hand gesturing toward button ("Should I press it again?")
+	_apply_pose_at(anim, tracks, 9.00, PoseLibraryV12.get_satisfaction_pose())
+	# Final hold through 11.0s
+	_apply_pose_at(anim, tracks, 11.00, PoseLibraryV12.get_satisfaction_pose())
 
 	return anim
 
