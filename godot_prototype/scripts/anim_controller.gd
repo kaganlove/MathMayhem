@@ -25,6 +25,7 @@ const AnimationBuilderV12 = preload("res://scripts/animation_builder_v12.gd")
 var anim_player: AnimationPlayer = null
 
 const CLIP_DURATIONS: Dictionary = {
+	"v12_master": 11.0,
 	"v12_six_poses": 6.0,
 	"v12_breakdowns": 22.0,
 	"v12_stepped_blocking": 11.0,
@@ -60,16 +61,19 @@ func _setup_animation_player() -> void:
 	var master_anim = AnimationBuilder.create_mysterious_button_animation(false)
 	var stepped_anim = AnimationBuilder.create_mysterious_button_animation(true)
 	var v12_stepped = AnimationBuilderV12.create_v12_animation(true)
+	var v12_master = AnimationBuilderV12.create_v12_master_animation()
 	
 	lib.add_animation("mysterious_button", master_anim)
 	lib.add_animation("mysterious_button_stepped", stepped_anim)
 	lib.add_animation("v12_stepped_blocking", v12_stepped)
+	lib.add_animation("v12_master", v12_master)
 	anim_player.add_animation_library("", lib)
 	
 	# Save reusable resources to disk (Milestone 7 & v12)
 	ResourceSaver.save(master_anim, "res://animations/mysterious_button_master.res")
 	ResourceSaver.save(stepped_anim, "res://animations/mysterious_button_stepped.res")
 	ResourceSaver.save(v12_stepped, "res://animations/mysterious_button_v12_stepped.res")
+	ResourceSaver.save(v12_master, "res://animations/mysterious_button_v12_master.res")
 
 func set_clip(clip_name: String) -> void:
 	active_clip = clip_name
@@ -80,7 +84,9 @@ func evaluate_at(t: float) -> void:
 	if rig == null:
 		return
 		
-	if active_clip == "v12_six_poses":
+	if active_clip == "v12_master":
+		_evaluate_v12_master(t)
+	elif active_clip == "v12_six_poses":
 		_evaluate_v12_six_poses(t)
 	elif active_clip == "v12_breakdowns":
 		_evaluate_v12_breakdowns(t)
@@ -192,6 +198,57 @@ func _evaluate_v12_stepped_blocking(t: float) -> void:
 		label = "Beat 7: Recovery (Weight shift, shoulder settle, glasses push-up)"
 	else:
 		label = "Beat 8: Amused Payoff (Smirk, intentional button gesture)"
+		
+	if debug_overlay != null:
+		debug_overlay.set("current_action_label", label)
+		var left_plant: bool = true
+		var right_plant: bool = true
+		if t >= 1.2 and t < 2.6:
+			var step_t = t - 1.2
+			if step_t < 0.25:
+				right_plant = false
+			elif step_t < 0.55:
+				left_plant = false
+			elif step_t < 0.85:
+				right_plant = false
+			elif step_t < 1.15:
+				left_plant = false
+		elif t >= 5.2 and t < 5.65:
+			# During explosive recoil snap, right foot kicks forward (unweighted)
+			right_plant = false
+		debug_overlay.set("left_foot_planted", left_plant)
+		debug_overlay.set("right_foot_planted", right_plant)
+
+func _evaluate_v12_master(t: float) -> void:
+	_setup_animation_player()
+	anim_player.play("v12_master")
+	anim_player.seek(t, true)
+	
+	var label: String
+	if t < 0.45:
+		label = "Beat 1: Tall Neutral Idle (Living breathing)"
+	elif t < 1.20:
+		label = "Beat 1: Curious Notice (Eyebrow & head lead, body follows, overshoot & hold)"
+	elif t < 2.60:
+		label = "Beat 2: Splined Approach (6-phase walk, vertical bobbing, deceleration)"
+	elif t < 4.00:
+		label = "Beat 3: Hesitation & Doubt (Hand hovers 28px above button, doubt hold)"
+	elif t < 4.40:
+		label = "Beat 4: Decision & Commit (Anticipation pull, clavicle & shoulder drive)"
+	elif t < 4.80:
+		label = "Beat 4: Physical Button Press (Contact at y=1206.4, -8px depression hold)"
+	elif t < 5.20:
+		label = "Beat 5: Activation (Energy pulse, shockwave ring, hand release)"
+	elif t < 5.65:
+		label = "Beat 6: Surprise Recoil Snap (-20° overshoot, hair lag -34°, rear foot catch)"
+	elif t < 6.80:
+		label = "Beat 6: Surprise Peak Hold (-18° recoil, slipped glasses, open gasp hold)"
+	elif t < 8.35:
+		label = "Beat 7: Recovery & Glasses Push (Shoulder settle, hand to bridge, bounce)"
+	elif t < 9.00:
+		label = "Beat 7: Smirk Emergence (Glasses settled, asymmetric smirk, inspect button)"
+	else:
+		label = "Beat 8: Amused Payoff (Cocky -2° ease, button gesture, amused final hold)"
 		
 	if debug_overlay != null:
 		debug_overlay.set("current_action_label", label)

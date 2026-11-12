@@ -84,7 +84,7 @@ def test_v12_blueprint_movement_mechanics():
 
 
 def test_v12_deliverables_exist_and_non_empty():
-    """Verify all requested Phase 2 deliverables exist and exceed size thresholds."""
+    """Verify all requested Phase 2, 3 & 4 deliverables exist and exceed size thresholds."""
     deliverables = [
         RENDERS_DIR / "godot_v12_stepped_blocking_preview.mp4",
         RENDERS_DIR / "godot_v12_key_pose_sheet.png",
@@ -92,6 +92,10 @@ def test_v12_deliverables_exist_and_non_empty():
         RENDERS_DIR / "godot_v12_storyboard_sheet.png",
         RENDERS_DIR / "godot_v12_contact_verification.png",
         RENDERS_DIR / "godot_v12_balance_verification.png",
+        RENDERS_DIR / "godot_v12_mysterious_button_clean.mp4",
+        RENDERS_DIR / "godot_v12_mysterious_button_debug.mp4",
+        RENDERS_DIR / "godot_v12_comparison_v11_vs_v12.mp4",
+        RENDERS_DIR / "godot_v12_master_contact_sheet.png",
     ]
 
     for p in deliverables:
