@@ -489,7 +489,7 @@ def evaluate_ep001_full_24s_character_state(
             scale=s,
             facing=1,
             yaw_factor=_lerp(0.20, 0.22, step_in_p),
-            torso_lean_deg=_lerp(-6.0, 7.5, step_in_p),
+            torso_lean_deg=_lerp(-6.0, _lerp(7.5, 16.5, reach_dist_x), step_in_p),
             spine_arch_deg=_lerp(-10.0, 8.0, step_in_p),
             shoulder_shrug_px=9.0 * (1.0 - relief_p),
             head_tilt_deg=_lerp(-10.0, 3.0, step_in_p),
@@ -512,7 +512,7 @@ def evaluate_ep001_full_24s_character_state(
             right_brow_raise_px=_lerp(10.0, 6.5, relief_p),
             brow_slant_deg=_lerp(11.0, 0.0, relief_p),
             mouth_state="smirk" if relief_p > 0.5 else "firm",
-            right_shoulder_protract_px=_lerp(12.0, 32.0, reach_dist_x),
+            right_shoulder_protract_px=_lerp(4.0, 8.0, reach_dist_x),
             obstacle_boxes=obs_boxes,
         )
 
@@ -540,7 +540,7 @@ def evaluate_ep001_full_24s_character_state(
             scale=s,
             facing=1,
             yaw_factor=0.22,
-            torso_lean_deg=_lerp(7.5, 9.0, reach_dist_x),
+            torso_lean_deg=_lerp(7.5, 16.5, reach_dist_x),
             spine_arch_deg=_lerp(8.0, 10.0, reach_dist_x),
             head_tilt_deg=4.0,
             head_nod_px=2.0,
@@ -559,7 +559,7 @@ def evaluate_ep001_full_24s_character_state(
             right_brow_raise_px=8.5,
             brow_slant_deg=-5.0,
             mouth_state="smirk",
-            right_shoulder_protract_px=_lerp(12.0, 35.0, reach_dist_x),
+            right_shoulder_protract_px=_lerp(4.0, 8.0, reach_dist_x),
             obstacle_boxes=obs_boxes,
         )
 

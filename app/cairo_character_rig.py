@@ -254,7 +254,7 @@ def solve_cairo_anatomy(spec: OptionCCharacterSpec, state: CairoRigState) -> Sol
 
     left_hip: Point = (pelvis[0] - hip_dx, pelvis[1])
     right_hip: Point = (pelvis[0] + hip_dx, pelvis[1])
-    protract_dx = max(-18.0, min(36.0, state.right_shoulder_protract_px)) * s * state.facing
+    protract_dx = max(-6.0, min(6.0, state.right_shoulder_protract_px)) * s * state.facing
     left_shoulder: Point = (shoulder_center[0] - sh_dx, shoulder_center[1] + 4.0 * s)
     right_shoulder: Point = (shoulder_center[0] + sh_dx + protract_dx, shoulder_center[1] + 4.0 * s)
 
@@ -343,58 +343,6 @@ def _set_ink(ctx: cairo.Context, rgb: Tuple[float, float, float] = (0.06, 0.08, 
     ctx.set_line_join(cairo.LINE_JOIN_ROUND)
 
 
-def _draw_tapered_segment(
-    ctx: cairo.Context,
-    p0: Point,
-    p1: Point,
-    w0: float,
-    w1: float,
-    fill_rgb: Tuple[float, float, float] = (0.07, 0.09, 0.14),
-) -> None:
-    """Draw a straight tapered bone segment between p0 and p1 with round end caps."""
-    dx = p1[0] - p0[0]
-    dy = p1[1] - p0[1]
-    length = max(1e-5, math.hypot(dx, dy))
-    nx, ny = -dy / length, dx / length
-    hw0 = w0 * 0.5
-    hw1 = w1 * 0.5
-
-    ctx.new_path()
-    ctx.move_to(p0[0] + nx * hw0, p0[1] + ny * hw0)
-    ctx.line_to(p1[0] + nx * hw1, p1[1] + ny * hw1)
-    ctx.line_to(p1[0] - nx * hw1, p1[1] - ny * hw1)
-    ctx.line_to(p0[0] - nx * hw0, p0[1] - ny * hw0)
-    ctx.close_path()
-    ctx.set_source_rgb(*fill_rgb)
-    ctx.fill()
-
-    for pt, dia in ((p0, w0), (p1, w1)):
-        ctx.arc(pt[0], pt[1], dia * 0.5, 0, 2 * math.pi)
-        ctx.set_source_rgb(*fill_rgb)
-        ctx.fill()
-
-
-def _draw_articulated_limb(
-    ctx: cairo.Context,
-    p0: Point,
-    p1: Point,
-    p2: Point,
-    w_start: float,
-    w_mid: float,
-    w_end: float,
-    fill_rgb: Tuple[float, float, float] = (0.07, 0.09, 0.14),
-) -> None:
-    """Draw an articulated 2-bone limb (p0 -> p1 -> p2) with constant segment geometry and round hinge cap at p1."""
-    # Segment 1: Upper segment (p0 -> p1)
-    _draw_tapered_segment(ctx, p0, p1, w_start, w_mid, fill_rgb=fill_rgb)
-    # Segment 2: Lower segment (p1 -> p2)
-    _draw_tapered_segment(ctx, p1, p2, w_mid, w_end, fill_rgb=fill_rgb)
-    # Joint disk at p1 ensuring continuous volume
-    ctx.arc(p1[0], p1[1], w_mid * 0.5, 0, 2 * math.pi)
-    ctx.set_source_rgb(*fill_rgb)
-    ctx.fill()
-
-
 def _draw_tapered_limb(
     ctx: cairo.Context,
     p0: Point,
@@ -405,13 +353,13 @@ def _draw_tapered_limb(
     w_end: float,
     fill_rgb: Tuple[float, float, float] = (0.07, 0.09, 0.14),
 ) -> None:
-    """Draw a smooth variable-width tapered limb curve passing from `p0` through joint `p1` to `p2`."""
+    """Draw a smooth variable-width tapered limb curve passing organically through joint `p1` to `p2`."""
     steps = 26
     left_edge: List[Point] = []
     right_edge: List[Point] = []
     ctrl: Point = (
-        1.15 * p1[0] - 0.075 * (p0[0] + p2[0]),
-        1.15 * p1[1] - 0.075 * (p0[1] + p2[1]),
+        2.0 * p1[0] - 0.5 * (p0[0] + p2[0]),
+        2.0 * p1[1] - 0.5 * (p0[1] + p2[1]),
     )
     for i in range(steps + 1):
         t = i / float(steps)
@@ -441,7 +389,7 @@ def _draw_tapered_limb(
     ctx.set_source_rgb(*fill_rgb)
     ctx.fill()
 
-    for pt, dia in ((p0, w_start), (p1, w_mid), (p2, w_end)):
+    for pt, dia in ((p0, w_start), (p2, w_end)):
         ctx.arc(pt[0], pt[1], dia * 0.5, 0, 2 * math.pi)
         ctx.set_source_rgb(*fill_rgb)
         ctx.fill()
@@ -481,11 +429,6 @@ def _draw_boot(
     ctx.fill_preserve()
     _set_ink(ctx, (0.05, 0.06, 0.10), 4.8)
     ctx.stroke()
-
-    # Ankle joint disk ensuring clean connection to lower shin
-    ctx.arc(0.0, 0.0, 6.0, 0, 2 * math.pi)
-    ctx.set_source_rgb(0.07, 0.09, 0.14)
-    ctx.fill()
     ctx.restore()
 
 
@@ -534,8 +477,8 @@ def draw_option_c_character(
     arm_w = tuple(w * s for w in spec.arm_widths)
     spine_w = tuple(w * s for w in spec.spine_widths)
 
-    # 2. Back Leg & Back Arm (Hierarchical Articulated 2-Bone Limbs)
-    _draw_articulated_limb(ctx, anat.left_hip, anat.left_knee, anat.left_ankle, *leg_w)
+    # 2. Back Leg & Back Arm (Smooth Cairo Curved Limbs)
+    _draw_tapered_limb(ctx, anat.left_hip, anat.left_knee, anat.left_ankle, *leg_w)
     _draw_boot(
         ctx,
         anat.left_ankle,
@@ -545,9 +488,8 @@ def draw_option_c_character(
         height=spec.ankle_height * s,
     )
 
-    # Back Clavicle and Arm
-    _draw_tapered_segment(ctx, anat.shoulder_center, anat.left_shoulder, spine_w[0] * 0.70, arm_w[0])
-    _draw_articulated_limb(ctx, anat.left_shoulder, anat.left_elbow, anat.left_wrist, *arm_w)
+    # Back Arm
+    _draw_tapered_limb(ctx, anat.left_shoulder, anat.left_elbow, anat.left_wrist, *arm_w)
     _draw_hand(ctx, anat.left_wrist, angle_deg=state.left_hand_angle_deg, scale=s, pose=state.left_hand_pose)
 
     # 3. Tapered S/C-Curve Spine & Neck (Option C)
@@ -562,8 +504,8 @@ def draw_option_c_character(
         leg_w[2],
     )
 
-    # 4. Front Leg (Hierarchical Articulated 2-Bone Limb)
-    _draw_articulated_limb(ctx, anat.right_hip, anat.right_knee, anat.right_ankle, *leg_w)
+    # 4. Front Leg (Smooth Cairo Curved Limb)
+    _draw_tapered_limb(ctx, anat.right_hip, anat.right_knee, anat.right_ankle, *leg_w)
     _draw_boot(
         ctx,
         anat.right_ankle,
@@ -708,23 +650,16 @@ def draw_option_c_character(
     _set_ink(ctx, ink, outline_w * 0.90)
     ctx.stroke()
 
-    # 5e. Blank Rectangular Glasses (NO pupils) + Expressive Eyebrows — Locked to unified facial nod
+    # 5e. Blank Rectangular Glasses (NO pupils) + Expressive Eyebrows — Symmetric canonical geometry
     lens_y = -head_r * 0.16 + nod_y + state.glasses_slip_px * s
     lens_h = head_r * 0.42
-    abs_yaw = abs(state.yaw_factor)
-    if abs_yaw < 0.08:
-        left_w = head_r * 0.60
-        right_w = head_r * 0.60
-    elif state.yaw_factor >= 0:
-        left_w = head_r * max(0.36, 0.62 - abs_yaw * 0.55)
-        right_w = head_r * 0.64
-    else:
-        left_w = head_r * 0.64
-        right_w = head_r * max(0.36, 0.62 - abs_yaw * 0.55)
-    bridge_gap = head_r * (0.12 if abs_yaw < 0.30 else 0.09)
+    lens_w = head_r * 0.58  # Canonical symmetric lens width: strictly equal for left and right eyes
+    left_w = lens_w
+    right_w = lens_w
+    bridge_gap = head_r * 0.10
 
-    lx = yaw_px * 0.62 - bridge_gap * 0.5 - left_w
-    rx = yaw_px * 0.62 + bridge_gap * 0.5
+    lx = yaw_px * 0.45 - bridge_gap * 0.5 - left_w
+    rx = yaw_px * 0.45 + bridge_gap * 0.5
 
     # Temple arms (both sides visible in front view; back temple visible in 3/4 and side views)
     ctx.new_path()
@@ -770,9 +705,8 @@ def draw_option_c_character(
 
     ctx.restore()
 
-    # 6. Front Arm & Hand (drawn in front of torso/head so glasses adjustment & reaches read cleanly in foreground)
-    _draw_tapered_segment(ctx, anat.shoulder_center, anat.right_shoulder, spine_w[0] * 0.70, arm_w[0])
-    _draw_articulated_limb(ctx, anat.right_shoulder, anat.right_elbow, anat.right_wrist, *arm_w)
+    # 6. Front Arm & Hand (Smooth Cairo Curved Limb)
+    _draw_tapered_limb(ctx, anat.right_shoulder, anat.right_elbow, anat.right_wrist, *arm_w)
     _draw_hand(ctx, anat.right_wrist, angle_deg=state.right_hand_angle_deg, scale=s, pose=state.right_hand_pose)
 
     return anat
