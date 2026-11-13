@@ -343,6 +343,58 @@ def _set_ink(ctx: cairo.Context, rgb: Tuple[float, float, float] = (0.06, 0.08, 
     ctx.set_line_join(cairo.LINE_JOIN_ROUND)
 
 
+def _draw_tapered_segment(
+    ctx: cairo.Context,
+    p0: Point,
+    p1: Point,
+    w0: float,
+    w1: float,
+    fill_rgb: Tuple[float, float, float] = (0.07, 0.09, 0.14),
+) -> None:
+    """Draw a straight tapered bone segment between p0 and p1 with round end caps."""
+    dx = p1[0] - p0[0]
+    dy = p1[1] - p0[1]
+    length = max(1e-5, math.hypot(dx, dy))
+    nx, ny = -dy / length, dx / length
+    hw0 = w0 * 0.5
+    hw1 = w1 * 0.5
+
+    ctx.new_path()
+    ctx.move_to(p0[0] + nx * hw0, p0[1] + ny * hw0)
+    ctx.line_to(p1[0] + nx * hw1, p1[1] + ny * hw1)
+    ctx.line_to(p1[0] - nx * hw1, p1[1] - ny * hw1)
+    ctx.line_to(p0[0] - nx * hw0, p0[1] - ny * hw0)
+    ctx.close_path()
+    ctx.set_source_rgb(*fill_rgb)
+    ctx.fill()
+
+    for pt, dia in ((p0, w0), (p1, w1)):
+        ctx.arc(pt[0], pt[1], dia * 0.5, 0, 2 * math.pi)
+        ctx.set_source_rgb(*fill_rgb)
+        ctx.fill()
+
+
+def _draw_articulated_limb(
+    ctx: cairo.Context,
+    p0: Point,
+    p1: Point,
+    p2: Point,
+    w_start: float,
+    w_mid: float,
+    w_end: float,
+    fill_rgb: Tuple[float, float, float] = (0.07, 0.09, 0.14),
+) -> None:
+    """Draw an articulated 2-bone limb (p0 -> p1 -> p2) with constant segment geometry and round hinge cap at p1."""
+    # Segment 1: Upper segment (p0 -> p1)
+    _draw_tapered_segment(ctx, p0, p1, w_start, w_mid, fill_rgb=fill_rgb)
+    # Segment 2: Lower segment (p1 -> p2)
+    _draw_tapered_segment(ctx, p1, p2, w_mid, w_end, fill_rgb=fill_rgb)
+    # Joint disk at p1 ensuring continuous volume
+    ctx.arc(p1[0], p1[1], w_mid * 0.5, 0, 2 * math.pi)
+    ctx.set_source_rgb(*fill_rgb)
+    ctx.fill()
+
+
 def _draw_tapered_limb(
     ctx: cairo.Context,
     p0: Point,
@@ -389,7 +441,7 @@ def _draw_tapered_limb(
     ctx.set_source_rgb(*fill_rgb)
     ctx.fill()
 
-    for pt, dia in ((p0, w_start), (p2, w_end)):
+    for pt, dia in ((p0, w_start), (p1, w_mid), (p2, w_end)):
         ctx.arc(pt[0], pt[1], dia * 0.5, 0, 2 * math.pi)
         ctx.set_source_rgb(*fill_rgb)
         ctx.fill()
@@ -429,6 +481,11 @@ def _draw_boot(
     ctx.fill_preserve()
     _set_ink(ctx, (0.05, 0.06, 0.10), 4.8)
     ctx.stroke()
+
+    # Ankle joint disk ensuring clean connection to lower shin
+    ctx.arc(0.0, 0.0, 6.0, 0, 2 * math.pi)
+    ctx.set_source_rgb(0.07, 0.09, 0.14)
+    ctx.fill()
     ctx.restore()
 
 
@@ -477,8 +534,8 @@ def draw_option_c_character(
     arm_w = tuple(w * s for w in spec.arm_widths)
     spine_w = tuple(w * s for w in spec.spine_widths)
 
-    # 2. Back Leg & Back Arm
-    _draw_tapered_limb(ctx, anat.left_hip, anat.left_knee, anat.left_ankle, *leg_w)
+    # 2. Back Leg & Back Arm (Hierarchical Articulated 2-Bone Limbs)
+    _draw_articulated_limb(ctx, anat.left_hip, anat.left_knee, anat.left_ankle, *leg_w)
     _draw_boot(
         ctx,
         anat.left_ankle,
@@ -488,7 +545,9 @@ def draw_option_c_character(
         height=spec.ankle_height * s,
     )
 
-    _draw_tapered_limb(ctx, anat.left_shoulder, anat.left_elbow, anat.left_wrist, *arm_w)
+    # Back Clavicle and Arm
+    _draw_tapered_segment(ctx, anat.shoulder_center, anat.left_shoulder, spine_w[0] * 0.70, arm_w[0])
+    _draw_articulated_limb(ctx, anat.left_shoulder, anat.left_elbow, anat.left_wrist, *arm_w)
     _draw_hand(ctx, anat.left_wrist, angle_deg=state.left_hand_angle_deg, scale=s, pose=state.left_hand_pose)
 
     # 3. Tapered S/C-Curve Spine & Neck (Option C)
@@ -503,8 +562,8 @@ def draw_option_c_character(
         leg_w[2],
     )
 
-    # 4. Front Leg
-    _draw_tapered_limb(ctx, anat.right_hip, anat.right_knee, anat.right_ankle, *leg_w)
+    # 4. Front Leg (Hierarchical Articulated 2-Bone Limb)
+    _draw_articulated_limb(ctx, anat.right_hip, anat.right_knee, anat.right_ankle, *leg_w)
     _draw_boot(
         ctx,
         anat.right_ankle,
@@ -518,7 +577,8 @@ def draw_option_c_character(
     head_r = spec.head_radius * s
     hx, hy = anat.head_center
     yaw_px = head_r * state.yaw_factor
-    nod_y = state.head_nod_px * s
+    # Unified facial nod offset: ensures beard, mouth, and glasses move together without differential drift
+    nod_y = state.head_nod_px * s * 0.42
 
     ctx.save()
     ctx.translate(hx, hy)
@@ -534,16 +594,16 @@ def draw_option_c_character(
     _set_ink(ctx, ink, outline_w)
     ctx.stroke()
 
-    # 5b. Short Contoured Beard (Lower 30% Jaw/Chin)
+    # 5b. Short Contoured Beard (Lower 30% Jaw/Chin) — Locked to unified facial nod
     ctx.new_path()
-    ctx.move_to(-head_r * 0.88 + yaw_px * 0.10, head_r * 0.34 + nod_y * 0.3)
+    ctx.move_to(-head_r * 0.88 + yaw_px * 0.10, head_r * 0.34 + nod_y)
     ctx.curve_to(
         -head_r * 0.45 + yaw_px * 0.25,
-        head_r * 0.66 + nod_y * 0.4,
+        head_r * 0.66 + nod_y,
         head_r * 0.48 + yaw_px * 0.25,
-        head_r * 0.66 + nod_y * 0.4,
+        head_r * 0.66 + nod_y,
         head_r * 0.90 + yaw_px * 0.08,
-        head_r * 0.32 + nod_y * 0.3,
+        head_r * 0.32 + nod_y,
     )
     ctx.curve_to(
         head_r * 0.78 + yaw_px * 0.15,
@@ -559,7 +619,7 @@ def draw_option_c_character(
         -head_r * 0.78 + yaw_px * 0.08,
         head_r * 0.86,
         -head_r * 0.88 + yaw_px * 0.10,
-        head_r * 0.34 + nod_y * 0.3,
+        head_r * 0.34 + nod_y,
     )
     ctx.close_path()
     ctx.set_source_rgb(*beard_fill)
@@ -569,7 +629,7 @@ def draw_option_c_character(
 
     # 5c. Expressive Mouth Shapes above the Beard Contour (Silent Acting)
     mx = yaw_px * 0.38
-    my = head_r * 0.46 + nod_y * 0.45
+    my = head_r * 0.46 + nod_y
     if state.mouth_state == "curious_o":
         ctx.save()
         ctx.translate(mx, my)
@@ -648,8 +708,8 @@ def draw_option_c_character(
     _set_ink(ctx, ink, outline_w * 0.90)
     ctx.stroke()
 
-    # 5e. Blank Rectangular Glasses (NO pupils) + Expressive Eyebrows
-    lens_y = -head_r * 0.16 + nod_y * 0.55 + state.glasses_slip_px * s
+    # 5e. Blank Rectangular Glasses (NO pupils) + Expressive Eyebrows — Locked to unified facial nod
+    lens_y = -head_r * 0.16 + nod_y + state.glasses_slip_px * s
     lens_h = head_r * 0.42
     abs_yaw = abs(state.yaw_factor)
     if abs_yaw < 0.08:
@@ -711,7 +771,8 @@ def draw_option_c_character(
     ctx.restore()
 
     # 6. Front Arm & Hand (drawn in front of torso/head so glasses adjustment & reaches read cleanly in foreground)
-    _draw_tapered_limb(ctx, anat.right_shoulder, anat.right_elbow, anat.right_wrist, *arm_w)
+    _draw_tapered_segment(ctx, anat.shoulder_center, anat.right_shoulder, spine_w[0] * 0.70, arm_w[0])
+    _draw_articulated_limb(ctx, anat.right_shoulder, anat.right_elbow, anat.right_wrist, *arm_w)
     _draw_hand(ctx, anat.right_wrist, angle_deg=state.right_hand_angle_deg, scale=s, pose=state.right_hand_pose)
 
     return anat
