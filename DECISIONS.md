@@ -183,3 +183,35 @@
   - **Option C (`candidate_c_quirky_minimalist_plucked.wav`):** *Quirky Minimalist Percussion & Plucked Instruments* — Clever puzzle-box motif with interlocking kalimba, pizzicato cello, and plucked lute/harpsichord over woodblocks, claves, and tuned percussion.
 - **Cost:** $0.
 
+
+
+---
+
+## DEC-011: Canonical Cairo Restoration & Two-Fix Architecture Lock
+- **Date:** 2026-11-13
+- **Status:** `APPROVED BY OWNER`
+- **Context:**
+  - Following evaluation of Godot prototypes and rejected Stage C1 revisions, the owner determined that the first/original Cairo animation (commit `89021a2`) is the preferred visual version.
+  - Authorized exactly two targeted fixes:
+    1. Fix 1: Eliminating arm/shoulder detachment during reaching without adding rigid box bones or joint disks.
+    2. Fix 2: Symmetrical eye and glasses geometry ($w = 0.58 \cdot r_{\text{head}}$, $h = 0.42 \cdot r_{\text{head}}$).
+- **Decision:**
+  - Pinned immutable reference tag `canonical-cairo-baseline` at commit `89021a2`.
+  - Archived Godot exploration on branch `reference-godot-v14`.
+  - Resolved shoulder detachment via forward torso lean ($\theta_{\text{lean}} \in [7.5^\circ, 16.5^\circ]$) and bounded protraction ($dx \le 16.7\text{ px}$ vs $18.9\text{ px}$ radius), ensuring 100% gapless physical overlap across all 720 frames.
+  - Committed baseline on branch `feature/cairo-production-refinement` (commit `5d5d590`).
+- **Cost:** $0.
+
+---
+
+## DEC-012: Phase A Technical Polish (Contact Precision, Display Readability, Arm Curvature)
+- **Date:** 2026-11-13
+- **Status:** `PHASE A COMPLETED — AWAITING OWNER VISUAL APPROVAL BEFORE PHASE B`
+- **Context:**
+  - Owner directed an 8-improvement production polish in controlled phases, starting with Phase A technical polish (Improvements 1, 2, 3).
+- **Decision:**
+  - **Improvement 1 (Button Contact):** Reduced contact error on all 20 calculator button presses from $4.69\text{ px}$ to **$0.000\text{ px}$** subpixel accuracy. Oriented hand cap along forearm approach vector during button presses. Enhanced tactile feedback with 3D key depression ($6\text{ px}$ down, shadow compresses from $6\text{ px}$ to $1\text{ px}$, inner highlight border).
+  - **Improvement 2 (Calculator Display Readability):** Implemented responsive text fitting (`fit_math_font`), recessed dual-line LCD bezel, right-aligned numeric results ($68\text{pt}$ bold) away from character body, and prominent bold red $48\text{pt}$ `UNDEFINED` display.
+  - **Improvement 3 (Curved Arm Geometry):** Upgraded `_draw_tapered_limb` to 36-step antialiased Bézier curves with smooth quadratic spline thickness blend, eliminating apex pinching while preserving the fluid ink stick-figure aesthetic.
+  - Stopped development after Phase A; all 16 automated tests passed; awaiting visual approval before Phase B.
+- **Cost:** $0.

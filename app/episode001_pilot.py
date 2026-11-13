@@ -386,11 +386,11 @@ def evaluate_ep001_character_state(
         reach_dist_x = max(0.0, min(1.0, (r_wrist[0] - 492.0) / 300.0))
         is_reaching = active_step is not None
 
-        # Keep head/torso cleanly to the left of calculator (`x1 = 555`) while protracting shoulder for far keys
-        pelvis_x = _lerp(412.0, 418.0, reach_dist_x)
+        # Keep head/torso cleanly to the left of calculator (`x1 = 555`) while accommodating reach via natural lean
+        pelvis_x = _lerp(412.0, 420.5, reach_dist_x)
         pelvis_y = _lerp(1294.0, 1296.0, reach_dist_x)
-        torso_lean = _lerp(7.5, 16.5, reach_dist_x)
-        protract = _lerp(4.0, 8.0, reach_dist_x)
+        torso_lean = _lerp(7.5, 17.5, reach_dist_x)
+        protract = _lerp(4.0, 6.0, reach_dist_x)
 
         # Expressive acting reactions between sequences
         if 6.08 <= t16 < 7.00:

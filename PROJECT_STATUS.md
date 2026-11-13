@@ -42,4 +42,11 @@
   2. Implemented the 10-stage AI Production Agent Pipeline (`app/production_agents.py`) with structured `AgentStageLog` records, `CostLedgerEntry` tracking (`$0.00` total cost), and `request_episode_revision` immutable version progression.
   3. Produced the complete **24.0-second (`720 frames @ 30fps`, `1080x1920`) Episode 001 ("Never Divide by Zero")** (`renders/previews/ep001_full_24s_1080x1920.mp4` + `renders/previews/ep001_full_24s_contact_sheet.png`) across 8 scenes and **20 physical calculator button contacts** (`10÷2=5`, `10÷1=10`, `10÷0=UNDEFINED`, explicitly tagged cartoon void metaphor, physical `C` clear press resetting reality, glasses adjustment, and `0÷0=UNDEFINED` cliffhanger) scored with **Option A** (`assets/audio/ep001_full_24s_option_a_mix.wav`) and packaged in `renders/packages/EP001_v2/`.
   4. Verified all `37/37` automated tests pass (`tests/test_phase4_agents.py`).
-- **Next Action:** **Stop and await owner review of Phase 4 (`EP001_v2` Full 24.0s Episode & 10-Stage Agent Pipeline) before starting Phase 5 (Remote Phone Control).**
+- **Active Phase:** **Phase A Technical Polish Completed** on branch `feature/cairo-ep001-production-polish` (awaiting visual review before Phase B).
+- **Production Baseline:** Pinned at tag `checkpoint-cairo-two-fixes-baseline` (commit `5d5d590`).
+- **Phase A Results:**
+  - Improvement 1 (Hand-to-button contact): 0.000px contact error across all 20 button presses; forearm-aligned fingertip orientation; 3D key depression with drop-shadow compression.
+  - Improvement 2 (Calculator display readability): Responsive text fitting (`fit_math_font`), recessed dual-line LCD bezel, 68pt bold numeric results right-aligned away from character, 48pt bold crimson `UNDEFINED`.
+  - Improvement 3 (Curved arm geometry): 36-step antialiased Bézier limb curve, continuous thickness tangent, zero apex pinching, shoulder distance bounded to <= 17.4px (< 18.9px combined radius) for 100% gapless attachment.
+- **Verification:** 16/16 pytest tests passing (`tests/test_cairo_phase_a_polish_validation.py`, `tests/test_cairo_c1_connectivity_validation.py`, `tests/test_cairo_c1_1_visual_validation.py`).
+- **Next Action:** **Stop and await owner visual approval of Phase A before starting Phase B (Storytelling Polish).**

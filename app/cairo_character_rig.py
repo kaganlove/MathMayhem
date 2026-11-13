@@ -354,7 +354,7 @@ def _draw_tapered_limb(
     fill_rgb: Tuple[float, float, float] = (0.07, 0.09, 0.14),
 ) -> None:
     """Draw a smooth variable-width tapered limb curve passing organically through joint `p1` to `p2`."""
-    steps = 26
+    steps = 36
     left_edge: List[Point] = []
     right_edge: List[Point] = []
     ctrl: Point = (
@@ -370,12 +370,14 @@ def _draw_tapered_limb(
         dy = 2.0 * u * (ctrl[1] - p0[1]) + 2.0 * t * (p2[1] - ctrl[1])
         length = max(1e-5, math.hypot(dx, dy))
         nx, ny = -dy / length, dx / length
-        if t < 0.5:
-            lt = t * 2.0
-            hw = 0.5 * ((1.0 - lt) * w_start + lt * w_mid)
+        if t <= 0.5:
+            s_t = 2.0 * t
+            blend = s_t * (2.0 - s_t)
+            hw = 0.5 * ((1.0 - blend) * w_start + blend * w_mid)
         else:
-            lt = (t - 0.5) * 2.0
-            hw = 0.5 * ((1.0 - lt) * w_mid + lt * w_end)
+            s_t = 2.0 * (t - 0.5)
+            blend = s_t * s_t
+            hw = 0.5 * ((1.0 - blend) * w_mid + blend * w_end)
         left_edge.append((x + nx * hw, y + ny * hw))
         right_edge.append((x - nx * hw, y - ny * hw))
 
@@ -707,7 +709,16 @@ def draw_option_c_character(
 
     # 6. Front Arm & Hand (Smooth Cairo Curved Limb)
     _draw_tapered_limb(ctx, anat.right_shoulder, anat.right_elbow, anat.right_wrist, *arm_w)
-    _draw_hand(ctx, anat.right_wrist, angle_deg=state.right_hand_angle_deg, scale=s, pose=state.right_hand_pose)
+
+    # When reaching for calculator buttons, orient hand cap along forearm vector for seamless fingertip contact
+    hand_ang = state.right_hand_angle_deg
+    if state.right_hand_pose == "press" or (anat.right_wrist[0] > 540.0 and abs(anat.right_wrist[1] - 1100.0) < 260.0):
+        fa_dx = anat.right_wrist[0] - anat.right_elbow[0]
+        fa_dy = anat.right_wrist[1] - anat.right_elbow[1]
+        if math.hypot(fa_dx, fa_dy) > 1e-4:
+            hand_ang = math.degrees(math.atan2(fa_dy, fa_dx))
+
+    _draw_hand(ctx, anat.right_wrist, angle_deg=hand_ang, scale=s, pose=state.right_hand_pose)
 
     return anat
 

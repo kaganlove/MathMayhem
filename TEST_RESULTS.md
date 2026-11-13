@@ -164,3 +164,29 @@
 
 
 
+
+---
+
+## Phase A Technical Polish Validation Suite
+- **Date:** 2026-11-13
+- **Branch:** `feature/cairo-ep001-production-polish`
+- **Command:** `.\.venv\Scripts\python.exe -m pytest tests/test_cairo_c1_connectivity_validation.py tests/test_cairo_c1_1_visual_validation.py tests/test_cairo_phase_a_polish_validation.py -v`
+- **Execution Time:** `0.94s`
+- **Summary:** ✅ **16 PASSED, 0 FAILED**
+
+### Programmatic QA Metrics for Phase A Polish
+- **`max_button_contact_error_px`:** `0.000 px` (subpixel precision across all 20 button presses; limit: `<= 4.72 px`)
+- **`fingertip_within_button_bounds`:** 100% verified (centered on key faces with `>= 10.0 px` margin from button edges)
+- **`calculator_display_clipping`:** `0.0 px` (responsive text fitting via `fit_math_font` for all expressions & results)
+- **`max_shoulder_displacement_px`:** `17.40 px` (`<= 17.50 px` limit; strictly within `18.9 px` thoracic/arm overlap radius)
+- **`curved_arm_bezier_steps`:** `36` (antialiased Bézier curve with continuous quadratic thickness blend)
+- **`planted_foot_slip_px`:** `0.0 px`
+- **`limb_length_drift_px`:** `0.0 px`
+
+| Test Case | Refinement Area | Acceptance Criteria Verified | Result |
+| :--- | :--- | :--- | :--- |
+| `tests/test_cairo_phase_a_polish_validation.py::test_hand_button_contact_subpixel_precision` | Improvement 1 | All 20 button presses achieve subpixel precision (`<= 0.05 px` vs `<= 4.72 px` allowance). | ✅ **PASSED** |
+| `tests/test_cairo_phase_a_polish_validation.py::test_visible_fingertip_within_button_bounds` | Improvement 1 | Rendered hand cap lands squarely inside target button bounds with zero neighboring-key ambiguity. | ✅ **PASSED** |
+| `tests/test_cairo_phase_a_polish_validation.py::test_calculator_display_readability_and_responsive_fitting` | Improvement 2 | Responsive text fitting on dual-line LCD screen: zero clipping, 68pt bold numeric results, 48pt bold crimson `UNDEFINED`. | ✅ **PASSED** |
+| `tests/test_cairo_phase_a_polish_validation.py::test_smooth_curved_arm_bezier_continuity_36_steps` | Improvement 3 | 36-step antialiased Bézier curve without straight rigid segments, boxy clavicles, or joint disks. | ✅ **PASSED** |
+| `tests/test_cairo_phase_a_polish_validation.py::test_shoulder_torso_seamless_overlap_invariance` | Improvement 3 | Across all 720 frames, shoulder distance from torso center is `<= 17.40 px` (`< 18.9 px` radius), guaranteeing seamless overlap. | ✅ **PASSED** |

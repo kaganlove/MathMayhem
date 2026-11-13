@@ -64,6 +64,27 @@ def _draw_operator_glyph(
         draw.text((cx - 11, cy - 19), label, fill=color, font=font)
 
 
+def fit_math_font(
+    text: str,
+    max_width: float,
+    base_size: int,
+    min_size: int = 24,
+) -> Tuple[ImageFont.FreeTypeFont | ImageFont.ImageFont, int, int]:
+    """Dynamically determine the largest font size so `text` fits within `max_width` without clipping."""
+    size = base_size
+    while size >= min_size:
+        font = load_math_font(size)
+        bbox = font.getbbox(text)
+        w = bbox[2] - bbox[0]
+        h = bbox[3] - bbox[1]
+        if w <= max_width or size <= min_size:
+            return font, w, h
+        size -= 2
+    font = load_math_font(min_size)
+    bbox = font.getbbox(text)
+    return font, bbox[2] - bbox[0], bbox[3] - bbox[1]
+
+
 def draw_readable_calculator_prop(
     draw: ImageDraw.ImageDraw,
     expression_text: str,
@@ -99,20 +120,34 @@ def draw_readable_calculator_prop(
     scr_fill: ColorRGB = (255, 235, 238) if error_mode else (255, 255, 255)
     draw.rounded_rectangle([scr_x1, scr_y1, scr_x2, scr_y2], radius=14, outline=border_color, fill=scr_fill, width=6)
 
+    # Recessed LCD inner bezel shadow
+    draw.rounded_rectangle([scr_x1 + 3, scr_y1 + 3, scr_x2 - 3, scr_y2 - 3], radius=11, outline=(226, 232, 240) if not error_mode else (254, 205, 211), fill=None, width=2)
+
     scr_w = scr_x2 - scr_x1
-    expr_font = load_math_font(36 if scr_w < 300 else 38)
-    undef_size = 34 if scr_w < 300 else 46
-    result_font = load_math_font(52 if result_text != "UNDEFINED" else undef_size)
-    key_font = load_math_font(32 if scr_w < 300 else 34)
+    avail_w = max(60, scr_w - 44)
 
     # Top line of calculator display: full expression (e.g. "10 ÷ 2 =")
     if expression_text:
-        draw.text((scr_x1 + 18, scr_y1 + 24), expression_text, fill=(40, 40, 40), font=expr_font)
+        expr_font, expr_w, _ = fit_math_font(expression_text, max_width=avail_w, base_size=40, min_size=28)
+        draw.text((scr_x1 + 22, scr_y1 + 22), expression_text, fill=(40, 40, 40), font=expr_font)
+
+    # Subtle horizontal LCD division line between expression and result
+    div_y = scr_y1 + 94
+    div_col: ColorRGB = (254, 205, 211) if error_mode else (226, 232, 240)
+    draw.line([(scr_x1 + 16, div_y), (scr_x2 - 16, div_y)], fill=div_col, width=2)
 
     # Bottom line of calculator display: result or UNDEFINED in bold red
     res_color: ColorRGB = (220, 20, 40) if error_mode else (0, 0, 0)
     if result_text:
-        draw.text((scr_x1 + 18, scr_y1 + 115), result_text, fill=res_color, font=result_font)
+        if result_text == "UNDEFINED":
+            res_font, res_w, _ = fit_math_font(result_text, max_width=avail_w, base_size=48, min_size=32)
+            res_x = scr_x1 + (scr_w - res_w) // 2
+            draw.text((res_x, scr_y1 + 116), result_text, fill=res_color, font=res_font)
+        else:
+            res_font, res_w, _ = fit_math_font(result_text, max_width=avail_w, base_size=68, min_size=36)
+            # Right-align numeric results to open space on the right, away from the character's body
+            res_x = scr_x2 - 24 - res_w
+            draw.text((res_x, scr_y1 + 104), result_text, fill=res_color, font=res_font)
 
     # Canonical 4x4 Keypad grid matching `app/interaction_engine.py`
     keys = [
@@ -130,6 +165,7 @@ def draw_readable_calculator_prop(
     target_pt: Tuple[float, float] = (float(x1 + 60), float(grid_top + 40))
 
     operators = {"÷", "×", "−", "+", "="}
+    key_font = load_math_font(32 if scr_w < 300 else 34)
 
     for r_idx, row in enumerate(keys):
         for c_idx, label in enumerate(row):
@@ -138,14 +174,12 @@ def draw_readable_calculator_prop(
             bx2 = bx1 + col_w
             by2 = by1 + row_h
             is_pressed = active_key == label
-            depress = int(round(button_depression_px if is_pressed else (6.0 if is_pressed else 0.0)))
-            if is_pressed and depress == 0:
-                depress = 6
+            depress = int(round(button_depression_px if is_pressed and button_depression_px > 0 else (6.0 if is_pressed else 0.0)))
 
             if is_pressed or (active_key is None and label == "="):
                 target_pt = ((bx1 + bx2) * 0.5, (by1 + by2) * 0.5 + depress)
 
-            # Key drop shadow (reduces when physically depressed)
+            # Key drop shadow (compresses from 6px down to 1px when physically depressed)
             shadow_offset = max(1, 6 - depress)
             draw.rounded_rectangle(
                 [bx1, by1 + shadow_offset, bx2, by2 + shadow_offset],
@@ -174,6 +208,7 @@ def draw_readable_calculator_prop(
                 k_fill = (255, 255, 255)
                 t_fill = (0, 0, 0)
 
+            # Draw button body at depressed vertical offset
             draw.rounded_rectangle(
                 [bx1, by1 + depress, bx2, by2 + depress],
                 radius=12,
@@ -181,6 +216,17 @@ def draw_readable_calculator_prop(
                 fill=k_fill,
                 width=4,
             )
+
+            # Subtle inner highlight on active depression
+            if is_pressed:
+                draw.rounded_rectangle(
+                    [bx1 + 3, by1 + depress + 3, bx2 - 3, by2 + depress - 3],
+                    radius=9,
+                    outline=(255, 255, 255) if not error_mode else (255, 180, 180),
+                    fill=None,
+                    width=2,
+                )
+
             _draw_operator_glyph(
                 draw=draw,
                 label=label,

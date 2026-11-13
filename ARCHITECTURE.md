@@ -134,3 +134,34 @@ MathMayhem/
 ├── TASKS.md
 └── TEST_RESULTS.md
 ```
+
+
+---
+
+## 11. Cairo Production Character Rig & Interaction Architecture (Phase A Polish)
+
+```
+                       ┌───────────────────────┐
+                       │  OptionCCharacterSpec │
+                       └───────────┬───────────┘
+                                   │
+                                   ▼
+┌──────────────────┐     ┌─────────────────────┐     ┌───────────────────────┐
+│  CairoRigState   ├───► │ solve_cairo_anatomy ├────►│  SolvedCairoAnatomy   │
+│  (Pelvis, Lean,  │     │ (2-Bone IK Legs/Arms│     │  (Joint Landmark Pts) │
+│   Nod, Wrists)   │     │  Bounded Shoulders) │     └───────────┬───────────┘
+└──────────────────┘     └─────────────────────┘                 │
+                                                                 ▼
+                                                     ┌───────────────────────┐
+                                                     │draw_option_c_character│
+                                                     │ - _draw_tapered_limb  │
+                                                     │   (36-step Bezier)    │
+                                                     │ - _draw_hand (aligned)│
+                                                     │ - Symmetric Eyes/Face │
+                                                     └───────────────────────┘
+```
+
+- **Limb Curvature Engine (`_draw_tapered_limb`):** 36-step continuous quadratic Bézier curve passing organically through joint $p_1$ with a smooth spline thickness profile, eliminating apex pinching and discretization artifacts.
+- **Shoulder Attachment:** Torso lean ($\theta_{\text{lean}} \in [7.5^\circ, 17.5^\circ]$) dynamically accommodates reach distance; shoulder protraction is clamped ($dx \le 16.7\text{ px} < 18.9\text{ px}$ combined radius), guaranteeing 100% gapless physical overlap across all frames.
+- **Hand Pointer Orientation:** Front hand cap automatically rotates along the forearm approach vector when reaching or pressing calculator keys, ensuring smooth, natural alignment with button faces.
+- **Calculator Display:** Dual-line LCD bezel with responsive TrueType text fitting (`fit_math_font`), right-aligned $68\text{pt}$ numeric results, and prominent bold red $48\text{pt}$ `UNDEFINED` display.

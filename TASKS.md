@@ -103,3 +103,15 @@
 - **Phase 5 (`T5.x`):** Remote Phone Control (Mobile PWA/responsive controls, voice/text idea submission, preview player, approval & batch approval gates, Tailscale/tunnel auth).
 - **Phase 6 (`T6.x`):** Account Onboarding, Distribution, Monetization & Sponsors (Field-by-field setup wizard, YouTube/Instagram/TikTok adapters & compliant scheduler fallback, Maximum Publishing Mode for approved inventory, Sponsor CRM with mandatory exact-message approval gate).
 - **Phase 7 (`T7.x`):** Analytics & Optimization (Inventory/revenue/cost/profit tracking, monetization eligibility tracker, recommendation engine, comment moderation queue, weekly report).
+
+---
+
+## Phase A — Technical Polish (Active Episode 001 Refinement)
+*Goal: Implement Improvements 1 (hand-to-button contact precision), 2 (calculator display readability), and 3 (arm curvature and silhouette polish) in pure Cairo. Stop and request visual review before Phase B.*
+
+| Task ID | Title | Owner | Prerequisites | Status | Acceptance Criteria | Evidence | Next Action |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **T-PA.1** | Subpixel Hand-to-Button Contact & Fingertip Alignment | Agent (Animator / Engineer) | `5d5d590` | `completed` | All 20 button presses achieve subpixel precision (`0.000 px` error); forearm-aligned hand pointer; 3D key depression with compressed shadow. | `tests/test_cairo_phase_a_polish_validation.py` | Completed |
+| **T-PA.2** | Calculator LCD Display Readability & Responsive Fitting | Agent (Animator / Engineer) | `T-PA.1` | `completed` | Responsive text fitting (`fit_math_font`), recessed dual-line LCD bezel, right-aligned numeric results ($68\text{pt}$ bold), and prominent bold red $48\text{pt}$ `UNDEFINED`. | `tests/test_cairo_phase_a_polish_validation.py` | Completed |
+| **T-PA.3** | Smooth Curved Arm Bézier Continuity & Silhouette Polish | Agent (Animator / Engineer) | `T-PA.2` | `completed` | 36-step antialiased Bézier curve with smooth quadratic spline thickness blend; shoulder distance bounded to $\le 17.40\text{ px}$ ($< 18.9\text{ px}$ radius) for 100% gapless attachment. | `tests/test_cairo_phase_a_polish_validation.py` | Completed |
+| **T-PA.4** | Phase A Master Preview & Synchronized Comparison Renders | Agent (QA / Animator) | `T-PA.1`–`T-PA.3` | `completed` | 720-frame `1080x1920` master (`ep001_phase_a_polished_preview.mp4`), side-by-side comparison (`phase_a_vs_canonical_comparison.mp4`), 4 close-up comparison sheets, and 3 animated WebPs generated. | `renders/previews/` & Artifact Directory | Stop and request owner visual approval |
