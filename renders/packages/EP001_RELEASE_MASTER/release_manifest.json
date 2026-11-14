@@ -1,0 +1,138 @@
+{
+  "project": "Math Mayhem",
+  "episode_code": "EP001",
+  "title": "Never Divide by Zero",
+  "release_version": "1.0.0-canonical-cairo",
+  "release_timestamp": "2026-11-14T01:32:42.523265+00:00",
+  "video_spec": {
+    "resolution": [
+      1080,
+      1920
+    ],
+    "aspect_ratio": "9:16",
+    "frame_rate": 30.0,
+    "frame_count": 720,
+    "duration_seconds": 24.0,
+    "distribution_master": {
+      "filename": "ep001_never_divide_by_zero_master_1080x1920.mp4",
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "profile": "High",
+      "faststart": true,
+      "sha256": "9bb7432e20a9a62435b24488f8f8f4147ac1e712b0ea1d0535f1b04e9dcd14d7",
+      "size_bytes": 2159577
+    },
+    "archive_master": {
+      "filename": "ep001_never_divide_by_zero_archive_master.mp4",
+      "codec": "h264",
+      "crf": 12,
+      "sha256": "59bf60a509f98aff38810821f9f4d7b2cfc0fd0ee5de5cced05440d4a332574b",
+      "size_bytes": 2890040
+    }
+  },
+  "audio_spec": {
+    "soundtrack_title": "Option A \u2014 Orchestral Cartoon Mix",
+    "sample_rate": 44100,
+    "channels": 2,
+    "sound_cue_count": 26,
+    "peak_amplitude": 0.9,
+    "sha256": "1b47fe80a3ee7b48aeac780ed703214e6586d0d512a2cf70ad05a46fcdfda668"
+  },
+  "character_rig": {
+    "spec_id": "mm_protagonist_option_c_v1",
+    "ratio": "1:3.4 Compact Mobile-First Cartoon Adventurer",
+    "kinematics": "Stage C2 Cubic Bezier Refined",
+    "planted_foot_slip_px": 0.0,
+    "key_contact_precision_px": 0.0,
+    "contacts_verified": 20
+  },
+  "mathematical_verification": {
+    "status": "VERIFIED_100%",
+    "axioms_verified": 5,
+    "sympy_engine": "SymPy 1.13.3",
+    "expressions": [
+      "10 / 2 = 5",
+      "10 / 1 = 10",
+      "10 / 0 = UNDEFINED (Division by zero)",
+      "0 / 0 = UNDEFINED (Indeterminate form)"
+    ]
+  },
+  "package_files": {
+    "artwork/ep001_master_8panel_contact_sheet.png": {
+      "size_bytes": 311387,
+      "sha256": "5c1fb28d7e3c0d0b46e993f1b05f728d3fb77e87f55a8b93d155dfb038c00345"
+    },
+    "artwork/ep001_master_8panel_contact_sheet.webp": {
+      "size_bytes": 186342,
+      "sha256": "4d5526fc8b1599069360898c76e426a7df269c2c4553219ba02c8a4acdab3c7d"
+    },
+    "artwork/thumbnail_cliffhanger_1080x1920.png": {
+      "size_bytes": 71734,
+      "sha256": "3deb79cbdd1d75f7c55e90b9258da3801bc645d50aea2b997bba623403582979"
+    },
+    "artwork/thumbnail_cliffhanger_1080x1920.webp": {
+      "size_bytes": 66572,
+      "sha256": "f8b57d812cbe2113e5b6dbbb7199eed8b30bc3c360d1c4ff3807ec8a7ea91510"
+    },
+    "artwork/thumbnail_climax_1080x1920.png": {
+      "size_bytes": 94435,
+      "sha256": "691e32d15ab77756da4e94fd677b491132d4cafd66bf2b139c00d933048c05c8"
+    },
+    "artwork/thumbnail_climax_1080x1920.webp": {
+      "size_bytes": 81244,
+      "sha256": "8c7d4b8c073ab94f8266b82a1bf2d6e5da0d0eadd7cb7860f81a5310677aebb1"
+    },
+    "artwork/thumbnail_poster_1080x1920.png": {
+      "size_bytes": 78731,
+      "sha256": "4f503d54ffdeb7257d03cf368d16e18b4df2cbf28c2abc10bd1f22700bc9a1bb"
+    },
+    "artwork/thumbnail_poster_1080x1920.webp": {
+      "size_bytes": 70522,
+      "sha256": "6aff8eea4264b2ed821dae6c5ac94849adbb52e4787e60bc71e3b19b8bf309b4"
+    },
+    "audio/ep001_master_audio.wav": {
+      "size_bytes": 2116844,
+      "sha256": "1b47fe80a3ee7b48aeac780ed703214e6586d0d512a2cf70ad05a46fcdfda668"
+    },
+    "captions/captions.srt": {
+      "size_bytes": 716,
+      "sha256": "c48335edddb84604550b467d50835127267085fe015636e320b085d663d73760"
+    },
+    "captions/captions.vtt": {
+      "size_bytes": 705,
+      "sha256": "a403a55dcfe21cdf3c735f282a764dba3864587d827d4dfc98410a0ec2f272b6"
+    },
+    "ep001_master.mp4": {
+      "size_bytes": 2159577,
+      "sha256": "9bb7432e20a9a62435b24488f8f8f4147ac1e712b0ea1d0535f1b04e9dcd14d7"
+    },
+    "metadata/DISTRIBUTION_GUIDE.md": {
+      "size_bytes": 2526,
+      "sha256": "4ea2ba9971237a9c2f114efb333936e90f584aee2a7e352c411fc85c1c6c4861"
+    },
+    "metadata/distribution_metadata.json": {
+      "size_bytes": 2968,
+      "sha256": "5433b424f8b2a5f76d7ca517b1fae4ebe1625b5d95f7dc9b4d2a27159921d2a7"
+    },
+    "thumbnail.png": {
+      "size_bytes": 94435,
+      "sha256": "691e32d15ab77756da4e94fd677b491132d4cafd66bf2b139c00d933048c05c8"
+    },
+    "video/ep001_never_divide_by_zero_archive_master.mp4": {
+      "size_bytes": 2890040,
+      "sha256": "59bf60a509f98aff38810821f9f4d7b2cfc0fd0ee5de5cced05440d4a332574b"
+    },
+    "video/ep001_never_divide_by_zero_master_1080x1920.mp4": {
+      "size_bytes": 2159577,
+      "sha256": "9bb7432e20a9a62435b24488f8f8f4147ac1e712b0ea1d0535f1b04e9dcd14d7"
+    }
+  },
+  "gpu_telemetry": {
+    "available": true,
+    "name": "NVIDIA GeForce RTX 5080",
+    "driver_version": "610.88",
+    "vram_total_mib": 16303,
+    "vram_free_mib": 15121,
+    "temperature_c": 33
+  }
+}

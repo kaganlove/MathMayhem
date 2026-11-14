@@ -1,0 +1,51 @@
+{
+  "episode": {
+    "code": "EP001",
+    "title": "Never Divide by Zero",
+    "series": "Math Mayhem",
+    "duration_seconds": 24.0,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "fps": 30,
+    "soundtrack": "Option A \u2014 Playful Orchestral Cartoon Theme (132 BPM)"
+  },
+  "platforms": {
+    "youtube_shorts": {
+      "title": "NEVER Divide By Zero! \ud83d\ude31 (Watch What Happens to Reality)",
+      "description": "What happens when you divide by zero on a giant calculator?\n\nEpisode 001 of Math Mayhem: 'Never Divide by Zero'.\n\nMathematical Truth:\n\u2022 10 \u00f7 2 = 5\n\u2022 10 \u00f7 1 = 10\n\u2022 10 \u00f7 0 = UNDEFINED (Division by zero is impossible in standard arithmetic!)\n\u2022 0 \u00f7 0 = INDETERMINATE / UNDEFINED (The forbidden cliffhanger!)\n\n#MathMayhem #Shorts #Animation #Math #DivideByZero #MathHumor",
+      "tags": [
+        "math mayhem",
+        "never divide by zero",
+        "division by zero",
+        "math animation",
+        "cairo animation",
+        "python animation",
+        "math shorts",
+        "calculus",
+        "zero divided by zero",
+        "indeterminate form",
+        "funny math",
+        "stem animation"
+      ],
+      "category_id": "27"
+    },
+    "tiktok": {
+      "caption": "POV: You pushed the one button in math you're never supposed to touch... \ud83d\ude33\ud83d\udca5 #MathMayhem #DivideByZero #MathTok #Animation #Funny #LearnOnTikTok",
+      "recommended_hashtags": [
+        "#MathMayhem",
+        "#DivideByZero",
+        "#MathTok",
+        "#Animation",
+        "#LearnOnTikTok",
+        "#FunnyMath"
+      ]
+    },
+    "instagram_reels": {
+      "caption": "Never, EVER divide by zero! \ud83d\udea8 When math breaks reality...\n\nWatch what happens when our protagonist encounters a pedestal calculator in the void.\n\nDrop your favorite math paradox in the comments! \ud83d\udc47\n\n#MathMayhem #MathHumor #Animation #StemEducation #MathReels #ZeroDivision"
+    },
+    "x_twitter": {
+      "post_text": "What actually happens when you divide by zero? \ud83e\uddee\ud83d\udca5\n\nEpisode 001 of #MathMayhem is officially out! 100% procedurally animated in Python with Cairo.\n\nWatch with sound on for the orchestral cartoon score! \ud83c\udfb5 #Math #IndieAnimation"
+    }
+  },
+  "educational_pinned_comment": "\ud83d\udccc MATHEMATICAL BREAKDOWN:\n\nWhy is dividing by zero undefined?\nThink of division as inverse multiplication: If 10 / x = y, then y * x must equal 10.\nIf x = 0, then y * 0 must equal 10. But ANY number multiplied by 0 equals 0! No such number y exists.\n\nAs x approaches 0 from the right, 10 / x approaches +\u221e; from the left, it approaches -\u221e.\nBecause there is no finite, single consistent value, 10 \u00f7 0 is strictly UNDEFINED.\n\nAnd what about 0 \u00f7 0? That's an INDETERMINATE form: any number y satisfies y * 0 = 0!\nStay tuned for Episode 002 for more Math Mayhem!"
+}
