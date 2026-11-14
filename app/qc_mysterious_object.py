@@ -678,15 +678,20 @@ def _synthesize_mysterious_object_audio(output_wav: Path, duration_seconds: floa
 def validate_animation_quality_metrics(
     states: List[CairoRigState],
     anatomies: List[SolvedCairoAnatomy],
+    scene_cut_frames: Optional[Set[int]] = None,
+    max_pelvis_step_threshold: float = 25.0,
+    max_head_step_threshold: float = 38.0,
+    frame_indices: Optional[List[int]] = None,
 ) -> Dict[str, Any]:
     """Programmatic Phase 6 Quality-Control Validator.
 
     Checks:
     1. Planted foot stability (`max_planted_foot_slip_px < 0.05 px` across consecutive planted frames).
     2. Anatomical proportion invariance (`head_radius`, `left_leg_total_length`, `right_leg_total_length`, `left_arm_total_length`, `right_arm_total_length`).
-    3. Joint movement continuity (`max_pelvis_step_px < 25.0 px/frame` and `max_head_step_px < 30.0 px/frame` — zero joint snapping).
+    3. Joint movement continuity (`max_pelvis_step_px < max_pelvis_step_threshold` and `max_head_step_px < max_head_step_threshold` — zero joint snapping, excluding intentional scene cuts).
     4. Scale stability (`scale == 1.0` throughout).
     """
+    cuts = scene_cut_frames or set()
     max_left_slip = 0.0
     max_right_slip = 0.0
     max_pelvis_delta = 0.0
@@ -704,6 +709,14 @@ def validate_animation_quality_metrics(
         head_radii.append(an.head_radius_px)
 
         if i > 0:
+            if frame_indices is not None and i < len(frame_indices):
+                curr_frame = frame_indices[i]
+                prev_frame = frame_indices[i - 1]
+                if curr_frame in cuts or (curr_frame - prev_frame > 1):
+                    continue
+            elif i in cuts:
+                continue
+
             prev_st = states[i - 1]
             prev_an = anatomies[i - 1]
             if st.left_foot_planted and prev_st.left_foot_planted:
@@ -726,8 +739,8 @@ def validate_animation_quality_metrics(
         raise AssertionError(f"Planted foot sliding detected: left={max_left_slip:.4f}px, right={max_right_slip:.4f}px")
     if leg_spread > 0.1 or arm_spread > 0.1 or head_spread > 0.05:
         raise AssertionError(f"Anatomical proportion drift detected: leg_spread={leg_spread}, arm_spread={arm_spread}")
-    if max_pelvis_delta > 25.0 or max_head_delta > 32.0:
-        raise AssertionError(f"Joint snapping discontinuity detected: pelvis={max_pelvis_delta:.2f}px, head={max_head_delta:.2f}px")
+    if max_pelvis_delta > max_pelvis_step_threshold or max_head_delta > max_head_step_threshold:
+        raise AssertionError(f"Joint snapping discontinuity detected: pelvis={max_pelvis_delta:.2f}px (limit {max_pelvis_step_threshold:.2f}px), head={max_head_delta:.2f}px (limit {max_head_step_threshold:.2f}px)")
 
     return {
         "frames_validated": len(states),

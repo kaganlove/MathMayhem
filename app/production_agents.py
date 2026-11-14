@@ -966,6 +966,7 @@ def run_phase4_episode001_pipeline(
     t0 = time.perf_counter()
     states = [s.char_state for s in snapshots if s.char_state is not None]
     anatomies = [s.anatomy for s in snapshots if s.anatomy is not None]
+    active_frame_indices = [s.frame_idx for s in snapshots if s.char_state is not None]
     record_stage(
         6,
         "animation_simulation",
@@ -1126,7 +1127,13 @@ def run_phase4_episode001_pipeline(
             sheet_draw.text((x0 + 4, y0 + card_h + 8), caption, fill=(226, 232, 240), font=lbl_font)
         sheet_img.save(contact_sheet_path, format="PNG")
 
-    qa_report = validate_animation_quality_metrics(states, anatomies)
+    ep001_scene_cuts = {60, 120, 200, 300, 450, 540, 630}
+    qa_report = validate_animation_quality_metrics(
+        states,
+        anatomies,
+        scene_cut_frames=ep001_scene_cuts,
+        frame_indices=active_frame_indices,
+    )
     probe = probe_video_metadata(target_mp4, ffmpeg_exe=ffmpeg_exe)
     probe["encoder"] = used_encoder
     probe["qa_report"] = qa_report

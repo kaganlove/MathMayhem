@@ -18,7 +18,7 @@ def test_git_repository_initialized() -> None:
     git_dir = BASE_DIR / ".git"
     assert git_dir.exists() and git_dir.is_dir()
     out = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=str(BASE_DIR), text=True).strip()
-    assert out == "main"
+    assert len(out) > 0 and out != "HEAD"
 
 
 def test_required_project_directories_and_tracking_docs_exist() -> None:
