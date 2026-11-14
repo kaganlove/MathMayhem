@@ -8,8 +8,21 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import __version__
@@ -25,6 +38,14 @@ from app.episode001_pilot import build_ep001_pilot_storyboard, render_episode001
 from app.logging_config import setup_logging
 from app.math_verifier import verify_math_statement
 from app.models import AuditEvent, Episode, EpisodeVersion, Job, approve_episode_version
+from app.phone_control import (
+    PairingManager,
+    PhoneWebSocketHub,
+    VoiceIdeaService,
+    get_local_lan_ip,
+    phone_ws_hub,
+    stream_video_with_range,
+)
 from app.production_agents import request_episode_revision, run_phase4_episode001_pipeline
 from app.queue import PersistentJobQueue
 from app.render_smoke import detect_gpu_info, run_gpu_render_smoke_test
@@ -384,6 +405,230 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
                 "video_sha256": ver.video_sha256,
                 "approval_log_id": log_entry.id,
             }
+
+    # -------------------------------------------------------------------
+    # Phase 5: Remote Phone Control Endpoints
+    # -------------------------------------------------------------------
+    renders_dir = cfg.MM_RENDERS_DIR
+    renders_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/renders", StaticFiles(directory=str(renders_dir)), name="renders")
+
+    @app.get("/phone", response_class=HTMLResponse)
+    async def phone_dashboard(request: Request, token: Optional[str] = None) -> Response:
+        resp = templates.TemplateResponse(request, "phone.html", {})
+        if token:
+            with session_factory() as session:
+                client_ip = request.client.host if request.client else ""
+                ua = request.headers.get("user-agent", "")
+                success, sess_tok, _ = PairingManager.consume_pairing_token(
+                    token=token,
+                    session=session,
+                    ip=client_ip,
+                    user_agent=ua,
+                )
+                if success and sess_tok:
+                    resp.set_cookie(
+                        key="mm_phone_session",
+                        value=sess_tok,
+                        max_age=30 * 86400,
+                        httponly=True,
+                        samesite="lax",
+                    )
+        return resp
+
+    @app.get("/api/phone/pair")
+    async def get_pairing_info(request: Request) -> Dict[str, Any]:
+        token = PairingManager.generate_pairing_token()
+        lan_ip = get_local_lan_ip()
+        pairing_url = PairingManager.build_pairing_url(token, host=lan_ip, port=8000)
+        qr_svg_uri = PairingManager.generate_qr_svg_data_uri(pairing_url)
+        return {
+            "token": token,
+            "lan_ip": lan_ip,
+            "pairing_url": pairing_url,
+            "qr_svg_data_uri": qr_svg_uri,
+            "expires_in_seconds": 900,
+        }
+
+    @app.websocket("/ws/phone")
+    async def phone_websocket_endpoint(websocket: WebSocket) -> None:
+        await phone_ws_hub.connect(websocket)
+        try:
+            while True:
+                data = await websocket.receive_text()
+                if data == "ping":
+                    await websocket.send_text("pong")
+        except WebSocketDisconnect:
+            phone_ws_hub.disconnect(websocket)
+        except Exception:
+            phone_ws_hub.disconnect(websocket)
+
+    @app.post("/api/phone/idea/text")
+    async def api_submit_phone_text_idea(payload: Dict[str, Any]) -> Dict[str, Any]:
+        title = str(payload.get("title", ""))
+        concept = str(payload.get("concept", ""))
+        math_category = str(payload.get("math_category", "arithmetic"))
+        with session_factory() as session:
+            memo = VoiceIdeaService.save_text_idea(
+                title=title,
+                concept=concept,
+                math_category=math_category,
+                session=session,
+            )
+            await phone_ws_hub.broadcast_notification(
+                title="New Episode Idea Enqueued",
+                body=f"{memo.title} ({memo.memo_code})",
+                kind="success",
+            )
+            return {
+                "id": memo.id,
+                "memo_code": memo.memo_code,
+                "title": memo.title,
+                "status": memo.status,
+            }
+
+    @app.post("/api/phone/idea/voice")
+    async def api_submit_phone_voice_idea(
+        audio: UploadFile = File(...),
+        title: str = Form("Voice Memo Idea"),
+        concept: str = Form("Spoken episode dictation"),
+        math_category: str = Form("arithmetic"),
+    ) -> Dict[str, Any]:
+        audio_bytes = await audio.read()
+        ext = "webm"
+        if audio.filename and "." in audio.filename:
+            ext = audio.filename.rsplit(".", 1)[-1]
+
+        with session_factory() as session:
+            memo = VoiceIdeaService.save_voice_memo(
+                audio_bytes=audio_bytes,
+                title=title,
+                concept=concept,
+                math_category=math_category,
+                session=session,
+                extension=ext,
+            )
+            await phone_ws_hub.broadcast_notification(
+                title="Voice Memo Uploaded",
+                body=f"{memo.title} ({memo.memo_code})",
+                kind="success",
+            )
+            return {
+                "id": memo.id,
+                "memo_code": memo.memo_code,
+                "title": memo.title,
+                "file_path": memo.audio_file_path,
+                "status": memo.status,
+            }
+
+    @app.post("/api/phone/approve")
+    async def api_phone_approve_version(
+        payload: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        episode_id = int(payload.get("episode_id", 1))
+        version_number = int(payload.get("version_number", 2))
+        notes = str(payload.get("notes", "Approved via Phone Controller"))
+
+        with session_factory() as session:
+            ver = (
+                session.query(EpisodeVersion)
+                .filter_by(episode_id=episode_id, version_number=version_number)
+                .first()
+            )
+            if not ver:
+                raise HTTPException(status_code=404, detail="EpisodeVersion not found")
+
+            log_entry = approve_episode_version(
+                session,
+                ver,
+                approved_by="owner_phone",
+                approval_mode="INDIVIDUAL",
+                notes=notes,
+            )
+            await phone_ws_hub.broadcast_notification(
+                title="Episode Approved!",
+                body=f"Episode {episode_id} v{version_number} approved and locked.",
+                kind="success",
+            )
+            return {
+                "version_id": ver.id,
+                "version_number": ver.version_number,
+                "status": ver.status,
+                "video_sha256": ver.video_sha256,
+                "approval_log_id": log_entry.id,
+            }
+
+    @app.post("/api/phone/batch-approve")
+    async def api_phone_batch_approve(payload: Dict[str, Any]) -> Dict[str, Any]:
+        version_ids = payload.get("version_ids", [])
+        notes = str(payload.get("notes", "Batch approved via Phone Controller"))
+        results = []
+        with session_factory() as session:
+            for vid in version_ids:
+                ver = session.get(EpisodeVersion, int(vid))
+                if ver:
+                    log_entry = approve_episode_version(
+                        session,
+                        ver,
+                        approved_by="owner_phone",
+                        approval_mode="BATCH",
+                        notes=notes,
+                    )
+                    results.append({
+                        "version_id": ver.id,
+                        "status": ver.status,
+                        "approval_log_id": log_entry.id,
+                    })
+
+            await phone_ws_hub.broadcast_notification(
+                title="Batch Approval Complete",
+                body=f"Approved {len(results)} episode versions.",
+                kind="success",
+            )
+            return {"approved_count": len(results), "items": results}
+
+    @app.post("/api/phone/revision")
+    async def api_phone_request_revision(payload: Dict[str, Any]) -> Dict[str, Any]:
+        episode_code = str(payload.get("episode_code", "EP001"))
+        revision_notes = str(payload.get("revision_notes", "Mobile owner revision request"))
+        with session_factory() as session:
+            res = request_episode_revision(
+                session=session,
+                episode_code=episode_code,
+                revision_notes=revision_notes,
+                requested_by="owner_phone",
+                resolution=(540, 960),
+                settings=cfg,
+            )
+            await phone_ws_hub.broadcast_notification(
+                title="Revision Pipeline Started",
+                body=f"Re-rendering {episode_code} with revision notes.",
+                kind="info",
+            )
+            return res
+
+    @app.get("/api/phone/video/{filename}")
+    async def api_phone_stream_video(filename: str, request: Request) -> Response:
+        candidates = [
+            cfg.MM_RENDERS_DIR / "packages" / "EP001_RELEASE_MASTER" / filename,
+            cfg.MM_RENDERS_DIR / "packages" / "EP001_RELEASE_MASTER" / "video" / filename,
+            cfg.MM_RENDERS_DIR / "previews" / filename,
+            cfg.MM_RENDERS_DIR / filename,
+        ]
+        target: Optional[Path] = None
+        for cand in candidates:
+            if cand.exists():
+                target = cand
+                break
+
+        if not target:
+            fallback = cfg.MM_RENDERS_DIR / "packages" / "EP001_RELEASE_MASTER" / "video" / "ep001_never_divide_by_zero_master_1080x1920.mp4"
+            if fallback.exists():
+                target = fallback
+            else:
+                raise HTTPException(status_code=404, detail="Video file not found")
+
+        return stream_video_with_range(request, target)
 
     return app
 

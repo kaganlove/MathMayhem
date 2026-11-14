@@ -99,6 +99,7 @@
       <span class="badge">PHASE 4 AI PRODUCTION AGENTS</span>
     </div>
     <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+      <button id="pairBtn" style="background:#0284c7;" onclick="openPairModal()">📱 Pair Phone</button>
       <button id="smokeBtn" onclick="triggerSmokeTest()">Run RTX 5080 Smoke Render</button>
       <button id="charBtn" onclick="triggerCharShowcase()">Render Phase 2 Showcase</button>
       <button id="ep001Btn" onclick="triggerEp001Pilot()">Render EP001 16s Pilot</button>
@@ -278,6 +279,43 @@
         btn.disabled = false;
       }
     }
+    async function openPairModal() {
+      const modal = document.getElementById('pairModal');
+      const qrImg = document.getElementById('pairQrImg');
+      const urlTxt = document.getElementById('pairUrlText');
+      modal.style.display = 'flex';
+      qrImg.src = '';
+      urlTxt.textContent = 'Generating pairing QR code...';
+      try {
+        const res = await fetch('/api/phone/pair');
+        const data = await res.json();
+        qrImg.src = data.qr_svg_data_uri;
+        urlTxt.innerHTML = `<a href="${data.pairing_url}" target="_blank" style="color:#38bdf8;">${data.pairing_url}</a>`;
+      } catch (err) {
+        urlTxt.textContent = 'Failed to generate QR code: ' + err;
+      }
+    }
+    function closePairModal() {
+      document.getElementById('pairModal').style.display = 'none';
+    }
   </script>
+
+  <!-- Phone Pairing Modal -->
+  <div id="pairModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:#1e293b; border:1px solid #334155; border-radius:18px; padding:1.75rem; max-width:420px; width:90%; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h2 style="font-size:1.15rem; color:#f8fafc;">📱 Pair Remote Phone Control</h2>
+        <span style="cursor:pointer; font-size:1.25rem; color:#94a3b8;" onclick="closePairModal()">✕</span>
+      </div>
+      <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:1.25rem;">
+        Scan this QR code with your iPhone or Android camera to open the remote control hub over your local Wi-Fi.
+      </p>
+      <div style="background:#0f172a; padding:1rem; border-radius:12px; display:inline-block; margin-bottom:1rem;">
+        <img id="pairQrImg" style="width:200px; height:200px; display:block;" alt="Pairing QR Code" />
+      </div>
+      <div id="pairUrlText" style="font-size:0.82rem; word-break:break-all; margin-bottom:1.25rem;"></div>
+      <button onclick="closePairModal()" style="width:100%; background:#334155; padding:0.65rem;">Done</button>
+    </div>
+  </div>
 </body>
 </html>

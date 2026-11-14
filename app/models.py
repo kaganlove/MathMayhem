@@ -195,6 +195,40 @@ class SponsorLead(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
 
 
+class PairedDevice(Base):
+    """Securely paired mobile controller device for Phase 5 Remote Phone Control."""
+
+    __tablename__ = "paired_devices"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    device_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    device_name: Mapped[str] = mapped_column(String(128), default="Owner Smartphone", nullable=False)
+    session_token_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    pairing_ip: Mapped[str] = mapped_column(String(64), default="", nullable=False)
+    user_agent: Mapped[str] = mapped_column(String(256), default="", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+
+class VoiceIdeaMemo(Base):
+    """Voice memo or quick mobile idea submission for episode concepts."""
+
+    __tablename__ = "voice_idea_memos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    memo_code: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    raw_concept: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    audio_file_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    audio_sha256: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    audio_duration_sec: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    transcription_text: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    math_category: Mapped[str] = mapped_column(String(64), default="arithmetic", nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="SUBMITTED", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+
 class AuditEvent(Base):
     """Append-only system and security audit log."""
 

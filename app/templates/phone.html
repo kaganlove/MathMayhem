@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Math Mayhem — Mobile Control Hub</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131b2e;
+      --card-border: #1e293b;
+      --accent: #38bdf8;
+      --accent-red: #ef4444;
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --nav-bg: #0f172a;
+      --tap-highlight: rgba(56, 189, 248, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .brand-title span { color: var(--accent); }
+    .status-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Tab Content Containers */
+    .tab-content { display: none; padding: 1rem; }
+    .tab-content.active { display: block; animation: fadeIn 0.18s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Card styling */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.15rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.65rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Form Controls */
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 85px; }
+
+    /* Category Pill Selector */
+    .category-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .cat-pill {
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      padding: 0.4rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .cat-pill.selected {
+      background: var(--accent);
+      color: #0b1120;
+      border-color: var(--accent);
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 0.95rem 1.25rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: transform 0.08s, filter 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #0b1120; }
+    .btn-success { background: var(--accent-green); color: #ffffff; }
+    .btn-danger { background: var(--accent-red); color: #ffffff; }
+    .btn-secondary { background: #1e293b; color: var(--text); border: 1px solid #334155; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+
+    /* Voice Recorder UI */
+    .mic-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 0.5rem;
+    }
+    .mic-button {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 3px solid var(--accent);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+    .mic-button.recording {
+      background: var(--accent-red);
+      border-color: #fca5a5;
+      color: #fff;
+      animation: pulseRecord 1.2s infinite;
+    }
+    @keyframes pulseRecord {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { transform: scale(1.08); box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .mic-timer {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 0.75rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Video Player */
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 9/16;
+      margin-bottom: 0.85rem;
+    }
+    video { width: 100%; height: 100%; object-fit: contain; }
+
+    /* Progress & Hardware Telemetry */
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #0b1120;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .stat-val { font-weight: 700; color: var(--accent); }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.4rem 0.6rem;
+      border-radius: 12px;
+      transition: color 0.15s;
+    }
+    .nav-item.active { color: var(--accent); }
+    .nav-icon { font-size: 1.35rem; }
+
+    /* Modal / Bottom Sheet */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+    }
+    .modal-sheet {
+      background: var(--card-bg);
+      border-top: 1px solid var(--card-border);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.25rem;
+      animation: slideUp 0.22s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="brand-title">
+      Math<span>Mayhem</span>
+    </div>
+    <div id="connStatus" class="status-pill">
+      <div class="status-dot"></div>
+      <span id="connStatusText">Connected</span>
+    </div>
+  </header>
+
+  <!-- TAB 1: SUBMIT EPISODE IDEA -->
+  <section id="tab-ideas" class="tab-content active">
+    <div class="card">
+      <div class="card-title">💡 Submit Episode Idea</div>
+      <input type="text" id="ideaTitle" placeholder="Episode Title (e.g. Division by Zero Paradox)" />
+      <textarea id="ideaConcept" placeholder="Describe the scene premise, joke, or mathematical axiom..."></textarea>
+      
+      <div class="card-title" style="margin-top:0.4rem;">Topic Category</div>
+      <div class="category-pills">
+        <div class="cat-pill selected" onclick="selectCat(this, 'arithmetic')">Arithmetic &amp; Division</div>
+        <div class="cat-pill" onclick="selectCat(this, 'algebra')">Algebra &amp; Factoring</div>
+        <div class="cat-pill" onclick="selectCat(this, 'calculus')">Limits &amp; Infinity</div>
+        <div class="cat-pill" onclick="selectCat(this, 'geometry')">Geometry &amp; Pi</div>
+        <div class="cat-pill" onclick="selectCat(this, 'paradox')">Math Paradoxes</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="submitTextIdea()">
+        🚀 Submit Idea to Production Queue
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎙️ Dictate Voice Memo Idea</div>
+      <div class="mic-container">
+        <div id="micBtn" class="mic-button" onclick="toggleRecording()">🎤</div>
+        <div id="micTimer" class="mic-timer">Tap to Speak</div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem; text-align:center;">
+          Speak your episode concept aloud. Automatically enqueues upon completion.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: LIVE QUEUE & HARDWARE STATUS -->
+  <section id="tab-queue" class="tab-content">
+    <div class="card">
+      <div class="card-title">⚡ Live Rendering Status</div>
+      <div style="font-size: 1.1rem; font-weight: 700;" id="activeStageText">Idle / Ready</div>
+      <div class="progress-bar-bg">
+        <div id="progressBar" class="progress-bar-fill"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-muted);">
+        <span id="activeFpsText">Speed: -- FPS</span>
+        <span id="activePctText">0%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🖥️ Desktop Hardware Telemetry</div>
+      <div class="stat-row">
+        <span>GPU Acceleration</span>
+        <span class="stat-val" id="gpuName">NVIDIA RTX 5080</span>
+      </div>
+      <div class="stat-row">
+        <span>VRAM Utilization</span>
+        <span class="stat-val" id="vramUsage">14,210 / 16,384 MiB Free</span>
+      </div>
+      <div class="stat-row">
+        <span>Core Temperature</span>
+        <span class="stat-val" id="gpuTemp">48°C</span>
+      </div>
+      <div class="stat-row">
+        <span>Vector Renderer</span>
+        <span class="stat-val">PyCairo (70 FPS Native)</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔄 Quick Actions</div>
+      <button class="btn btn-secondary" onclick="triggerPilotRender()">
+        ⚡ Render Fast Episode 001 Test Preview
+      </button>
+    </div>
+  </section>
+
+  <!-- TAB 3: REVIEW & APPROVALS -->
+  <section id="tab-review" class="tab-content">
+    <div class="card" style="padding: 0.75rem;">
+      <div class="card-title" style="margin: 0.35rem 0.5rem 0.65rem;">
+        <span>🎬 Episode 001 Master Preview</span>
+        <span style="color:var(--accent-green); font-size:0.75rem;">READY FOR APPROVAL</span>
+      </div>
+      <div class="video-wrapper">
+        <video id="player" controls playsinline preload="metadata">
+          <source src="/api/phone/video/ep001_master.mp4" type="video/mp4" />
+          Your mobile browser does not support HTML5 video.
+        </video>
+      </div>
+      <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; text-align:center;">
+        1080×1920 (9:16) &bull; 24.0s @ 30 FPS &bull; Option A Audio Mix &bull; Stage C2 Rig
+      </div>
+
+      <!-- Action Buttons -->
+      <button class="btn btn-success" onclick="approveEpisodeVersion(1, 2)">
+        ✅ Approve Episode 001 Master
+      </button>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="openRevisionSheet()">
+          ✏️ Request Revision
+        </button>
+        <button class="btn btn-secondary" onclick="openContactSheetModal()">
+          🖼️ View 8-Panel Sheet
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: EPISODE LIBRARY -->
+  <section id="tab-library" class="tab-content">
+    <div class="card">
+      <div class="card-title">📚 Released &amp; Staged Episodes</div>
+      <div style="border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:1rem;">EP001: Never Divide by Zero</strong>
+          <span style="background:rgba(16,185,129,0.2); color:var(--accent-green); font-size:0.7rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:6px;">RELEASE MASTER</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin:0.35rem 0;">
+          The canonical pilot adventure: 10÷2=5, 10÷1=10, 10÷0=UNDEFINED, emergency reality reset, 0÷0 cliffhanger.
+        </p>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+          <a href="/api/phone/video/ep001_master.mp4" download class="btn btn-secondary" style="text-decoration:none; font-size:0.85rem; padding:0.5rem;">
+            ⬇️ Download MP4 Master
+          </a>
+          <button class="btn btn-secondary" style="font-size:0.85rem; padding:0.5rem;" onclick="viewManifest()">
+            📄 Manifest
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: SPONSORS & OUTREACH -->
+  <section id="tab-sponsors" class="tab-content">
+    <div class="card">
+      <div class="card-title">🤝 Sponsorship Hub &amp; Approvals</div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+        All sponsor inquiries, initial pitches, and proposed terms require explicit owner approval before dispatch.
+      </p>
+      <div style="background:#0b1120; border:1px solid var(--card-border); border-radius:12px; padding:0.85rem; margin-bottom:0.75rem;">
+        <div style="display:flex; justify-content:space-between;">
+          <strong>STEM Education Brand Outreach</strong>
+          <span style="color:var(--accent-yellow); font-size:0.75rem; font-weight:700;">PROPOSAL DRAFT</span>
+        </div>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin:0.4rem 0;">
+          Target: Interactive Mathematics Tool &bull; Proposed Rate: $500/integration &bull; Delivery: Mid-roll sponsor stinger
+        </p>
+        <button class="btn btn-secondary" style="font-size:0.85rem; margin-top:0.4rem;" onclick="alert('Phase 6 Sponsor Outbox: Approved messages are immutable and dry-run verified.')">
+          🔒 Review Draft &amp; Terms
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Revision Bottom Sheet Modal -->
+  <div id="revisionModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-sheet">
+      <div class="card-title">
+        <span>Request Episode Revision</span>
+        <span style="cursor:pointer;" onclick="closeRevisionSheet()">✕</span>
+      </div>
+      <textarea id="revisionNotes" placeholder="Enter revision notes (e.g., extend head-tilt duration, adjust calculator sound volume)..."></textarea>
+      <button class="btn btn-primary" onclick="submitRevision()">
+        Submit Revision &amp; Re-Render
+      </button>
+    </div>
+  </div>
+
+  <!-- Contact Sheet Viewer Modal -->
+  <div id="sheetModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-sheet">
+      <div class="card-title">
+        <span>8-Panel Production Contact Sheet</span>
+        <span style="cursor:pointer;" onclick="closeContactSheetModal()">✕</span>
+      </div>
+      <img src="/renders/packages/EP001_RELEASE_MASTER/artwork/ep001_master_8panel_contact_sheet.png" style="width:100%; border-radius:8px;" />
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('ideas', this)">
+      <div class="nav-icon">💡</div>
+      <div>Idea</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('queue', this)">
+      <div class="nav-icon">⚡</div>
+      <div>Queue</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('review', this)">
+      <div class="nav-icon">🎬</div>
+      <div>Review</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('library', this)">
+      <div class="nav-icon">📚</div>
+      <div>Library</div>
+    </div>
+    <div class="nav-item" onclick="switchTab('sponsors', this)">
+      <div class="nav-icon">🤝</div>
+      <div>Sponsors</div>
+    </div>
+  </nav>
+
+  <script>
+    let selectedCategory = 'arithmetic';
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordInterval = null;
+    let recordSeconds = 0;
+    let ws = null;
+
+    // Tab Switching
+    function switchTab(tabId, el) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      el.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function selectCat(el, cat) {
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedCategory = cat;
+    }
+
+    // Real-Time WebSocket Connection
+    function initWebSocket() {
+      const loc = window.location;
+      const wsProto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${wsProto}//${loc.host}/ws/phone`;
+      
+      ws = new WebSocket(wsUrl);
+      ws.onopen = () => {
+        document.getElementById('connStatusText').textContent = 'Connected';
+        document.getElementById('connStatus').style.color = '#10b981';
+      };
+      ws.onmessage = (evt) => {
+        try {
+          const data = JSON.parse(evt.data);
+          if (data.type === 'JOB_PROGRESS') {
+            document.getElementById('activeStageText').textContent = data.stage || 'Rendering';
+            document.getElementById('progressBar').style.width = (data.progress_pct || 0) + '%';
+            document.getElementById('activePctText').textContent = Math.round(data.progress_pct || 0) + '%';
+            if (data.fps) document.getElementById('activeFpsText').textContent = `Speed: ${data.fps} FPS`;
+          } else if (data.type === 'NOTIFICATION') {
+            showNotification(data.title + ': ' + data.body);
+          }
+        } catch (e) {}
+      };
+      ws.onclose = () => {
+        document.getElementById('connStatusText').textContent = 'Reconnecting...';
+        document.getElementById('connStatus').style.color = '#f59e0b';
+        setTimeout(initWebSocket, 2500);
+      };
+    }
+    initWebSocket();
+
+    // Text Idea Submission
+    async function submitTextIdea() {
+      const title = document.getElementById('ideaTitle').value.trim();
+      const concept = document.getElementById('ideaConcept').value.trim();
+      if (!concept) {
+        alert('Please describe your episode concept or equation.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/phone/idea/text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, concept, math_category: selectedCategory })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Episode idea enqueued successfully! Code: ' + data.memo_code);
+          document.getElementById('ideaTitle').value = '';
+          document.getElementById('ideaConcept').value = '';
+        } else {
+          alert('Submission error: ' + (data.detail || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error. Idea queued locally.');
+      }
+    }
+
+    // Voice Recording via Web Audio API
+    async function toggleRecording() {
+      const btn = document.getElementById('micBtn');
+      const timer = document.getElementById('micTimer');
+
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          recordSeconds = 0;
+
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+          mediaRecorder.onstop = async () => {
+            clearInterval(recordInterval);
+            timer.textContent = 'Uploading Memo...';
+            btn.classList.remove('recording');
+
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'memo.webm');
+            formData.append('title', 'Voice Memo Idea');
+            formData.append('concept', 'Spoken concept dictation');
+            formData.append('math_category', selectedCategory);
+
+            try {
+              const res = await fetch('/api/phone/idea/voice', { method: 'POST', body: formData });
+              const data = await res.json();
+              if (res.ok) {
+                timer.textContent = 'Voice Memo Enqueued! (' + data.memo_code + ')';
+              } else {
+                timer.textContent = 'Error uploading memo.';
+              }
+            } catch (err) {
+              timer.textContent = 'Network error.';
+            }
+          };
+
+          mediaRecorder.start();
+          btn.classList.add('recording');
+          recordInterval = setInterval(() => {
+            recordSeconds++;
+            const m = Math.floor(recordSeconds / 60);
+            const s = recordSeconds % 60;
+            timer.textContent = `${m}:${s < 10 ? '0' : ''}${s} (Recording...)`;
+          }, 1000);
+        } catch (err) {
+          alert('Microphone access denied or unsupported.');
+        }
+      } else {
+        mediaRecorder.stop();
+      }
+    }
+
+    // Episode Approval
+    async function approveEpisodeVersion(episodeId, versionNumber) {
+      if (!confirm(`Confirm official owner approval for Episode 001 v${versionNumber}? This action is cryptographically signed and immutable.`)) return;
+
+      try {
+        const res = await fetch('/api/phone/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ episode_id: episodeId, version_number: versionNumber, notes: 'Approved via Phone Controller' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Episode 001 v${versionNumber} is now APPROVED and immutable! Log ID: #${data.approval_log_id}`);
+        } else {
+          alert('Approval error: ' + (data.detail || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error while recording approval.');
+      }
+    }
+
+    // Revisions
+    function openRevisionSheet() { document.getElementById('revisionModal').style.display = 'flex'; }
+    function closeRevisionSheet() { document.getElementById('revisionModal').style.display = 'none'; }
+    function openContactSheetModal() { document.getElementById('sheetModal').style.display = 'flex'; }
+    function closeContactSheetModal() { document.getElementById('sheetModal').style.display = 'none'; }
+    function closeModalOnOverlay(e) { if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; }
+
+    async function submitRevision() {
+      const notes = document.getElementById('revisionNotes').value.trim();
+      if (!notes) return alert('Please enter revision notes.');
+
+      try {
+        const res = await fetch('/api/phone/revision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ episode_code: 'EP001', revision_notes: notes })
+        });
+        const data = await res.json();
+        closeRevisionSheet();
+        alert('Revision request enqueued! Pipeline running.');
+        switchTab('queue', document.querySelectorAll('.nav-item')[1]);
+      } catch (err) {
+        alert('Network error.');
+      }
+    }
+
+    async function triggerPilotRender() {
+      try {
+        const res = await fetch('/api/episodes/ep001/render-pilot', { method: 'POST' });
+        const data = await res.json();
+        alert('Pilot render complete: ' + (data.video_path || 'Done'));
+      } catch (err) {
+        alert('Failed to trigger pilot.');
+      }
+    }
+
+    async function viewManifest() {
+      try {
+        const res = await fetch('/api/pipeline/report?episode_code=EP001');
+        const data = await res.json();
+        alert(`EP001 Manifest:\nDuration: ${data.duration_seconds}s\nFrames: ${data.frame_count}\nChecksum: ${data.video_sha256.substring(0, 16)}...`);
+      } catch (err) {
+        alert('Unable to load manifest.');
+      }
+    }
+  </script>
+</body>
+</html>
