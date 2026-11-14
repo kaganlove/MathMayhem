@@ -123,6 +123,14 @@ class CairoRigState:
     right_shoulder_protract_px: float = 0.0
     obstacle_boxes: List[Tuple[float, float, float, float]] = field(default_factory=list)
 
+    # Calibration parameters for limb curvature and hip convergence (defaults preserve Phase A exactly)
+    leg_bow_scale: float = 1.0
+    arm_bow_scale: float = 1.0
+    hip_spread_px: float = 0.0
+    use_cubic_limbs: bool = True
+    arm_tangent_weight: float = 0.65
+    leg_tangent_weight: float = 0.60
+
 
 @dataclass
 class SolvedCairoAnatomy:
@@ -198,7 +206,7 @@ def solve_cairo_anatomy(spec: OptionCCharacterSpec, state: CairoRigState) -> Sol
 
     # Foreshortened hip & shoulder half-widths
     width_scale = max(0.25, 1.0 - abs(state.yaw_factor) * 1.1)
-    hip_dx = spec.hip_half_width * s * width_scale
+    hip_dx = (spec.hip_half_width + state.hip_spread_px) * s * width_scale
     sh_dx = spec.shoulder_half_width * s * width_scale
 
     thigh_l = spec.thigh_length * s
@@ -352,34 +360,70 @@ def _draw_tapered_limb(
     w_mid: float,
     w_end: float,
     fill_rgb: Tuple[float, float, float] = (0.07, 0.09, 0.14),
+    bow_scale: float = 1.0,
+    use_cubic: bool = False,
+    tangent_weight: float = 0.62,
 ) -> None:
     """Draw a smooth variable-width tapered limb curve passing organically through joint `p1` to `p2`."""
     steps = 36
     left_edge: List[Point] = []
     right_edge: List[Point] = []
-    ctrl: Point = (
-        2.0 * p1[0] - 0.5 * (p0[0] + p2[0]),
-        2.0 * p1[1] - 0.5 * (p0[1] + p2[1]),
-    )
-    for i in range(steps + 1):
-        t = i / float(steps)
-        u = 1.0 - t
-        x = u * u * p0[0] + 2.0 * u * t * ctrl[0] + t * t * p2[0]
-        y = u * u * p0[1] + 2.0 * u * t * ctrl[1] + t * t * p2[1]
-        dx = 2.0 * u * (ctrl[0] - p0[0]) + 2.0 * t * (p2[0] - ctrl[0])
-        dy = 2.0 * u * (ctrl[1] - p0[1]) + 2.0 * t * (p2[1] - ctrl[1])
-        length = max(1e-5, math.hypot(dx, dy))
-        nx, ny = -dy / length, dx / length
-        if t <= 0.5:
-            s_t = 2.0 * t
-            blend = s_t * (2.0 - s_t)
-            hw = 0.5 * ((1.0 - blend) * w_start + blend * w_mid)
-        else:
-            s_t = 2.0 * (t - 0.5)
-            blend = s_t * s_t
-            hw = 0.5 * ((1.0 - blend) * w_mid + blend * w_end)
-        left_edge.append((x + nx * hw, y + ny * hw))
-        right_edge.append((x - nx * hw, y - ny * hw))
+
+    if use_cubic:
+        # Stage C2 Articulated Cubic Bezier:
+        # Control points are anchored along the upper segment (p0 -> p1) and lower segment (p2 -> p1).
+        # This keeps the curve strictly within the convex hull of the joints, eliminating exaggerated loops
+        # and parentheses bowing while producing an intentional, organic elbow/knee articulation.
+        gamma = tangent_weight
+        c1: Point = (p0[0] + gamma * (p1[0] - p0[0]), p0[1] + gamma * (p1[1] - p0[1]))
+        c2: Point = (p2[0] + gamma * (p1[0] - p2[0]), p2[1] + gamma * (p1[1] - p2[1]))
+
+        for i in range(steps + 1):
+            t = i / float(steps)
+            u = 1.0 - t
+            x = u * u * u * p0[0] + 3.0 * u * u * t * c1[0] + 3.0 * u * t * t * c2[0] + t * t * t * p2[0]
+            y = u * u * u * p0[1] + 3.0 * u * u * t * c1[1] + 3.0 * u * t * t * c2[1] + t * t * t * p2[1]
+            dx = 3.0 * u * u * (c1[0] - p0[0]) + 6.0 * u * t * (c2[0] - c1[0]) + 3.0 * t * t * (p2[0] - c2[0])
+            dy = 3.0 * u * u * (c1[1] - p0[1]) + 6.0 * u * t * (c2[1] - c1[1]) + 3.0 * t * t * (p2[1] - c2[1])
+            length = max(1e-5, math.hypot(dx, dy))
+            nx, ny = -dy / length, dx / length
+            if t <= 0.5:
+                s_t = 2.0 * t
+                blend = s_t * (2.0 - s_t)
+                hw = 0.5 * ((1.0 - blend) * w_start + blend * w_mid)
+            else:
+                s_t = 2.0 * (t - 0.5)
+                blend = s_t * s_t
+                hw = 0.5 * ((1.0 - blend) * w_mid + blend * w_end)
+            left_edge.append((x + nx * hw, y + ny * hw))
+            right_edge.append((x - nx * hw, y - ny * hw))
+    else:
+        # Canonical single quadratic Bezier
+        mx = 0.5 * (p0[0] + p2[0])
+        my = 0.5 * (p0[1] + p2[1])
+        ctrl: Point = (
+            mx + 2.0 * bow_scale * (p1[0] - mx),
+            my + 2.0 * bow_scale * (p1[1] - my),
+        )
+        for i in range(steps + 1):
+            t = i / float(steps)
+            u = 1.0 - t
+            x = u * u * p0[0] + 2.0 * u * t * ctrl[0] + t * t * p2[0]
+            y = u * u * p0[1] + 2.0 * u * t * ctrl[1] + t * t * p2[1]
+            dx = 2.0 * u * (ctrl[0] - p0[0]) + 2.0 * t * (p2[0] - ctrl[0])
+            dy = 2.0 * u * (ctrl[1] - p0[1]) + 2.0 * t * (p2[1] - ctrl[1])
+            length = max(1e-5, math.hypot(dx, dy))
+            nx, ny = -dy / length, dx / length
+            if t <= 0.5:
+                s_t = 2.0 * t
+                blend = s_t * (2.0 - s_t)
+                hw = 0.5 * ((1.0 - blend) * w_start + blend * w_mid)
+            else:
+                s_t = 2.0 * (t - 0.5)
+                blend = s_t * s_t
+                hw = 0.5 * ((1.0 - blend) * w_mid + blend * w_end)
+            left_edge.append((x + nx * hw, y + ny * hw))
+            right_edge.append((x - nx * hw, y - ny * hw))
 
     ctx.new_path()
     ctx.move_to(*left_edge[0])
@@ -480,7 +524,16 @@ def draw_option_c_character(
     spine_w = tuple(w * s for w in spec.spine_widths)
 
     # 2. Back Leg & Back Arm (Smooth Cairo Curved Limbs)
-    _draw_tapered_limb(ctx, anat.left_hip, anat.left_knee, anat.left_ankle, *leg_w)
+    _draw_tapered_limb(
+        ctx,
+        anat.left_hip,
+        anat.left_knee,
+        anat.left_ankle,
+        *leg_w,
+        bow_scale=state.leg_bow_scale,
+        use_cubic=state.use_cubic_limbs,
+        tangent_weight=state.leg_tangent_weight,
+    )
     _draw_boot(
         ctx,
         anat.left_ankle,
@@ -491,7 +544,16 @@ def draw_option_c_character(
     )
 
     # Back Arm
-    _draw_tapered_limb(ctx, anat.left_shoulder, anat.left_elbow, anat.left_wrist, *arm_w)
+    _draw_tapered_limb(
+        ctx,
+        anat.left_shoulder,
+        anat.left_elbow,
+        anat.left_wrist,
+        *arm_w,
+        bow_scale=state.arm_bow_scale,
+        use_cubic=state.use_cubic_limbs,
+        tangent_weight=state.arm_tangent_weight,
+    )
     _draw_hand(ctx, anat.left_wrist, angle_deg=state.left_hand_angle_deg, scale=s, pose=state.left_hand_pose)
 
     # 3. Tapered S/C-Curve Spine & Neck (Option C)
@@ -507,7 +569,16 @@ def draw_option_c_character(
     )
 
     # 4. Front Leg (Smooth Cairo Curved Limb)
-    _draw_tapered_limb(ctx, anat.right_hip, anat.right_knee, anat.right_ankle, *leg_w)
+    _draw_tapered_limb(
+        ctx,
+        anat.right_hip,
+        anat.right_knee,
+        anat.right_ankle,
+        *leg_w,
+        bow_scale=state.leg_bow_scale,
+        use_cubic=state.use_cubic_limbs,
+        tangent_weight=state.leg_tangent_weight,
+    )
     _draw_boot(
         ctx,
         anat.right_ankle,
@@ -708,7 +779,16 @@ def draw_option_c_character(
     ctx.restore()
 
     # 6. Front Arm & Hand (Smooth Cairo Curved Limb)
-    _draw_tapered_limb(ctx, anat.right_shoulder, anat.right_elbow, anat.right_wrist, *arm_w)
+    _draw_tapered_limb(
+        ctx,
+        anat.right_shoulder,
+        anat.right_elbow,
+        anat.right_wrist,
+        *arm_w,
+        bow_scale=state.arm_bow_scale,
+        use_cubic=state.use_cubic_limbs,
+        tangent_weight=state.arm_tangent_weight,
+    )
 
     # When reaching for calculator buttons, orient hand cap along forearm vector for seamless fingertip contact
     hand_ang = state.right_hand_angle_deg

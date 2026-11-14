@@ -320,6 +320,8 @@ def build_ep001_full_24s_storyboard() -> List[Dict[str, Any]]:
 
 def build_ep001_full_24s_interaction_engine(
     calc_box: Tuple[int, int, int, int] = EP001_CALC_BOX,
+    rest_right_wrist_offset: Point = (80.0, -174.0),
+    rest_left_wrist_offset: Point = (-44.0, -12.0),
 ) -> PhysicalInteractionEngine:
     """Create the 24.0-second `PhysicalInteractionEngine` with all 20 scheduled physical button presses."""
     calc_obj = create_calculator_interactive_object(object_id="pedestal_calculator", box=calc_box)
@@ -348,8 +350,8 @@ def build_ep001_full_24s_interaction_engine(
     return PhysicalInteractionEngine(
         objects={"pedestal_calculator": calc_obj},
         steps=steps,
-        rest_right_wrist_offset=(80.0, -174.0),
-        rest_left_wrist_offset=(-44.0, -12.0),
+        rest_right_wrist_offset=rest_right_wrist_offset,
+        rest_left_wrist_offset=rest_left_wrist_offset,
     )
 
 
@@ -613,11 +615,16 @@ def evaluate_ep001_full_24s_character_state(
 def simulate_ep001_full_24s_timeline(
     fps: int = 30,
     floor_y: float = 1520.0,
+    variant: Optional[Any] = None,
 ) -> Tuple[PhysicalInteractionEngine, List[FullEpisodeFrameSnapshot]]:
     """Simulate all 720 frames (`24.0s @ 30fps`) of the full Episode 001 with 20 physical button contacts."""
     spec = OptionCCharacterSpec()
     spec.validate()
-    engine = build_ep001_full_24s_interaction_engine(calc_box=EP001_CALC_BOX)
+    if variant is not None and getattr(variant, "variant_id", None) != "phase_a_baseline":
+        from app.limb_proportions import build_variant_interaction_engine, evaluate_variant_character_state
+        engine = build_variant_interaction_engine(variant)
+    else:
+        engine = build_ep001_full_24s_interaction_engine(calc_box=EP001_CALC_BOX)
     calc_obj = engine.objects["pedestal_calculator"]
 
     duration_seconds = 24.0
@@ -633,12 +640,21 @@ def simulate_ep001_full_24s_timeline(
         else:
             slide_offset = 0
 
-        char_state = evaluate_ep001_full_24s_character_state(
-            frame_idx=frame_idx,
-            fps=fps,
-            floor_y=floor_y,
-            engine=engine,
-        )
+        if variant is not None and getattr(variant, "variant_id", None) != "phase_a_baseline":
+            char_state = evaluate_variant_character_state(
+                frame_idx=frame_idx,
+                fps=fps,
+                floor_y=floor_y,
+                variant=variant,
+                engine=engine,
+            )
+        else:
+            char_state = evaluate_ep001_full_24s_character_state(
+                frame_idx=frame_idx,
+                fps=fps,
+                floor_y=floor_y,
+                engine=engine,
+            )
         anat: Optional[SolvedCairoAnatomy] = None
         if char_state is not None:
             anat = solve_cairo_anatomy(spec, char_state)
