@@ -41,7 +41,25 @@ from app.distribution_adapters import (
     PlatformDistributionHub,
     PublishingPlatform,
 )
-from app.models import AuditEvent, Episode, EpisodeVersion, Job, SponsorLead, approve_episode_version
+from app.analytics_engine import (
+    CommentModerationService,
+    ExecutiveReportCompiler,
+    FinancialTracker,
+    PerformanceTracker,
+    TopicRecommendationEngine,
+)
+from app.models import (
+    ApprovalLog,
+    AudienceComment,
+    AuditEvent,
+    Episode,
+    EpisodeVersion,
+    ExecutiveReport,
+    Job,
+    PerformanceMetric,
+    SponsorLead,
+    approve_episode_version,
+)
 from app.phone_control import (
     PairingManager,
     PhoneWebSocketHub,
@@ -797,6 +815,117 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
                 return res
             except Exception as e:
                 raise HTTPException(status_code=400, detail=str(e))
+
+    # ---------------------------------------------------------------------------
+    # Phase 7: Analytics, Financial Tracking & Optimization Endpoints
+    # ---------------------------------------------------------------------------
+
+    @app.get("/api/analytics/dashboard")
+    async def api_analytics_dashboard() -> Dict[str, Any]:
+        with session_factory() as session:
+            return PerformanceTracker.get_dashboard_summary(session)
+
+    @app.get("/api/analytics/financials")
+    async def api_analytics_financials() -> Dict[str, Any]:
+        with session_factory() as session:
+            return FinancialTracker.calculate_financial_summary(session)
+
+    @app.get("/api/analytics/recommendations")
+    async def api_analytics_recommendations() -> Dict[str, Any]:
+        return {"recommendations": TopicRecommendationEngine.get_recommendations(count=3)}
+
+    @app.get("/api/analytics/comments")
+    async def api_analytics_comments() -> Dict[str, Any]:
+        with session_factory() as session:
+            comments = session.query(AudienceComment).order_by(AudienceComment.id.desc()).all()
+            return {
+                "comments": [
+                    {
+                        "id": c.id,
+                        "episode_code": c.episode_code,
+                        "platform": c.platform,
+                        "author": c.author,
+                        "comment_text": c.comment_text,
+                        "sentiment": c.sentiment,
+                        "math_question": c.math_question,
+                        "draft_reply": c.draft_reply,
+                        "status": c.status,
+                    }
+                    for c in comments
+                ]
+            }
+
+    @app.post("/api/analytics/comments/ingest")
+    async def api_ingest_comment(payload: Dict[str, Any]) -> Dict[str, Any]:
+        episode_code = str(payload.get("episode_code", "EP001"))
+        platform = str(payload.get("platform", "youtube_shorts"))
+        author = str(payload.get("author", "MathFan"))
+        text = str(payload.get("comment_text", "Great video!"))
+
+        with session_factory() as session:
+            comment = CommentModerationService.ingest_comment(
+                session=session,
+                episode_code=episode_code,
+                platform=platform,
+                author=author,
+                comment_text=text,
+            )
+            return {
+                "id": comment.id,
+                "author": comment.author,
+                "draft_reply": comment.draft_reply,
+                "status": comment.status,
+            }
+
+    @app.post("/api/analytics/comments/approve")
+    async def api_approve_comment_reply(payload: Dict[str, Any]) -> Dict[str, Any]:
+        comment_id = int(payload.get("comment_id", 0))
+        approved_by = str(payload.get("approved_by", "owner_primary"))
+
+        with session_factory() as session:
+            try:
+                res = CommentModerationService.approve_reply(session, comment_id, approved_by=approved_by)
+                await phone_ws_hub.broadcast_notification(
+                    title="Comment Reply Sent",
+                    body=f"Dispatched reply to @{res['author']}",
+                    kind="info",
+                )
+                return res
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+    @app.post("/api/analytics/reports/compile")
+    async def api_compile_executive_report() -> Dict[str, Any]:
+        with session_factory() as session:
+            report = ExecutiveReportCompiler.compile_weekly_report(session)
+            await phone_ws_hub.broadcast_notification(
+                title="Weekly Executive Report Ready",
+                body=f"Progress to $500/mo: {report.milestone_progress_pct}%",
+                kind="success",
+            )
+            return {
+                "id": report.id,
+                "report_title": report.report_title,
+                "total_views": report.total_views,
+                "net_profit_usd": report.net_profit_usd,
+                "milestone_progress_pct": report.milestone_progress_pct,
+                "summary_markdown": report.summary_markdown,
+            }
+
+    @app.get("/api/analytics/reports/latest")
+    async def api_latest_executive_report() -> Dict[str, Any]:
+        with session_factory() as session:
+            rep = session.query(ExecutiveReport).order_by(ExecutiveReport.id.desc()).first()
+            if not rep:
+                rep = ExecutiveReportCompiler.compile_weekly_report(session)
+            return {
+                "id": rep.id,
+                "report_title": rep.report_title,
+                "total_views": rep.total_views,
+                "net_profit_usd": rep.net_profit_usd,
+                "milestone_progress_pct": rep.milestone_progress_pct,
+                "summary_markdown": rep.summary_markdown,
+            }
 
     return app
 

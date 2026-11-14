@@ -244,6 +244,65 @@ class AuditEvent(Base):
 
 
 # ---------------------------------------------------------------------------
+# Phase 7: Analytics, Financial Tracking & Audience Optimization Models
+# ---------------------------------------------------------------------------
+
+class PerformanceMetric(Base):
+    """Episodic audience and retention telemetry across distribution channels."""
+
+    __tablename__ = "performance_metrics"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    episode_code: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    platform: Mapped[str] = mapped_column(String(64), nullable=False)  # youtube_shorts | tiktok | instagram_reels
+    views: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    likes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    comments: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    shares: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    average_retention_pct: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    estimated_revenue_usd: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+
+class AudienceComment(Base):
+    """Audience reaction comment with automated polite/witty draft response queue."""
+
+    __tablename__ = "audience_comments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    episode_code: Mapped[str] = mapped_column(String(32), default="EP001", nullable=False, index=True)
+    platform: Mapped[str] = mapped_column(String(64), default="youtube_shorts", nullable=False)
+    author: Mapped[str] = mapped_column(String(128), default="Viewer", nullable=False)
+    comment_text: Mapped[str] = mapped_column(Text, nullable=False)
+    sentiment: Mapped[str] = mapped_column(String(32), default="CURIOUS", nullable=False)  # POSITIVE | CURIOUS | CRITICAL
+    math_question: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    draft_reply: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="PENDING_REVIEW", nullable=False)  # PENDING_REVIEW | APPROVED | SENT
+    approved_by: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+
+class ExecutiveReport(Base):
+    """Weekly automated executive summary compiler artifact."""
+
+    __tablename__ = "executive_reports"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    report_title: Mapped[str] = mapped_column(String(200), nullable=False)
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    total_views: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    total_ad_revenue_usd: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    total_sponsor_revenue_usd: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    net_profit_usd: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    monthly_milestone_target_usd: Mapped[float] = mapped_column(Float, default=500.0, nullable=False)
+    milestone_progress_pct: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    summary_markdown: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+
+# ---------------------------------------------------------------------------
 # Guardrail Event Listeners: Immutability & Asset Provenance Enforcement
 # ---------------------------------------------------------------------------
 

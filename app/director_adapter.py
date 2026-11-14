@@ -83,6 +83,10 @@ class ConversationalIntent(str, Enum):
     APPROVE_MASTER = "APPROVE_MASTER"
     DISTRIBUTE_EPISODE = "DISTRIBUTE_EPISODE"
     SPONSOR_PITCH = "SPONSOR_PITCH"
+    FINANCIAL_QUERY = "FINANCIAL_QUERY"
+    RECOMMENDATION_QUERY = "RECOMMENDATION_QUERY"
+    COMMENT_MODERATION = "COMMENT_MODERATION"
+    REPORT_GENERATION = "REPORT_GENERATION"
     GENERAL_QUERY = "GENERAL_QUERY"
 
 
@@ -212,6 +216,38 @@ class DirectorProductionAdapter:
                 intent=ConversationalIntent.SPONSOR_PITCH,
                 confidence=0.91,
                 extracted_topic=target_brand,
+                raw_instruction=msg,
+            )
+
+        # Check for financial query / revenue / $500 milestone
+        if any(w in lower for w in ["financial", "revenue", "money", "profit", "$500", "milestone", "earnings", "how much made", "income"]):
+            return IntentResult(
+                intent=ConversationalIntent.FINANCIAL_QUERY,
+                confidence=0.92,
+                raw_instruction=msg,
+            )
+
+        # Check for topic recommendations / what to make next
+        if any(w in lower for w in ["what to make next", "recommend", "next topic", "what should we make", "topic recommendation", "data-driven"]):
+            return IntentResult(
+                intent=ConversationalIntent.RECOMMENDATION_QUERY,
+                confidence=0.91,
+                raw_instruction=msg,
+            )
+
+        # Check for comment moderation / audience interaction
+        if any(w in lower for w in ["comment", "audience question", "reply to comment", "moderate", "feedback", "fan question"]):
+            return IntentResult(
+                intent=ConversationalIntent.COMMENT_MODERATION,
+                confidence=0.90,
+                raw_instruction=msg,
+            )
+
+        # Check for executive / weekly reporting
+        if any(w in lower for w in ["executive report", "weekly report", "summary report", "channel health", "compile report", "growth report"]):
+            return IntentResult(
+                intent=ConversationalIntent.REPORT_GENERATION,
+                confidence=0.92,
                 raw_instruction=msg,
             )
 
@@ -1025,6 +1061,82 @@ class DirectorProductionAdapter:
                     f"- **Proposed Terms:** `{lead.proposed_terms}`\n"
                     f"- **Status:** `PENDING_APPROVAL` (Protected by Owner Firewall Gate)\n\n"
                     f"This pitch is staged safely in your Sponsor CRM and will NOT be sent until you approve it."
+                )
+
+        elif intent == ConversationalIntent.FINANCIAL_QUERY:
+            from app.analytics_engine import FinancialTracker
+            with self.memory.session_factory() as session:
+                fin_summary = FinancialTracker.calculate_financial_summary(session)
+                artifacts["financial_summary"] = fin_summary
+                progress_bar = "█" * int(fin_summary["milestone_progress_pct"] // 10) + "░" * (10 - int(fin_summary["milestone_progress_pct"] // 10))
+                response_text = (
+                    f"💰 **Financial Health & $500/Month Milestone Status:**\n\n"
+                    f"- **Monthly Target:** ${fin_summary['monthly_target_usd']:.2f} USD / month\n"
+                    f"- **Current Gross Revenue (30d):** ${fin_summary['gross_revenue_usd']:.2f} USD\n"
+                    f"  - Platform AdSense: ${fin_summary['ad_revenue_usd']:.2f} USD\n"
+                    f"  - Brand Sponsorships: ${fin_summary['sponsor_revenue_usd']:.2f} USD\n"
+                    f"- **Operating Compute Cost:** ${fin_summary['operating_compute_cost_usd']:.2f} USD *(100% Local GPU RTX 5080)*\n"
+                    f"- **Net Profit:** ${fin_summary['net_profit_usd']:.2f} USD (**{fin_summary['profit_margin_pct']:.0f}% Margin**)\n"
+                    f"- **Milestone Progress:** `{progress_bar}` **{fin_summary['milestone_progress_pct']}%** "
+                    f"({'🎉 TARGET REACHED!' if fin_summary['milestone_achieved'] else f'(${fin_summary['gap_to_milestone_usd']:.2f} to go)'})"
+                )
+
+        elif intent == ConversationalIntent.RECOMMENDATION_QUERY:
+            from app.analytics_engine import TopicRecommendationEngine
+            recs = TopicRecommendationEngine.get_recommendations(3)
+            artifacts["recommendations"] = recs
+            rec_lines = []
+            for i, r in enumerate(recs, 1):
+                rec_lines.append(
+                    f"{i}. **{r['topic']}** ({r['category']}) — *Virality Score: {r['projected_virality_score']}/100*\n"
+                    f"   - **Premise:** {r['premise']}\n"
+                    f"   - **SymPy Rigor:** `{r['sympy_validation']}`"
+                )
+            response_text = (
+                f"🧠 **Top Data-Driven Episode Recommendations:**\n\n"
+                + "\n\n".join(rec_lines) + "\n\n"
+                f"Which one would you like to explore next? Just let me know and I'll generate the full 3-concept pitch!"
+            )
+
+        elif intent == ConversationalIntent.COMMENT_MODERATION:
+            from app.models import AudienceComment
+            with self.memory.session_factory() as session:
+                pending_comments = session.query(AudienceComment).filter_by(status="PENDING_REVIEW").all()
+                artifacts["pending_comments_count"] = len(pending_comments)
+                if not pending_comments:
+                    response_text = (
+                        f"💬 **Audience Comment Inbox:** All caught up! Zero pending comments awaiting review.\n\n"
+                        f"Every response is protected by your approval firewall before dispatch."
+                    )
+                else:
+                    top = pending_comments[0]
+                    artifacts["sample_comment"] = {
+                        "id": top.id,
+                        "author": top.author,
+                        "comment": top.comment_text,
+                        "draft_reply": top.draft_reply,
+                    }
+                    response_text = (
+                        f"💬 **Audience Comment Queue ({len(pending_comments)} pending review):**\n\n"
+                        f"- **Author:** `@{top.author}` on **{top.platform}** ({top.episode_code})\n"
+                        f"- **Question:** \"{top.comment_text}\"\n"
+                        f"- **Draft Reply:** \"{top.draft_reply}\"\n\n"
+                        f"Would you like me to approve and dispatch this reply, or tweak the wording?"
+                    )
+
+        elif intent == ConversationalIntent.REPORT_GENERATION:
+            from app.analytics_engine import ExecutiveReportCompiler
+            with self.memory.session_factory() as session:
+                report = ExecutiveReportCompiler.compile_weekly_report(session)
+                artifacts["report_id"] = report.id
+                artifacts["report_title"] = report.report_title
+                response_text = (
+                    f"📊 **Executive Report Generated: {report.report_title}**\n\n"
+                    f"- **Total Views:** {report.total_views:,}\n"
+                    f"- **Net Revenue:** ${report.net_profit_usd:.2f} USD\n"
+                    f"- **$500/Mo Milestone Progress:** {report.milestone_progress_pct}%\n"
+                    f"- **Status:** Locked & saved in database.\n\n"
+                    f"The full report breakdown is available on your Executive Dashboard and mobile controller."
                 )
 
         else:
