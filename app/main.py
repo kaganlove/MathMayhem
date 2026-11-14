@@ -37,7 +37,11 @@ from app.database import create_db_engine, init_db, make_session_factory
 from app.episode001_pilot import build_ep001_pilot_storyboard, render_episode001_opening_pilot
 from app.logging_config import setup_logging
 from app.math_verifier import verify_math_statement
-from app.models import AuditEvent, Episode, EpisodeVersion, Job, approve_episode_version
+from app.distribution_adapters import (
+    PlatformDistributionHub,
+    PublishingPlatform,
+)
+from app.models import AuditEvent, Episode, EpisodeVersion, Job, SponsorLead, approve_episode_version
 from app.phone_control import (
     PairingManager,
     PhoneWebSocketHub,
@@ -47,10 +51,16 @@ from app.phone_control import (
     stream_video_with_range,
 )
 from app.production_agents import request_episode_revision, run_phase4_episode001_pipeline
+from app.publishing_scheduler import PublishingScheduler
 from app.queue import PersistentJobQueue
 from app.render_smoke import detect_gpu_info, run_gpu_render_smoke_test
 from app.schemas import EpisodeCreateRequest, HealthStatusResponse, LoginRequest
 from app.security import require_owner_auth, verify_token_value
+from app.sponsor_crm import (
+    TARGET_SPONSOR_CATALOG,
+    SponsorOutreachEngine,
+    TargetSponsorBrand,
+)
 
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -629,6 +639,164 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
                 raise HTTPException(status_code=404, detail="Video file not found")
 
         return stream_video_with_range(request, target)
+
+    # ---------------------------------------------------------------------------
+    # Phase 6: Distribution, Publishing Scheduler & Sponsor CRM Endpoints
+    # ---------------------------------------------------------------------------
+    publishing_scheduler = PublishingScheduler(cfg)
+    distribution_hub = PlatformDistributionHub(cfg)
+
+    @app.get("/api/distribution/status")
+    async def api_distribution_status() -> Dict[str, Any]:
+        with session_factory() as session:
+            return publishing_scheduler.get_scheduler_status(session)
+
+    @app.post("/api/distribution/publish")
+    async def api_distribution_publish(payload: Dict[str, Any]) -> Dict[str, Any]:
+        episode_id = int(payload.get("episode_id", 1))
+        version_id = int(payload.get("version_id", 1))
+        actor = str(payload.get("actor", "owner_primary"))
+        force_simulation = payload.get("force_simulation", None)
+
+        with session_factory() as session:
+            try:
+                res = distribution_hub.publish_to_all_platforms(
+                    session=session,
+                    episode_id=episode_id,
+                    version_id=version_id,
+                    actor=actor,
+                    force_simulation=force_simulation,
+                )
+                await phone_ws_hub.broadcast_notification(
+                    title="Episode Published!",
+                    body=f"Published to YouTube Shorts, TikTok, and Instagram Reels.",
+                    kind="success",
+                )
+                return {
+                    "success": True,
+                    "platforms": {k: {"video_id": v.platform_video_id, "url": v.published_url} for k, v in res.items()},
+                }
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+    @app.post("/api/distribution/maximum-mode/run")
+    async def api_run_maximum_publishing_cycle(payload: Dict[str, Any] = None) -> Dict[str, Any]:
+        actor = "owner_primary"
+        force_simulation = None
+        if payload:
+            actor = str(payload.get("actor", "owner_primary"))
+            force_simulation = payload.get("force_simulation", None)
+
+        with session_factory() as session:
+            res = publishing_scheduler.run_maximum_publishing_cycle(
+                session=session, actor=actor, force_simulation=force_simulation
+            )
+            if res["published_count"] > 0:
+                await phone_ws_hub.broadcast_notification(
+                    title="Maximum Publishing Executed",
+                    body=f"Auto-published {res['published_count']} approved episodes across all channels.",
+                    kind="success",
+                )
+            return res
+
+    @app.post("/api/distribution/maximum-mode/toggle")
+    async def api_toggle_maximum_publishing_mode(payload: Dict[str, Any] = None) -> Dict[str, Any]:
+        enabled = None
+        if payload and "enabled" in payload:
+            enabled = bool(payload["enabled"])
+        if enabled is None:
+            publishing_scheduler.maximum_publishing_mode = not publishing_scheduler.maximum_publishing_mode
+        else:
+            publishing_scheduler.maximum_publishing_mode = enabled
+        return {"maximum_publishing_mode": publishing_scheduler.maximum_publishing_mode}
+
+    @app.get("/api/sponsors/catalog")
+    async def api_get_sponsor_catalog() -> Dict[str, Any]:
+        rate_card = SponsorOutreachEngine.calculate_rate_card()
+        catalog = [
+            {
+                "brand_name": b.brand_name,
+                "category": b.category.value,
+                "contact_email": b.contact_email,
+                "product_focus": b.product_focus,
+                "preferred_deliverable": b.preferred_deliverable,
+            }
+            for b in TARGET_SPONSOR_CATALOG
+        ]
+        return {"rate_card": rate_card, "catalog": catalog}
+
+    @app.get("/api/sponsors/leads")
+    async def api_list_sponsor_leads() -> Dict[str, Any]:
+        with session_factory() as session:
+            leads = session.query(SponsorLead).order_by(SponsorLead.id.desc()).all()
+            return {
+                "leads": [
+                    {
+                        "id": l.id,
+                        "brand_name": l.brand_name,
+                        "contact_email": l.contact_email,
+                        "subject": l.subject,
+                        "status": l.status,
+                        "proposed_terms": l.proposed_terms,
+                        "created_at": l.created_at.isoformat() if l.created_at else None,
+                        "approved_at": l.approved_at.isoformat() if l.approved_at else None,
+                    }
+                    for l in leads
+                ]
+            }
+
+    @app.post("/api/sponsors/pitch")
+    async def api_generate_sponsor_pitch(payload: Dict[str, Any]) -> Dict[str, Any]:
+        brand_name = str(payload.get("brand_name", "Desmos"))
+        package = str(payload.get("package", "standard_shoutout"))
+
+        target_brand = next((b for b in TARGET_SPONSOR_CATALOG if b.brand_name.lower() == brand_name.lower()), None)
+        if not target_brand:
+            raise HTTPException(status_code=404, detail=f"Brand '{brand_name}' not found in target catalog.")
+
+        pitch = SponsorOutreachEngine.generate_pitch_draft(target_brand, proposed_package=package)
+        with session_factory() as session:
+            lead = SponsorOutreachEngine.create_pending_lead(
+                session=session,
+                brand_name=pitch["brand_name"],
+                contact_email=pitch["contact_email"],
+                subject=pitch["subject"],
+                draft_body=pitch["draft_body"],
+                proposed_terms=pitch["proposed_terms"],
+            )
+            await phone_ws_hub.broadcast_notification(
+                title="Sponsor Pitch Drafted",
+                body=f"Drafted pitch for {lead.brand_name} (Pending Approval).",
+                kind="info",
+            )
+            return {
+                "id": lead.id,
+                "brand_name": lead.brand_name,
+                "subject": lead.subject,
+                "draft_body": lead.draft_body,
+                "proposed_terms": lead.proposed_terms,
+                "status": lead.status,
+            }
+
+    @app.post("/api/sponsors/approve")
+    async def api_approve_sponsor_lead(payload: Dict[str, Any]) -> Dict[str, Any]:
+        lead_id = int(payload.get("lead_id", 0))
+        approved_by = str(payload.get("approved_by", "owner_primary"))
+        notes = str(payload.get("notes", "Approved via API"))
+
+        with session_factory() as session:
+            try:
+                res = SponsorOutreachEngine.approve_and_send_lead(
+                    session=session, lead_id=lead_id, approved_by=approved_by, notes=notes
+                )
+                await phone_ws_hub.broadcast_notification(
+                    title="Sponsor Outreach Sent",
+                    body=f"Dispatched proposal to {res['brand_name']}.",
+                    kind="success",
+                )
+                return res
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
 
     return app
 

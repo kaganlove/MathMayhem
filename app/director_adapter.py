@@ -81,6 +81,8 @@ class ConversationalIntent(str, Enum):
     ROLLBACK_REQUEST = "ROLLBACK_REQUEST"
     STATUS_QUERY = "STATUS_QUERY"
     APPROVE_MASTER = "APPROVE_MASTER"
+    DISTRIBUTE_EPISODE = "DISTRIBUTE_EPISODE"
+    SPONSOR_PITCH = "SPONSOR_PITCH"
     GENERAL_QUERY = "GENERAL_QUERY"
 
 
@@ -185,6 +187,31 @@ class DirectorProductionAdapter:
                 intent=ConversationalIntent.STATUS_QUERY,
                 confidence=0.91,
                 target_episode=active_episode or "EP002",
+                raw_instruction=msg,
+            )
+
+        # Check for distribution / publishing
+        if any(w in lower for w in ["publish", "distribute", "release episode", "maximum publishing", "run publishing"]):
+            ep_match = re.search(r"episode\s*(?:00)?(\d+)", lower)
+            ep_code = f"EP{int(ep_match.group(1)):03d}" if ep_match else (active_episode or "EP001")
+            return IntentResult(
+                intent=ConversationalIntent.DISTRIBUTE_EPISODE,
+                confidence=0.93,
+                target_episode=ep_code,
+                raw_instruction=msg,
+            )
+
+        # Check for sponsor pitch / outreach
+        if any(w in lower for w in ["sponsor", "pitch", "monetization", "rate card", "sponsorship"]):
+            target_brand = "Desmos"
+            for b in ["desmos", "brilliant", "wolfram", "casio", "duolingo"]:
+                if b in lower:
+                    target_brand = b.capitalize()
+                    break
+            return IntentResult(
+                intent=ConversationalIntent.SPONSOR_PITCH,
+                confidence=0.91,
+                extracted_topic=target_brand,
                 raw_instruction=msg,
             )
 
@@ -956,6 +983,49 @@ class DirectorProductionAdapter:
                 f"- **Revisions Applied:** {status_res['revision_count']}\n"
                 f"- **Latest Preview:** {status_res['active_preview'] or 'None yet'}"
             )
+
+        elif intent == ConversationalIntent.DISTRIBUTE_EPISODE:
+            from app.publishing_scheduler import PublishingScheduler
+            scheduler = PublishingScheduler(self.settings)
+            with self.memory.session_factory() as session:
+                sched_res = scheduler.run_maximum_publishing_cycle(session, actor="owner_primary")
+                artifacts["distribution_result"] = sched_res
+                if sched_res["published_count"] > 0:
+                    response_text = (
+                        f"🚀 **Maximum Publishing Run Executed!**\n\n"
+                        f"- **Episodes Published:** {sched_res['published_count']}\n"
+                        f"- **Active Platforms:** YouTube Shorts, TikTok, Instagram Reels\n"
+                        f"- **Mode:** Maximum Publishing Mode (Peak Traffic Windows Active)\n\n"
+                        f"The releases are queued and live across all three channels!"
+                    )
+                else:
+                    response_text = (
+                        f"All approved episodes in inventory have already been published. "
+                        f"As soon as you approve a new episode master, Maximum Publishing Mode will automatically schedule and release it across YouTube Shorts, TikTok, and Instagram Reels!"
+                    )
+
+        elif intent == ConversationalIntent.SPONSOR_PITCH:
+            from app.sponsor_crm import SponsorOutreachEngine, TARGET_SPONSOR_CATALOG
+            brand_query = intent_res.extracted_topic or "Desmos"
+            target_brand = next((b for b in TARGET_SPONSOR_CATALOG if brand_query.lower() in b.brand_name.lower()), TARGET_SPONSOR_CATALOG[0])
+            pitch_draft = SponsorOutreachEngine.generate_pitch_draft(target_brand)
+            with self.memory.session_factory() as session:
+                lead = SponsorOutreachEngine.create_pending_lead(
+                    session=session,
+                    brand_name=pitch_draft["brand_name"],
+                    contact_email=pitch_draft["contact_email"],
+                    subject=pitch_draft["subject"],
+                    draft_body=pitch_draft["draft_body"],
+                    proposed_terms=pitch_draft["proposed_terms"],
+                )
+                artifacts["sponsor_lead"] = {"id": lead.id, "brand_name": lead.brand_name, "status": lead.status}
+                response_text = (
+                    f"🤝 I've prepared a sponsor outreach proposal for **{lead.brand_name}**:\n\n"
+                    f"- **Subject:** `{lead.subject}`\n"
+                    f"- **Proposed Terms:** `{lead.proposed_terms}`\n"
+                    f"- **Status:** `PENDING_APPROVAL` (Protected by Owner Firewall Gate)\n\n"
+                    f"This pitch is staged safely in your Sponsor CRM and will NOT be sent until you approve it."
+                )
 
         else:
             response_text = (

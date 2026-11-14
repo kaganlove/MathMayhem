@@ -432,24 +432,40 @@
     </div>
   </section>
 
-  <!-- TAB 5: SPONSORS & OUTREACH -->
+  <!-- TAB 5: SPONSORS & DISTRIBUTION -->
   <section id="tab-sponsors" class="tab-content">
+    <!-- Distribution Section -->
+    <div class="card">
+      <div class="card-title">🚀 Distribution &amp; Maximum Publishing</div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem;">
+        Target Platforms: <strong>YouTube Shorts, TikTok, Instagram Reels</strong><br>
+        Mode: <span id="maxPublishingStatusBadge" style="color:var(--accent); font-weight:700;">MAXIMUM PUBLISHING ACTIVE</span>
+      </p>
+      <div style="display:flex; gap:0.5rem;">
+        <button class="btn btn-primary" style="font-size:0.85rem;" onclick="runMaximumPublishingCycle()">
+          ⚡ Run Release Cycle Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Sponsorship Section -->
     <div class="card">
       <div class="card-title">🤝 Sponsorship Hub &amp; Approvals</div>
       <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
         All sponsor inquiries, initial pitches, and proposed terms require explicit owner approval before dispatch.
       </p>
-      <div style="background:#0b1120; border:1px solid var(--card-border); border-radius:12px; padding:0.85rem; margin-bottom:0.75rem;">
-        <div style="display:flex; justify-content:space-between;">
-          <strong>STEM Education Brand Outreach</strong>
-          <span style="color:var(--accent-yellow); font-size:0.75rem; font-weight:700;">PROPOSAL DRAFT</span>
+      
+      <div id="sponsorLeadsList">
+        <p style="color:var(--text-muted); font-size:0.85rem;">Loading active sponsor leads...</p>
+      </div>
+
+      <div style="margin-top:1rem; border-top:1px solid var(--card-border); padding-top:0.75rem;">
+        <div style="font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">Draft Educational Pitch:</div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.6rem;" onclick="draftPitch('Desmos')">➕ Pitch Desmos</button>
+          <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.6rem;" onclick="draftPitch('Brilliant.org')">➕ Pitch Brilliant</button>
+          <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.6rem;" onclick="draftPitch('WolframAlpha')">➕ Pitch Wolfram</button>
         </div>
-        <p style="font-size:0.82rem; color:var(--text-muted); margin:0.4rem 0;">
-          Target: Interactive Mathematics Tool &bull; Proposed Rate: $500/integration &bull; Delivery: Mid-roll sponsor stinger
-        </p>
-        <button class="btn btn-secondary" style="font-size:0.85rem; margin-top:0.4rem;" onclick="alert('Phase 6 Sponsor Outbox: Approved messages are immutable and dry-run verified.')">
-          🔒 Review Draft &amp; Terms
-        </button>
       </div>
     </div>
   </section>
@@ -705,6 +721,92 @@
         alert('Unable to load manifest.');
       }
     }
+
+    // Phase 6: Distribution & Sponsor Functions
+    async function loadSponsorLeads() {
+      try {
+        const res = await fetch('/api/sponsors/leads');
+        const data = await res.json();
+        const container = document.getElementById('sponsorLeadsList');
+        if (!container) return;
+        if (!data.leads || data.leads.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No active leads. Tap a button below to draft an educational pitch.</p>';
+          return;
+        }
+        container.innerHTML = data.leads.map(l => `
+          <div style="background:#0b1120; border:1px solid var(--card-border); border-radius:12px; padding:0.85rem; margin-bottom:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>${l.brand_name}</strong>
+              <span style="color:${l.status === 'SENT' ? 'var(--accent)' : 'var(--accent-yellow)'}; font-size:0.75rem; font-weight:700;">${l.status}</span>
+            </div>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin:0.4rem 0;">${l.proposed_terms}</p>
+            ${l.status === 'PENDING_APPROVAL' ? `<button class="btn btn-primary" style="font-size:0.85rem; padding:0.4rem 0.75rem; width:100%; margin-top:0.35rem;" onclick="approveSponsorLead(${l.id})">✅ Approve &amp; Send Proposal</button>` : `<div style="font-size:0.75rem; color:var(--accent); margin-top:0.25rem;">Dispatched to ${l.contact_email}</div>`}
+          </div>
+        `).join('');
+      } catch(e) {}
+    }
+
+    async function approveSponsorLead(leadId) {
+      if (!confirm('Approve and dispatch this sponsor outreach pitch?')) return;
+      try {
+        const res = await fetch('/api/sponsors/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lead_id: leadId, approved_by: 'owner_phone' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Sponsor proposal to ${data.brand_name} officially approved and dispatched!`);
+          loadSponsorLeads();
+        } else {
+          alert('Approval error: ' + (data.detail || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error.');
+      }
+    }
+
+    async function draftPitch(brandName) {
+      try {
+        const res = await fetch('/api/sponsors/pitch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_name: brandName, package: 'standard_shoutout' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Pitch drafted for ${brandName}! Review terms below.`);
+          loadSponsorLeads();
+        } else {
+          alert('Draft error: ' + (data.detail || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error.');
+      }
+    }
+
+    async function runMaximumPublishingCycle() {
+      try {
+        const res = await fetch('/api/distribution/maximum-mode/run', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Maximum Publishing Run: ${data.published_count} approved episode(s) released across YouTube Shorts, TikTok, and Instagram Reels!`);
+        } else {
+          alert('Publishing error: ' + (data.detail || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error.');
+      }
+    }
+
+    // Auto-load sponsors when tab clicked
+    const origSwitchTab = switchTab;
+    switchTab = function(tabId, el) {
+      origSwitchTab(tabId, el);
+      if (tabId === 'sponsors') {
+        loadSponsorLeads();
+      }
+    };
   </script>
 </body>
 </html>
