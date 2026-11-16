@@ -1,9 +1,12 @@
-# Math Mayhem — Episode 001 Platform Distribution Guide
+# Math Mishaps — Episode 001 Platform Distribution Guide
 
-## Episode Overview
-- **Title:** Never Divide by Zero
+## Series & Brand Overview
+- **Series Title:** Math Mishaps
+- **Official Handle:** `@MathMishaps` (YouTube, TikTok, Instagram)
+- **Tagline:** *"When Math Goes Terribly, Hilariously Wrong."*
+- **Episode Title:** Never Divide by Zero (Director's Cut)
 - **Episode Code:** EP001
-- **Runtime:** 24.00 seconds (720 frames @ 30 FPS)
+- **Runtime:** 26.00 seconds (780 frames @ 30 FPS)
 - **Format:** 1080 × 1920 (9:16 Vertical Video)
 - **Soundtrack:** Option A Playful Orchestral Cartoon Mix
 
@@ -16,27 +19,27 @@
 
 **Description:**
 ```
-What happens when you divide by zero on a giant calculator?
+What happens when you divide by zero on a giant calculator in the void?
 
-Episode 001 of Math Mayhem: 'Never Divide by Zero'.
+Welcome to Math Mishaps — pure 2D animated cartoon comedy where math goes horribly, hilariously wrong!
 
 Mathematical Truth:
 • 10 ÷ 2 = 5
 • 10 ÷ 1 = 10
-• 10 ÷ 0 = UNDEFINED (Division by zero is impossible in standard arithmetic!)
-• 0 ÷ 0 = INDETERMINATE / UNDEFINED (The forbidden cliffhanger!)
+• 10 ÷ 0 = UNDEFINED (Division by zero breaks the laws of arithmetic!)
+• 0 ÷ 0 = INDETERMINATE / UNDEFINED (The ultimate paradox!)
 
-#MathMayhem #Shorts #Animation #Math #DivideByZero #MathHumor
+#MathMishaps #Shorts #Animation #Math #DivideByZero #MathHumor #Comedy #STEM
 ```
 
-**Tags:** `math mayhem, never divide by zero, division by zero, math animation, cairo animation, python animation, math shorts, calculus, zero divided by zero, indeterminate form, funny math, stem animation`
+**Tags:** `math mishaps, mathmishaps, never divide by zero, division by zero, math animation, cairo animation, python animation, math shorts, calculus, zero divided by zero, indeterminate form, funny math, stem animation`
 
 ---
 
 ### 2. TikTok
 **Caption:**
 ```
-POV: You pushed the one button in math you're never supposed to touch... 😳💥 #MathMayhem #DivideByZero #MathTok #Animation #Funny #LearnOnTikTok
+POV: You pushed the one button in math you're never supposed to touch... 😳💥 #MathMishaps #DivideByZero #MathTok #Animation #Funny #LearnOnTikTok
 ```
 
 ---
@@ -50,7 +53,7 @@ Watch what happens when our protagonist encounters a pedestal calculator in the 
 
 Drop your favorite math paradox in the comments! 👇
 
-#MathMayhem #MathHumor #Animation #StemEducation #MathReels #ZeroDivision
+#MathMishaps #MathHumor #Animation #StemEducation #MathReels #ZeroDivision #2DAnimation
 ```
 
 ---
@@ -67,7 +70,7 @@ As x approaches 0 from the right, 10 / x approaches +∞; from the left, it appr
 Because there is no finite, single consistent value, 10 ÷ 0 is strictly UNDEFINED.
 
 And what about 0 ÷ 0? That's an INDETERMINATE form: any number y satisfies y * 0 = 0!
-Stay tuned for Episode 002 for more Math Mayhem!
+Stay tuned for Episode 002 for more Math Mishaps!
 ```
 
 ---

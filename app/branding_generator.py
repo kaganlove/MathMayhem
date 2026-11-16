@@ -193,8 +193,8 @@ def generate_youtube_banner(out_path: Path) -> Path:
     subtitle_font = load_math_font(34)
     badge_font = load_math_font(22)
 
-    # "MATH MAYHEM" with 3D chalk drop shadow
-    title_text = "MATH MAYHEM"
+    # "MATH MISHAPS" with 3D chalk drop shadow
+    title_text = "MATH MISHAPS"
     title_x = safe_left + 60
     title_y = safe_top + 80
     draw.text((title_x + 4, title_y + 4), title_text, fill=(8, 12, 22), font=title_font)
@@ -203,7 +203,7 @@ def generate_youtube_banner(out_path: Path) -> Path:
     # Tagline
     tag_x = title_x + 5
     tag_y = title_y + 105
-    draw.text((tag_x, tag_y), "WHEN MATH BREAKS REALITY.", fill=ACCENT_GOLD, font=subtitle_font)
+    draw.text((tag_x, tag_y), "WHEN MATH GOES HILARIOUSLY WRONG.", fill=ACCENT_GOLD, font=subtitle_font)
 
     # Value Proposition Badges
     badge_y = tag_y + 65
@@ -268,10 +268,10 @@ def generate_social_header(out_path: Path) -> Path:
 
     title_x = 80
     title_y = 180
-    draw.text((title_x + 3, title_y + 3), "MATH MAYHEM", fill=(8, 12, 22), font=title_font)
-    draw.text((title_x, title_y), "MATH MAYHEM", fill=CHALK_WHITE, font=title_font)
+    draw.text((title_x + 3, title_y + 3), "MATH MISHAPS", fill=(8, 12, 22), font=title_font)
+    draw.text((title_x, title_y), "MATH MISHAPS", fill=CHALK_WHITE, font=title_font)
 
-    draw.text((title_x, title_y + 78), "When Math Breaks Reality.", fill=ACCENT_GOLD, font=subtitle_font)
+    draw.text((title_x, title_y + 78), "When Math Goes Terribly, Hilariously Wrong.", fill=ACCENT_GOLD, font=subtitle_font)
     draw.text((title_x, title_y + 128), "Pure 2D Animation  •  Zero Dialogue  •  Weekly Shorts", fill=ACCENT_CYAN, font=badge_font)
 
     # Option C Protagonist on Right
@@ -329,10 +329,10 @@ def generate_mobile_banner(out_path: Path) -> Path:
     badge_font = load_math_font(24)
 
     # Top Header
-    title_text = "MATH MAYHEM"
+    title_text = "MATH MISHAPS"
     draw.text((124, 284), title_text, fill=(8, 12, 22), font=title_font)
     draw.text((120, 280), title_text, fill=CHALK_WHITE, font=title_font)
-    draw.text((120, 385), "WHEN MATH BREAKS REALITY.", fill=ACCENT_GOLD, font=subtitle_font)
+    draw.text((120, 385), "WHEN MATH GOES HILARIOUSLY WRONG.", fill=ACCENT_GOLD, font=subtitle_font)
 
     # Center Character
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
@@ -410,7 +410,7 @@ def generate_watermark(out_path: Path) -> Path:
 
     # Brand text
     brand_font = load_math_font(36)
-    draw.text((115, 395), "MATH MAYHEM", fill=ACCENT_CYAN, font=brand_font)
+    draw.text((108, 395), "MATH MISHAPS", fill=ACCENT_CYAN, font=brand_font)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, format="PNG")
@@ -422,7 +422,7 @@ def build_full_branding_kit(output_dir: Optional[Path] = None) -> dict[str, Path
     target_dir = output_dir or (Path(__file__).resolve().parent.parent / "renders" / "branding")
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Generating Math Mayhem Channel Branding Kit into: {target_dir}")
+    print(f"Generating Math Mishaps Channel Branding Kit into: {target_dir}")
     res = {
         "avatar": generate_avatar(target_dir / "channel_avatar_1024x1024.png"),
         "youtube_banner": generate_youtube_banner(target_dir / "youtube_banner_2560x1440.png"),

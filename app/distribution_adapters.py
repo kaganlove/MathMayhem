@@ -120,7 +120,7 @@ class YouTubeShortsAdapter(BasePublishingAdapter):
             title = f"{base_title[:75]}... #Shorts"
 
         description_lines = [
-            f"Math Mayhem — {episode.title}",
+            f"Math Mishaps — {episode.title}",
             "",
             "Can you solve this before reality breaks?",
             "",
@@ -130,12 +130,12 @@ class YouTubeShortsAdapter(BasePublishingAdapter):
             "⚠️ Disclaimer:",
             "Educational satire. Fictional comedic consequences (e.g. dimensional rotation, cartoon void collapses) are purely illustrative!",
             "",
-            "#MathMayhem #Shorts #Math #Animation #Comedy #Education #Science #STEM",
+            "#MathMishaps #Shorts #Math #Animation #Comedy #Education #Science #STEM",
         ]
         description = "\n".join(description_lines)
 
         tags = [
-            "Math Mayhem",
+            "Math Mishaps",
             "animation",
             "shorts",
             "math comedy",
@@ -151,7 +151,7 @@ class YouTubeShortsAdapter(BasePublishingAdapter):
             title=title,
             description=description,
             tags=tags,
-            hashtags=["#Shorts", "#MathMayhem", "#Math", "#Animation", "#STEM"],
+            hashtags=["#Shorts", "#MathMishaps", "#Math", "#Animation", "#STEM"],
             disclaimer_text="Fictional comedic metaphors are purely illustrative.",
             math_summary="Verified via SymPy symbolic engine.",
             category="Education",
@@ -225,17 +225,17 @@ class TikTokAdapter(BasePublishingAdapter):
     def build_metadata(self, episode: Episode, version: EpisodeVersion) -> PublishMetadata:
         caption = (
             f"Wait till the end... 😱 {episode.title} "
-            f"#MathMayhem #Math #Animation #Comedy #StemTok #LearnOnTikTok #Cartoon"
+            f"#MathMishaps #Math #Animation #Comedy #StemTok #LearnOnTikTok #Cartoon"
         )
         if len(caption) > 150:
             caption = caption[:147] + "..."
 
-        tags = ["MathMayhem", "StemTok", "animation", "comedy", "math", "calculus"]
+        tags = ["MathMishaps", "StemTok", "animation", "comedy", "math", "calculus"]
         return PublishMetadata(
             title=caption,
             description=caption,
             tags=tags,
-            hashtags=["#MathMayhem", "#StemTok", "#Math", "#Animation"],
+            hashtags=["#MathMishaps", "#StemTok", "#Math", "#Animation"],
             category="Education",
             privacy_status="public",
         )
@@ -259,7 +259,7 @@ class TikTokAdapter(BasePublishingAdapter):
 
         is_sim = True if force_simulation is not False else False
         mock_id = f"tt_{version.video_sha256[:12]}" if version.video_sha256 else f"tt_sim_{int(time.time())}"
-        published_url = f"https://www.tiktok.com/@mathmayhem/video/{mock_id}"
+        published_url = f"https://www.tiktok.com/@mathmishaps/video/{mock_id}"
 
         session.add(
             AuditEvent(
@@ -302,13 +302,13 @@ class InstagramReelsAdapter(BasePublishingAdapter):
             f"{episode.title} 🧮 Pure 2D vector animation. "
             f"Never argue with mathematics!\n\n"
             f"Audio: Option A Playful Orchestral Cartoon\n"
-            f"#MathMayhem #Reels #MathReels #2DAnimation #Cairo #IndieAnimation #STEM"
+            f"#MathMishaps #Reels #MathReels #2DAnimation #Cairo #IndieAnimation #STEM"
         )
         return PublishMetadata(
             title=episode.title,
             description=caption,
-            tags=["MathMayhem", "Reels", "Animation", "Math"],
-            hashtags=["#MathMayhem", "#Reels", "#2DAnimation", "#STEM"],
+            tags=["MathMishaps", "Reels", "Animation", "Math"],
+            hashtags=["#MathMishaps", "#Reels", "#2DAnimation", "#STEM"],
             category="Education",
             privacy_status="public",
         )
