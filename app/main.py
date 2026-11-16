@@ -165,6 +165,11 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
             failed_jobs=failed,
         )
 
+    @app.get("/dashboard", response_class=HTMLResponse)
+    async def dashboard_alias(request: Request) -> Response:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/phone", status_code=307)
+
     @app.get("/", response_class=HTMLResponse)
     async def dashboard_home(request: Request, _owner: str = Depends(require_owner_auth)) -> HTMLResponse:
         disk_free_gb = round(shutil.disk_usage(cfg.MM_DATA_DIR).free / 1e9, 2)

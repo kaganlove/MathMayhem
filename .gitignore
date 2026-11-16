@@ -13,6 +13,9 @@ build/
 .env
 *.key
 data/*.vault
+client_secret*.json
+*token*.json
+credentials.json
 
 # Local Runtime Databases, Logs, Backups & Temporary Renders
 data/*.db
