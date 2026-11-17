@@ -130,6 +130,7 @@ class CairoRigState:
     use_cubic_limbs: bool = True
     arm_tangent_weight: float = 0.65
     leg_tangent_weight: float = 0.60
+    draw_ground_shadow: bool = True
 
 
 @dataclass
@@ -510,14 +511,15 @@ def draw_option_c_character(
     outline_w = spec.outline_width * s
 
     # 1. Ground contact shadow anchored between feet and pelvis X
-    shadow_cx = 0.4 * anat.left_ankle[0] + 0.4 * anat.right_ankle[0] + 0.2 * anat.pelvis[0]
-    ctx.save()
-    ctx.translate(shadow_cx, state.floor_y + 3.0 * s)
-    ctx.scale(96.0 * s, 13.0 * s)
-    ctx.arc(0, 0, 1.0, 0, 2 * math.pi)
-    ctx.restore()
-    ctx.set_source_rgb(0.89, 0.91, 0.94)
-    ctx.fill()
+    if state.draw_ground_shadow:
+        shadow_cx = 0.4 * anat.left_ankle[0] + 0.4 * anat.right_ankle[0] + 0.2 * anat.pelvis[0]
+        ctx.save()
+        ctx.translate(shadow_cx, state.floor_y + 3.0 * s)
+        ctx.scale(96.0 * s, 13.0 * s)
+        ctx.arc(0, 0, 1.0, 0, 2 * math.pi)
+        ctx.restore()
+        ctx.set_source_rgb(0.89, 0.91, 0.94)
+        ctx.fill()
 
     leg_w = tuple(w * s for w in spec.leg_widths)
     arm_w = tuple(w * s for w in spec.arm_widths)

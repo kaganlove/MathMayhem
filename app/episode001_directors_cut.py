@@ -66,6 +66,7 @@ def _draw_cairo_calculator_prop(
     floor_y: float,
     calc_expr: str,
     calc_res: str,
+    active_btn: Optional[str] = None,
 ) -> None:
     """Draw high-contrast, readable vector pedestal calculator prop directly in Cairo."""
     stand_w = 44.0
@@ -100,11 +101,6 @@ def _draw_cairo_calculator_prop(
     ctx.stroke()
 
     # 2. Main casing
-    # Drop shadow
-    ctx.set_source_rgba(0.0, 0.0, 0.0, 0.10)
-    _draw_rounded_rect(ctx, calc_x + 8.0, calc_y + 8.0, calc_w, calc_h, 24.0)
-    ctx.fill()
-
     # Calculator body
     ctx.set_source_rgb(0.95, 0.96, 0.98)
     _draw_rounded_rect(ctx, calc_x, calc_y, calc_w, calc_h, 24.0)
@@ -177,7 +173,10 @@ def _draw_cairo_calculator_prop(
             bx = scr_x + c_idx * (btn_w + gap_x)
             by = kp_top + r_idx * (btn_h + gap_y)
 
-            if lbl == "=":
+            if lbl == active_btn:
+                bg_col = (0.28, 0.70, 1.0)
+                txt_col = (1.0, 1.0, 1.0)
+            elif lbl == "=":
                 bg_col = (0.20, 0.55, 0.92)
                 txt_col = (1.0, 1.0, 1.0)
             elif lbl in ("÷", "×", "−", "+"):
@@ -276,6 +275,72 @@ def _draw_floor_black_hole(ctx: cairo.Context, cx: float, cy: float, width_r: fl
     ctx.restore()
 
 
+# Shared 4x4 Keypad Button Coordinates on Pedestal Calculator (calc_x=555.0, calc_y=620.0, calc_w=288.0, calc_h=622.0)
+CALC_BTN_COORDS: Dict[str, Tuple[float, float]] = {
+    "7": (600.8, 875.9), "8": (666.2, 875.9), "9": (731.8, 875.9), "÷": (797.2, 875.9),
+    "4": (600.8, 975.6), "5": (666.2, 975.6), "6": (731.8, 975.6), "×": (797.2, 975.6),
+    "1": (600.8, 1075.4), "2": (666.2, 1075.4), "3": (731.8, 1075.4), "−": (797.2, 1075.4),
+    "C": (600.8, 1175.1), "0": (666.2, 1175.1), "=": (731.8, 1175.1), "+": (797.2, 1175.1),
+}
+
+# Precision Keystroke Knots: (timestamp, target_pos, key_label, is_contact_press)
+KEY_KNOTS: List[Tuple[float, Tuple[float, float], Optional[str], bool]] = [
+    (5.80, (425.0, 1279.0), None, False),
+    (6.45, (540.0, 1130.0), None, False),  # hand raised towards keypad
+    # Sequence 1: 10 ÷ 2 = 5
+    (6.75, CALC_BTN_COORDS["1"], "1", True),
+    (7.05, CALC_BTN_COORDS["0"], "0", True),
+    (7.45, CALC_BTN_COORDS["÷"], "÷", True),
+    (7.85, CALC_BTN_COORDS["2"], "2", True),
+    (8.25, CALC_BTN_COORDS["="], "=", True),
+    (8.60, (540.0, 1130.0), None, False),  # admire 5
+    # Sequence 2: 10 ÷ 1 = 10
+    (8.95, CALC_BTN_COORDS["1"], "1", True),
+    (9.25, CALC_BTN_COORDS["0"], "0", True),
+    (9.65, CALC_BTN_COORDS["÷"], "÷", True),
+    (10.00, CALC_BTN_COORDS["1"], "1", True),
+    (10.35, CALC_BTN_COORDS["="], "=", True),
+    (10.75, (540.0, 1130.0), None, False), # ponder 10
+    # Sequence 3: 10 ÷ 0 = ...
+    (11.15, CALC_BTN_COORDS["1"], "1", True),
+    (11.45, CALC_BTN_COORDS["0"], "0", True),
+    (11.85, CALC_BTN_COORDS["÷"], "÷", True),
+    (12.20, CALC_BTN_COORDS["0"], "0", True),
+    (12.50, (700.0, 1130.0), None, False), # hesitation hover over =
+    (12.75, CALC_BTN_COORDS["="], "=", True),
+    (13.30, (440.0, 1280.0), None, False), # pull back as ground begins rumbling
+]
+
+
+def get_calc_keystroke_state(t_sec: float) -> Tuple[Tuple[float, float], Optional[str], bool]:
+    """Calculate exact wrist coordinate, active button highlight, and contact state."""
+    if t_sec <= KEY_KNOTS[0][0]:
+        return KEY_KNOTS[0][1], KEY_KNOTS[0][2], KEY_KNOTS[0][3]
+    if t_sec >= KEY_KNOTS[-1][0]:
+        return KEY_KNOTS[-1][1], KEY_KNOTS[-1][2], KEY_KNOTS[-1][3]
+
+    for i in range(len(KEY_KNOTS) - 1):
+        t0, p0, k0, pr0 = KEY_KNOTS[i]
+        t1, p1, k1, pr1 = KEY_KNOTS[i + 1]
+        if t0 <= t_sec <= t1:
+            u = (t_sec - t0) / (t1 - t0)
+            su = u * u * (3.0 - 2.0 * u)
+            hx = p0[0] + (p1[0] - p0[0]) * su
+            hy = p0[1] + (p1[1] - p0[1]) * su
+
+            active_btn: Optional[str] = None
+            is_pressed = False
+            if pr0 and abs(t_sec - t0) <= 0.09:
+                active_btn = k0
+                is_pressed = True
+            elif pr1 and abs(t_sec - t1) <= 0.09:
+                active_btn = k1
+                is_pressed = True
+            return (hx, hy), active_btn, is_pressed
+
+    return KEY_KNOTS[0][1], None, False
+
+
 def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> Optional[CairoRigState]:
     """Evaluate character animation state across the 5 beats."""
     s = 1.22
@@ -321,6 +386,7 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
             right_brow_raise_px=_lerp(6.0, 11.0, p),
             brow_slant_deg=10.0,
             mouth_state="curious_o" if p > 0.4 else "smirk",
+            draw_ground_shadow=False,
         )
 
     # BEAT 2 (3.5s - 5.8s): Calculator poofs in! Character stops, recoils slightly in surprise
@@ -356,22 +422,24 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
             right_brow_raise_px=12.0,
             brow_slant_deg=6.0,
             mouth_state="open_gasp" if local_t < 1.2 else "curious_o",
+            draw_ground_shadow=False,
         )
 
     # BEAT 3 (5.8s - 13.5s): Character walks up to calculator and presses buttons
     if t_sec < 13.5:
-        # Move up to calc stand at x=412
+        # Move up to calc stand at x=440
         walk_up_p = min(1.0, (t_sec - 5.8) / 0.8)
-        pelvis_x = _lerp(380.0, 412.0, _smootherstep(walk_up_p))
+        base_pelvis_x = _lerp(380.0, 440.0, _smootherstep(walk_up_p))
         pelvis_y = 1294.0
 
-        # Pressing animations
-        # Sequence 1 (6.6s - 8.5s): 10 / 2 = 5
-        # Sequence 2 (8.8s - 10.8s): 10 / 1 = 10
-        # Sequence 3 (11.0s - 13.2s): 10 / 0 =
-        reach_phase = math.sin(t_sec * 6.0)
-        reach_x = _lerp(490.0, 680.0, max(0.0, reach_phase))
-        reach_y = _lerp(1120.0, 960.0, max(0.0, reach_phase))
+        # Exact hand trajectory from key knots
+        wrist_pos, active_btn, is_pressed = get_calc_keystroke_state(t_sec)
+
+        # When reaching for higher keys (like ÷ at y=875.9), lean torso in towards calculator
+        lean_add = max(0.0, (1175.1 - wrist_pos[1]) * 0.04)
+        pelvis_shift = max(0.0, (1175.1 - wrist_pos[1]) * 0.06)
+        pelvis_x = base_pelvis_x + pelvis_shift
+        torso_lean = 8.0 + lean_add
 
         if t_sec < 8.6:
             mouth = "smirk"
@@ -390,15 +458,16 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
             scale=s,
             facing=1,
             yaw_factor=0.22,
-            torso_lean_deg=_lerp(4.0, 14.0, max(0.0, reach_phase)),
+            torso_lean_deg=torso_lean,
             spine_arch_deg=8.0,
             head_tilt_deg=3.0,
-            left_ankle_pos=(340.0, ankle_y),
-            right_ankle_pos=(425.0, ankle_y),
+            left_ankle_pos=(370.0, ankle_y),
+            right_ankle_pos=(455.0, ankle_y),
             left_foot_planted=True,
             right_foot_planted=True,
             left_wrist_pos=(pelvis_x - 42.0, pelvis_y - 12.0),
-            right_wrist_pos=(reach_x, reach_y),
+            right_wrist_pos=wrist_pos,
+            right_hand_pose="press" if is_pressed else "relaxed",
             left_elbow_bend_dir=1,
             right_elbow_bend_dir=1,
             left_knee_bend_dir=1,
@@ -407,6 +476,7 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
             right_brow_raise_px=b_raise + 2.0,
             brow_slant_deg=4.0,
             mouth_state=mouth,
+            draw_ground_shadow=False,
         )
 
     # BEAT 4 (13.5s - 18.5s): Floor black hole opens! Character jumps to clear it!
@@ -437,6 +507,7 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
                 right_brow_raise_px=12.0,
                 brow_slant_deg=14.0,
                 mouth_state="open_gasp",
+                draw_ground_shadow=False,
             )
         # 14.3s - 16.5s: THE COMIC JUMP! Up into the air and backward to clear the hole!
         elif jump_t < 3.0:
@@ -473,6 +544,7 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
                 right_brow_raise_px=14.0,
                 brow_slant_deg=12.0,
                 mouth_state="open_gasp",
+                draw_ground_shadow=False,
             )
         # 16.5s - 18.5s: Landed safely at x=220, panting and catching breath
         else:
@@ -500,6 +572,7 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
                 right_brow_raise_px=7.0,
                 brow_slant_deg=2.0,
                 mouth_state="smirk",
+                draw_ground_shadow=False,
             )
 
     # BEAT 5 (18.5s - 26.0s): Character watches from safe distance at x=220 as camera zooms to calculator
@@ -525,6 +598,7 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
         right_brow_raise_px=9.0,
         brow_slant_deg=5.0,
         mouth_state="curious_o",
+        draw_ground_shadow=False,
     )
 
 
@@ -558,14 +632,20 @@ def synthesize_directors_cut_audio(output_wav: Path, duration_seconds: float = D
     signal[poof_mask] += 0.35 * p_env * (noise + np.sin(2.0 * math.pi * 320.0 * p_t))
 
     # 3. Button presses & result chimes
-    # 10 / 2 = 5 chime at t=8.4s (cheerful major triad)
-    c1_mask = (t >= 8.4) & (t < 9.0)
-    c1_t = t[c1_mask] - 8.4
+    key_clicks = [6.75, 7.05, 7.45, 7.85, 8.25, 8.95, 9.25, 9.65, 10.00, 10.35, 11.15, 11.45, 11.85, 12.20, 12.75]
+    for k_t in key_clicks:
+        k_mask = (t >= k_t) & (t < k_t + 0.05)
+        local_kt = t[k_mask] - k_t
+        signal[k_mask] += 0.28 * np.exp(-60.0 * local_kt) * np.sin(2.0 * math.pi * 1800.0 * local_kt)
+
+    # 10 / 2 = 5 chime at t=8.25s (cheerful major triad)
+    c1_mask = (t >= 8.25) & (t < 8.85)
+    c1_t = t[c1_mask] - 8.25
     signal[c1_mask] += 0.40 * np.exp(-5.0 * c1_t) * np.sin(2.0 * math.pi * 1046.50 * c1_t)
 
-    # 10 / 1 = 10 chime at t=10.6s (higher octave)
-    c2_mask = (t >= 10.6) & (t < 11.2)
-    c2_t = t[c2_mask] - 10.6
+    # 10 / 1 = 10 chime at t=10.35s (higher octave)
+    c2_mask = (t >= 10.35) & (t < 10.95)
+    c2_t = t[c2_mask] - 10.35
     signal[c2_mask] += 0.42 * np.exp(-5.0 * c2_t) * np.sin(2.0 * math.pi * 1318.51 * c2_t)
 
     # 4. Error alarm & Subterranean Void Rumble (13.5s - 18.0s)
@@ -675,16 +755,52 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
             hole_p = max(0.0, 1.0 - (t_sec - 17.5) / 0.8)
         _draw_floor_black_hole(ctx, cx=412.0, cy=FLOOR_Y + 10.0, width_r=220.0, height_r=55.0, time_sec=t_sec, progress=hole_p)
 
-    # Calculator display state logic
-    if t_sec < 6.6:
+    # Calculator display state logic synchronized with button press contacts
+    if t_sec < 6.75:
         calc_expr = ""
         calc_res = ""
-    elif t_sec < 8.6:
+    elif t_sec < 7.05:
+        calc_expr = "1"
+        calc_res = ""
+    elif t_sec < 7.45:
+        calc_expr = "10"
+        calc_res = ""
+    elif t_sec < 7.85:
+        calc_expr = "10 ÷"
+        calc_res = ""
+    elif t_sec < 8.25:
+        calc_expr = "10 ÷ 2"
+        calc_res = ""
+    elif t_sec < 8.80:
         calc_expr = "10 ÷ 2 ="
         calc_res = "5"
-    elif t_sec < 11.0:
+    elif t_sec < 9.25:
+        calc_expr = "1"
+        calc_res = ""
+    elif t_sec < 9.65:
+        calc_expr = "10"
+        calc_res = ""
+    elif t_sec < 10.00:
+        calc_expr = "10 ÷"
+        calc_res = ""
+    elif t_sec < 10.35:
+        calc_expr = "10 ÷ 1"
+        calc_res = ""
+    elif t_sec < 11.00:
         calc_expr = "10 ÷ 1 ="
         calc_res = "10"
+    elif t_sec < 11.45:
+        calc_expr = "1"
+        calc_res = ""
+    elif t_sec < 11.85:
+        calc_expr = "10"
+        calc_res = ""
+    elif t_sec < 12.20:
+        calc_expr = "10 ÷"
+        calc_res = ""
+    elif t_sec < 12.75:
+        calc_expr = "10 ÷ 0"
+        calc_res = ""
     elif t_sec < 13.5:
         calc_expr = "10 ÷ 0 ="
         calc_res = "..."
@@ -716,6 +832,8 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
     calc_w = 288.0
     calc_h = 622.0
 
+    _, active_btn, _ = get_calc_keystroke_state(t_sec)
+
     if calc_visible:
         _draw_cairo_calculator_prop(
             ctx,
@@ -726,6 +844,7 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
             floor_y=FLOOR_Y,
             calc_expr=calc_expr,
             calc_res=calc_res,
+            active_btn=active_btn,
         )
 
     # LAYER 2: Draw Option C Protagonist ON TOP of the calculator
