@@ -18,6 +18,6 @@ def test_ep001_directors_cut_spec_and_artifacts():
     assert meta["width"] == 1080
     assert meta["height"] == 1920
     assert meta["fps"] == 30.0
-    assert meta["frame_count"] == 840
+    assert meta["frame_count"] == 1200
     assert meta["has_audio"] is True
     assert meta["audio_codec"] == "aac"

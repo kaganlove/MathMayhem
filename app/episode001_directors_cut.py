@@ -42,8 +42,8 @@ from app.render_smoke import probe_video_metadata, resolve_ffmpeg_exe
 WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
-DURATION_SECONDS = 28.0
-TOTAL_FRAMES = int(DURATION_SECONDS * FPS)  # 840 frames
+DURATION_SECONDS = 40.0
+TOTAL_FRAMES = int(DURATION_SECONDS * FPS)  # 1200 frames
 FLOOR_Y = 1520.0
 
 
@@ -286,44 +286,44 @@ CALC_BTN_COORDS: Dict[str, Tuple[float, float]] = {
 # Precision Keystroke Knots: (timestamp, target_pos, key_label, is_contact_press)
 KEY_KNOTS: List[Tuple[float, Tuple[float, float], Optional[str], bool]] = [
     (5.50, (425.0, 1279.0), None, False),
-    (6.05, (540.0, 1130.0), None, False),  # hand raised towards keypad
+    (6.10, (540.0, 1130.0), None, False),  # hand raised towards keypad
     # Sequence 1: 10 ÷ 2 = 5
-    (6.30, CALC_BTN_COORDS["1"], "1", True),
-    (6.65, CALC_BTN_COORDS["0"], "0", True),
-    (7.05, CALC_BTN_COORDS["÷"], "÷", True),
-    (7.45, CALC_BTN_COORDS["2"], "2", True),
-    (7.85, CALC_BTN_COORDS["="], "=", True),
-    # Full 2.0s Hold after Seq 1 (7.85s - 9.85s): hand rests at hip while smugly smirking
-    (8.25, (395.0, 1285.0), None, False),
-    (9.65, (395.0, 1285.0), None, False),
-    (9.95, (540.0, 1130.0), None, False),  # hand returns to keypad
+    (6.50, CALC_BTN_COORDS["1"], "1", True),
+    (6.90, CALC_BTN_COORDS["0"], "0", True),
+    (7.30, CALC_BTN_COORDS["÷"], "÷", True),
+    (7.70, CALC_BTN_COORDS["2"], "2", True),
+    (8.10, CALC_BTN_COORDS["="], "=", True),
+    # Generous 3.1s Hold after Seq 1 (8.10s - 11.20s): hand rests at hip while smugly smirking
+    (8.50, (395.0, 1285.0), None, False),
+    (10.80, (395.0, 1285.0), None, False),
+    (11.20, (540.0, 1130.0), None, False),  # hand returns to keypad
     # Sequence 2: 10 ÷ 1 = 10
-    (10.15, CALC_BTN_COORDS["1"], "1", True),
-    (10.50, CALC_BTN_COORDS["0"], "0", True),
-    (10.90, CALC_BTN_COORDS["÷"], "÷", True),
-    (11.30, CALC_BTN_COORDS["1"], "1", True),
-    (11.70, CALC_BTN_COORDS["="], "=", True),
-    # Full 2.1s Hold after Seq 2 (11.70s - 13.80s): hand thoughtfully rests near chin
-    (12.10, (415.0, 1150.0), None, False),
-    (13.55, (415.0, 1150.0), None, False),
-    (13.85, (540.0, 1130.0), None, False),  # hand returns to keypad
+    (11.60, CALC_BTN_COORDS["1"], "1", True),
+    (12.00, CALC_BTN_COORDS["0"], "0", True),
+    (12.40, CALC_BTN_COORDS["÷"], "÷", True),
+    (12.80, CALC_BTN_COORDS["1"], "1", True),
+    (13.20, CALC_BTN_COORDS["="], "=", True),
+    # Generous 3.3s Hold after Seq 2 (13.20s - 16.50s): hand thoughtfully rests near chin
+    (13.60, (415.0, 1150.0), None, False),
+    (16.00, (415.0, 1150.0), None, False),
+    (16.40, (540.0, 1130.0), None, False),  # hand returns to keypad
     # Sequence 3: 10 ÷ 0 = ...
-    (14.10, CALC_BTN_COORDS["1"], "1", True),
-    (14.45, CALC_BTN_COORDS["0"], "0", True),
-    (14.85, CALC_BTN_COORDS["÷"], "÷", True),
-    (15.25, CALC_BTN_COORDS["0"], "0", True),
-    # Dramatic hesitation over = (15.25s - 16.20s)
-    (15.55, (715.0, 1150.0), None, False),
-    (16.00, (725.0, 1160.0), None, False),
-    (16.20, CALC_BTN_COORDS["="], "=", True),
-    (16.50, (440.0, 1280.0), None, False),  # pull back in shock
-    # Beat 4 Heroic Lunge to press C (19.5s - 22.0s)
-    (19.50, (260.0, 1300.0), None, False),
-    (20.60, (500.0, 1190.0), None, False),
-    (21.00, CALC_BTN_COORDS["C"], "C", True),
-    (21.30, CALC_BTN_COORDS["C"], "C", True),
-    (21.60, (420.0, 1260.0), None, False),
-    (22.00, (320.0, 1290.0), None, False),
+    (16.90, CALC_BTN_COORDS["1"], "1", True),
+    (17.30, CALC_BTN_COORDS["0"], "0", True),
+    (17.70, CALC_BTN_COORDS["÷"], "÷", True),
+    (18.10, CALC_BTN_COORDS["0"], "0", True),
+    # Dramatic hesitation over = (18.10s - 19.30s)
+    (18.50, (715.0, 1150.0), None, False),
+    (19.00, (725.0, 1160.0), None, False),
+    (19.30, CALC_BTN_COORDS["="], "=", True),
+    (19.70, (440.0, 1280.0), None, False),  # pull back in shock
+    # Beat 4 Heroic Lunge to press C (23.5s - 26.5s)
+    (23.50, (260.0, 1300.0), None, False),
+    (24.70, (500.0, 1190.0), None, False),
+    (25.20, CALC_BTN_COORDS["C"], "C", True),
+    (25.50, CALC_BTN_COORDS["C"], "C", True),
+    (25.90, (420.0, 1260.0), None, False),
+    (26.80, (320.0, 1290.0), None, False),
 ]
 
 
@@ -440,8 +440,8 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
             draw_ground_shadow=False,
         )
 
-    # BEAT 3 (5.5s - 16.6s): Character walks up to calculator, solves problems, and pauses between answers
-    if t_sec < 16.6:
+    # BEAT 3 (5.5s - 19.8s): Character walks up to calculator, solves problems, and pauses between answers
+    if t_sec < 19.8:
         walk_up_p = min(1.0, (t_sec - 5.5) / 0.7)
         base_pelvis_x = _lerp(380.0, 440.0, _smootherstep(walk_up_p))
         pelvis_y = 1294.0
@@ -449,51 +449,51 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
         wrist_pos, active_btn, is_pressed = get_calc_keystroke_state(t_sec)
 
         # Dynamic acting poses based on problem state
-        if t_sec < 7.85:
+        if t_sec < 8.10:
             # Active solving seq 1
             mouth = "smirk"
             b_l, b_r = 5.0, 7.0
             h_tilt = 3.0
             lean_base = 8.0
             r_pose = "press" if is_pressed else "relaxed"
-        elif t_sec < 9.85:
-            # Smug satisfied hold after 10 / 2 = 5! (Full 2.0s hold)
+        elif t_sec < 11.20:
+            # Smug satisfied hold after 10 / 2 = 5! (Generous 3.1s hold)
             mouth = "smirk"
             b_l, b_r = 6.0, 8.0
             h_tilt = 6.0  # cocky head tilt back
             lean_base = 4.0
             r_pose = "relaxed"
-        elif t_sec < 11.70:
+        elif t_sec < 13.20:
             # Active solving seq 2
             mouth = "curious_o"
             b_l, b_r = 7.0, 9.0
             h_tilt = 3.0
             lean_base = 8.0
             r_pose = "press" if is_pressed else "relaxed"
-        elif t_sec < 13.80:
-            # Intrigued pondering hold after 10 / 1 = 10! (Full 2.1s hold)
+        elif t_sec < 16.50:
+            # Intrigued pondering hold after 10 / 1 = 10! (Generous 3.3s hold)
             mouth = "curious_o"
             b_l, b_r = 8.0, 10.0
             h_tilt = -5.0  # quizzical head tilt
             lean_base = 5.0
             r_pose = "relaxed"
-        elif t_sec < 16.20:
+        elif t_sec < 19.30:
             # Active solving seq 3 & dramatic hesitation over =
-            mouth = "smirk" if t_sec < 15.25 else "curious_o"
+            mouth = "smirk" if t_sec < 18.10 else "curious_o"
             b_l, b_r = 8.0, 10.0
             h_tilt = 4.0
             lean_base = 9.0
             r_pose = "press" if is_pressed else "relaxed"
         else:
-            # Shocked realization at = press (16.20s - 16.60s)
+            # Shocked realization at = press (19.30s - 19.80s)
             mouth = "open_gasp"
             b_l, b_r = 12.0, 13.0
             h_tilt = -4.0
             lean_base = -6.0
             r_pose = "relaxed"
 
-        lean_add = max(0.0, (1175.1 - wrist_pos[1]) * 0.04) if t_sec < 16.20 else 0.0
-        pelvis_shift = max(0.0, (1175.1 - wrist_pos[1]) * 0.06) if t_sec < 16.20 else 0.0
+        lean_add = max(0.0, (1175.1 - wrist_pos[1]) * 0.04) if t_sec < 19.30 else 0.0
+        pelvis_shift = max(0.0, (1175.1 - wrist_pos[1]) * 0.06) if t_sec < 19.30 else 0.0
         pelvis_x = base_pelvis_x + pelvis_shift
 
         return CairoRigState(
@@ -524,13 +524,14 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
             draw_ground_shadow=False,
         )
 
-    # BEAT 4 (16.6s - 22.0s): Black hole opens, character jumps, then lunges to hit CLEAR!
-    if t_sec < 22.0:
-        # 16.6s - 17.1s: Shock anticipation crouch
-        if t_sec < 17.1:
-            cp = (t_sec - 16.6) / 0.5
+    # BEAT 4 (19.8s - 27.5s): Black hole opens, realistic athletic jump, then lunges to hit CLEAR!
+    if t_sec < 27.5:
+        # 19.8s - 20.6s: Shock anticipation crouch (deep athletic compression)
+        if t_sec < 20.6:
+            cp = (t_sec - 19.8) / 0.8
+            crouch = 45.0 * math.sin(math.pi * cp)
             pelvis_x = 412.0
-            pelvis_y = 1294.0 + 25.0 * math.sin(math.pi * cp)
+            pelvis_y = 1294.0 + crouch
             return CairoRigState(
                 pelvis_x=pelvis_x,
                 pelvis_y=pelvis_y,
@@ -538,28 +539,35 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
                 scale=s,
                 facing=1,
                 yaw_factor=0.22,
-                torso_lean_deg=-12.0,
+                torso_lean_deg=-14.0,
                 spine_arch_deg=-10.0,
                 head_tilt_deg=-10.0,
-                left_ankle_pos=(340.0, ankle_y),
+                left_ankle_pos=(345.0, ankle_y),
                 right_ankle_pos=(425.0, ankle_y),
+                left_knee_bend_dir=1,
+                right_knee_bend_dir=1,
                 left_foot_planted=True,
                 right_foot_planted=True,
-                left_wrist_pos=(pelvis_x - 60.0, pelvis_y - 30.0),
-                right_wrist_pos=(pelvis_x + 60.0, pelvis_y - 30.0),
-                left_brow_raise_px=11.0,
-                right_brow_raise_px=12.0,
+                left_wrist_pos=(pelvis_x - 60.0, pelvis_y - 20.0),
+                right_wrist_pos=(pelvis_x + 60.0, pelvis_y - 20.0),
+                left_brow_raise_px=12.0,
+                right_brow_raise_px=13.0,
                 brow_slant_deg=14.0,
                 mouth_state="open_gasp",
                 draw_ground_shadow=False,
             )
-        # 17.1s - 18.5s: THE COMIC JUMP! High arc backward to clear the expanding hole!
-        elif t_sec < 18.5:
-            jp = (t_sec - 17.1) / 1.4
-            arc_x = _lerp(412.0, 220.0, _smootherstep(jp))
-            jump_height = 280.0 * math.sin(math.pi * jp)
+        # 20.6s - 22.2s: REALISTIC ATHLETIC JUMP! Parabolic arc backward with bent-knee tuck!
+        elif t_sec < 22.2:
+            jp = (t_sec - 20.6) / 1.6
+            u = _smootherstep(jp)
+            arc_x = _lerp(412.0, 220.0, u)
+            jump_height = 300.0 * math.sin(math.pi * jp)
             pelvis_y = 1294.0 - jump_height
-            air_ankle_y = (floor_y - jump_height * 0.7)
+
+            # High knee tuck: ankles pull upward tightly with knees bent backward
+            tuck = math.sin(math.pi * jp)
+            l_ank_y = ankle_y - (ankle_y - (pelvis_y + 95.0)) * tuck
+            r_ank_y = ankle_y - (ankle_y - (pelvis_y + 105.0)) * tuck
 
             return CairoRigState(
                 pelvis_x=arc_x,
@@ -571,24 +579,54 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
                 torso_lean_deg=-16.0,
                 spine_arch_deg=-12.0,
                 head_tilt_deg=-8.0,
-                left_ankle_pos=(arc_x - 30.0, air_ankle_y),
-                right_ankle_pos=(arc_x + 30.0, air_ankle_y + 15.0),
+                left_ankle_pos=(arc_x - 30.0, l_ank_y),
+                right_ankle_pos=(arc_x + 30.0, r_ank_y),
+                left_knee_bend_dir=-1,
+                right_knee_bend_dir=-1,
                 left_foot_planted=False,
                 right_foot_planted=False,
-                left_wrist_pos=(arc_x - 90.0, pelvis_y - 110.0),
-                right_wrist_pos=(arc_x + 80.0, pelvis_y - 120.0),
+                left_wrist_pos=(arc_x - 85.0, pelvis_y - 90.0),
+                right_wrist_pos=(arc_x + 75.0, pelvis_y - 100.0),
                 left_elbow_bend_dir=1,
                 right_elbow_bend_dir=-1,
-                left_knee_bend_dir=1,
-                right_knee_bend_dir=1,
-                left_brow_raise_px=12.0,
-                right_brow_raise_px=14.0,
+                left_brow_raise_px=13.0,
+                right_brow_raise_px=15.0,
                 brow_slant_deg=12.0,
                 mouth_state="open_gasp",
                 draw_ground_shadow=False,
             )
-        # 18.5s - 19.5s: Landed at x=220, safe distance, wide-eyed panic!
-        elif t_sec < 19.5:
+        # 22.2s - 22.8s: Landing shock absorption squash (knees bend to absorb landing impact)
+        elif t_sec < 22.8:
+            lp = (t_sec - 22.2) / 0.6
+            squash = 35.0 * math.sin(math.pi * lp)
+            pelvis_x = 220.0
+            pelvis_y = 1294.0 + squash
+            return CairoRigState(
+                pelvis_x=pelvis_x,
+                pelvis_y=pelvis_y,
+                floor_y=floor_y,
+                scale=s,
+                facing=1,
+                yaw_factor=0.22,
+                torso_lean_deg=-6.0,
+                spine_arch_deg=4.0,
+                head_tilt_deg=-2.0,
+                left_ankle_pos=(pelvis_x - 42.0, ankle_y),
+                right_ankle_pos=(pelvis_x + 42.0, ankle_y),
+                left_knee_bend_dir=1,
+                right_knee_bend_dir=1,
+                left_foot_planted=True,
+                right_foot_planted=True,
+                left_wrist_pos=(pelvis_x - 55.0, pelvis_y - 10.0),
+                right_wrist_pos=(pelvis_x + 55.0, pelvis_y - 10.0),
+                left_brow_raise_px=11.0,
+                right_brow_raise_px=12.0,
+                brow_slant_deg=8.0,
+                mouth_state="open_gasp",
+                draw_ground_shadow=False,
+            )
+        # 22.8s - 23.5s: Landed at x=220, safe distance, wide-eyed panic!
+        elif t_sec < 23.5:
             pelvis_x = 220.0
             pelvis_y = 1294.0
             return CairoRigState(
@@ -613,21 +651,21 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
                 mouth_state="open_gasp",
                 draw_ground_shadow=False,
             )
-        # 19.5s - 22.0s: HEROIC LUNGE TO HIT CLEAR BUTTON 'C' AND CLOSE THE BLACK HOLE!
+        # 23.5s - 27.5s: HEROIC LUNGE TO HIT CLEAR BUTTON 'C' AND CLOSE THE BLACK HOLE!
         else:
-            if t_sec < 21.0:
-                lp = (t_sec - 19.5) / 1.5
-            elif t_sec < 21.3:
+            if t_sec < 25.2:
+                lp = (t_sec - 23.5) / 1.7
+            elif t_sec < 25.5:
                 lp = 1.0  # holding C down firmly!
             else:
-                lp = max(0.0, 1.0 - (t_sec - 21.3) / 0.7)
+                lp = max(0.0, 1.0 - (t_sec - 25.5) / 1.0)
 
             u = _smootherstep(lp)
             pelvis_x = _lerp(220.0, 370.0, u)
             torso_lean = _lerp(8.0, 24.0, u)
             wrist_x = _lerp(260.0, CALC_BTN_COORDS["C"][0], u)
             wrist_y = _lerp(1300.0, CALC_BTN_COORDS["C"][1], u)
-            is_c_hit = (21.0 <= t_sec <= 21.3)
+            is_c_hit = (25.2 <= t_sec <= 25.5)
 
             return CairoRigState(
                 pelvis_x=pelvis_x,
@@ -654,55 +692,120 @@ def evaluate_directors_cut_character(t_sec: float, floor_y: float = FLOOR_Y) -> 
                 left_brow_raise_px=8.0,
                 right_brow_raise_px=9.0,
                 brow_slant_deg=6.0,
-                mouth_state="firm" if t_sec < 21.3 else "curious_o",
+                mouth_state="firm" if t_sec < 25.5 else "curious_o",
                 draw_ground_shadow=False,
             )
 
-    # BEAT 5 (22.0s - 28.0s): Comic Relief! Brow Wipe & Proud Smirk
+    # BEAT 5 (27.5s - 32.5s): Comic Relief! Brow Wipe & Proud Smirk
+    if t_sec < 32.5:
+        pelvis_x = 280.0
+        pelvis_y = 1294.0
+
+        if t_sec < 30.5:
+            # 27.5s - 30.5s: Wipe sweaty brow with hand in deep relief
+            wp = min(1.0, (t_sec - 27.5) / 1.0) if t_sec < 29.5 else max(0.0, 1.0 - (t_sec - 29.5) / 1.0)
+            swp = _smootherstep(wp)
+            hand_x = _lerp(pelvis_x + 40.0, pelvis_x + 20.0, swp)
+            hand_y = _lerp(pelvis_y + 10.0, pelvis_y - 250.0, swp)
+            h_tilt = _lerp(3.0, -6.0, swp)
+            mouth = "smirk"
+        else:
+            # 30.5s - 32.5s: Confident triumphant stance next to reset calculator
+            hand_x = pelvis_x + 40.0
+            hand_y = pelvis_y + 10.0
+            h_tilt = 3.0
+            mouth = "smirk"
+
+        return CairoRigState(
+            pelvis_x=pelvis_x,
+            pelvis_y=pelvis_y,
+            floor_y=floor_y,
+            scale=s,
+            facing=1,
+            yaw_factor=0.22,
+            torso_lean_deg=-2.0,
+            spine_arch_deg=5.0,
+            head_tilt_deg=h_tilt,
+            left_ankle_pos=(pelvis_x - 42.0, ankle_y),
+            right_ankle_pos=(pelvis_x + 42.0, ankle_y),
+            left_foot_planted=True,
+            right_foot_planted=True,
+            left_wrist_pos=(pelvis_x - 40.0, pelvis_y + 10.0),
+            right_wrist_pos=(hand_x, hand_y),
+            left_elbow_bend_dir=1,
+            right_elbow_bend_dir=1,
+            left_knee_bend_dir=1,
+            right_knee_bend_dir=-1,
+            left_brow_raise_px=5.0,
+            right_brow_raise_px=6.0,
+            brow_slant_deg=3.0,
+            mouth_state=mouth,
+            draw_ground_shadow=False,
+        )
+
+    # BEAT 6 (32.5s - 40.0s): THE 0 ÷ 0 CLIFFHANGER AT THE END!
+    # Calculator mysteriously begins typing 0 / 0 = ? on its own!
     pelvis_x = 280.0
     pelvis_y = 1294.0
 
-    if t_sec < 25.0:
-        # 22.0s - 25.0s: Wipe sweaty brow with hand in deep relief
-        wp = min(1.0, (t_sec - 22.0) / 0.8) if t_sec < 23.5 else max(0.0, 1.0 - (t_sec - 23.5) / 1.5)
-        swp = _smootherstep(wp)
-        hand_x = _lerp(pelvis_x + 40.0, pelvis_x + 20.0, swp)
-        hand_y = _lerp(pelvis_y + 10.0, pelvis_y - 250.0, swp)
-        h_tilt = _lerp(3.0, -6.0, swp)
-        mouth = "smirk"
+    if t_sec < 37.0:
+        # Incredulous horror: turning head back to watch calculator self-type
+        look_back_p = min(1.0, (t_sec - 32.5) / 1.0)
+        h_tilt = _lerp(3.0, -8.0, _smootherstep(look_back_p))
+        return CairoRigState(
+            pelvis_x=pelvis_x,
+            pelvis_y=pelvis_y,
+            floor_y=floor_y,
+            scale=s,
+            facing=1,
+            yaw_factor=-0.15,  # looking back over shoulder in dread
+            torso_lean_deg=-4.0,
+            spine_arch_deg=4.0,
+            head_tilt_deg=h_tilt,
+            left_ankle_pos=(pelvis_x - 42.0, ankle_y),
+            right_ankle_pos=(pelvis_x + 42.0, ankle_y),
+            left_foot_planted=True,
+            right_foot_planted=True,
+            left_wrist_pos=(pelvis_x - 45.0, pelvis_y),
+            right_wrist_pos=(pelvis_x + 45.0, pelvis_y),
+            left_brow_raise_px=11.0,
+            right_brow_raise_px=12.0,
+            brow_slant_deg=8.0,
+            mouth_state="curious_o",
+            draw_ground_shadow=False,
+        )
     else:
-        # 25.0s - 28.0s: Confident triumphant stance next to reset calculator
-        hand_x = pelvis_x + 40.0
-        hand_y = pelvis_y + 10.0
-        h_tilt = 3.0
-        mouth = "smirk"
+        # 37.0s - 40.0s: FULL COMIC TERROR! Screen flashes ? and character clutches head!
+        terror_p = min(1.0, (t_sec - 37.0) / 0.5)
+        ut = _smootherstep(terror_p)
+        # Hands clutching head / glasses in sheer horror
+        l_hand = (pelvis_x - 25.0 * ut, pelvis_y - 250.0 * ut)
+        r_hand = (pelvis_x + 25.0 * ut, pelvis_y - 250.0 * ut)
 
-    return CairoRigState(
-        pelvis_x=pelvis_x,
-        pelvis_y=pelvis_y,
-        floor_y=floor_y,
-        scale=s,
-        facing=1,
-        yaw_factor=0.22,
-        torso_lean_deg=-2.0,
-        spine_arch_deg=5.0,
-        head_tilt_deg=h_tilt,
-        left_ankle_pos=(pelvis_x - 42.0, ankle_y),
-        right_ankle_pos=(pelvis_x + 42.0, ankle_y),
-        left_foot_planted=True,
-        right_foot_planted=True,
-        left_wrist_pos=(pelvis_x - 40.0, pelvis_y + 10.0),
-        right_wrist_pos=(hand_x, hand_y),
-        left_elbow_bend_dir=1,
-        right_elbow_bend_dir=1,
-        left_knee_bend_dir=1,
-        right_knee_bend_dir=-1,
-        left_brow_raise_px=5.0,
-        right_brow_raise_px=6.0,
-        brow_slant_deg=3.0,
-        mouth_state=mouth,
-        draw_ground_shadow=False,
-    )
+        return CairoRigState(
+            pelvis_x=pelvis_x,
+            pelvis_y=pelvis_y,
+            floor_y=floor_y,
+            scale=s,
+            facing=1,
+            yaw_factor=0.20,
+            torso_lean_deg=-18.0 * ut,
+            spine_arch_deg=-8.0,
+            head_tilt_deg=-10.0 * ut,
+            left_ankle_pos=(pelvis_x - 45.0, ankle_y),
+            right_ankle_pos=(pelvis_x + 45.0, ankle_y),
+            left_foot_planted=True,
+            right_foot_planted=True,
+            left_wrist_pos=l_hand,
+            right_wrist_pos=r_hand,
+            left_elbow_bend_dir=-1,
+            right_elbow_bend_dir=-1,
+            left_brow_raise_px=14.0,
+            right_brow_raise_px=16.0,
+            brow_slant_deg=14.0,
+            mouth_state="open_gasp",
+            draw_ground_shadow=False,
+        )
 
 
 def synthesize_directors_cut_audio(output_wav: Path, duration_seconds: float = DURATION_SECONDS, sample_rate: int = 44100) -> Path:
@@ -712,10 +815,10 @@ def synthesize_directors_cut_audio(output_wav: Path, duration_seconds: float = D
     t = np.linspace(0.0, duration_seconds, n_samples, endpoint=False)
     signal = np.zeros_like(t)
 
-    # 1. Background Playful Cartoon Motif (0s - 16.0s)
+    # 1. Background Playful Cartoon Motif (0s - 19.3s)
     motif_notes = [523.25, 587.33, 659.25, 783.99, 659.25, 783.99, 880.00, 783.99]
     step_sec = 0.40
-    music_end = 16.0
+    music_end = 19.2
     idx = 0
     while idx * step_sec < music_end:
         start_s = idx * step_sec
@@ -735,51 +838,51 @@ def synthesize_directors_cut_audio(output_wav: Path, duration_seconds: float = D
     signal[poof_mask] += 0.35 * p_env * (noise + np.sin(2.0 * math.pi * 320.0 * p_t))
 
     # 3. Button presses & result chimes
-    key_clicks = [6.30, 6.65, 7.05, 7.45, 7.85, 10.15, 10.50, 10.90, 11.30, 11.70, 14.10, 14.45, 14.85, 15.25, 16.20, 21.00]
+    key_clicks = [6.50, 6.90, 7.30, 7.70, 8.10, 11.60, 12.00, 12.40, 12.80, 13.20, 16.90, 17.30, 17.70, 18.10, 19.30, 25.20]
     for k_t in key_clicks:
         k_mask = (t >= k_t) & (t < k_t + 0.05)
         local_kt = t[k_mask] - k_t
         signal[k_mask] += 0.28 * np.exp(-60.0 * local_kt) * np.sin(2.0 * math.pi * 1800.0 * local_kt)
 
-    # 10 / 2 = 5 chime at t=7.85s (cheerful major triad)
-    c1_mask = (t >= 7.85) & (t < 8.45)
-    c1_t = t[c1_mask] - 7.85
+    # 10 / 2 = 5 chime at t=8.10s (cheerful major triad)
+    c1_mask = (t >= 8.10) & (t < 8.70)
+    c1_t = t[c1_mask] - 8.10
     signal[c1_mask] += 0.40 * np.exp(-5.0 * c1_t) * np.sin(2.0 * math.pi * 1046.50 * c1_t)
 
-    # 10 / 1 = 10 chime at t=11.70s (higher octave)
-    c2_mask = (t >= 11.70) & (t < 12.30)
-    c2_t = t[c2_mask] - 11.70
+    # 10 / 1 = 10 chime at t=13.20s (higher octave)
+    c2_mask = (t >= 13.20) & (t < 13.80)
+    c2_t = t[c2_mask] - 13.20
     signal[c2_mask] += 0.42 * np.exp(-5.0 * c2_t) * np.sin(2.0 * math.pi * 1318.51 * c2_t)
 
-    # 4. Error alarm & Subterranean Void Rumble (16.5s - 21.3s)
-    err_mask = (t >= 16.5) & (t < 21.3)
-    e_t = t[err_mask] - 16.5
+    # 4. Error alarm & Subterranean Void Rumble (19.8s - 25.5s)
+    err_mask = (t >= 19.8) & (t < 25.5)
+    e_t = t[err_mask] - 19.8
     rumble = 0.45 * np.sin(2.0 * math.pi * 48.0 * e_t) + 0.3 * np.sin(2.0 * math.pi * 65.4 * e_t)
     err_buzz = 0.25 * np.sign(np.sin(2.0 * math.pi * 185.0 * e_t))
     signal[err_mask] += (rumble + err_buzz) * np.minimum(1.0, e_t / 0.2)
 
-    # Cartoon Jump "BOING" Sound at t=17.1s
-    boing_mask = (t >= 17.1) & (t < 18.4)
-    b_t = t[boing_mask] - 17.1
-    b_freq = 220.0 + 440.0 * (b_t / 1.3)
-    b_env = np.exp(-2.2 * b_t) * np.minimum(1.0, b_t / 0.01)
+    # Cartoon Jump "BOING" Sound at t=20.6s
+    boing_mask = (t >= 20.6) & (t < 22.0)
+    b_t = t[boing_mask] - 20.6
+    b_freq = 200.0 + 440.0 * (b_t / 1.4)
+    b_env = np.exp(-2.0 * b_t) * np.minimum(1.0, b_t / 0.01)
     signal[boing_mask] += 0.48 * b_env * np.sin(2.0 * math.pi * b_freq * b_t)
 
-    # 5. CLEAR BUTTON RESET BEEP at t=21.0s (high-tech clean beep)
-    reset_mask = (t >= 21.0) & (t < 21.4)
-    r_t = t[reset_mask] - 21.0
+    # 5. CLEAR BUTTON RESET BEEP at t=25.2s (high-tech clean beep)
+    reset_mask = (t >= 25.2) & (t < 25.6)
+    r_t = t[reset_mask] - 25.2
     signal[reset_mask] += 0.45 * np.exp(-12.0 * r_t) * (np.sin(2.0 * math.pi * 1760.0 * r_t) + 0.5 * np.sin(2.0 * math.pi * 3520.0 * r_t))
 
-    # 6. Black Hole Implosion Vacuum "SCHWUMP" (21.3s - 22.0s)
-    impl_mask = (t >= 21.3) & (t < 22.0)
-    im_t = t[impl_mask] - 21.3
+    # 6. Black Hole Implosion Vacuum "SCHWUMP" (25.5s - 26.3s)
+    impl_mask = (t >= 25.5) & (t < 26.3)
+    im_t = t[impl_mask] - 25.5
     im_pitch = 600.0 * np.exp(-8.0 * im_t)
-    signal[impl_mask] += 0.42 * np.sin(2.0 * math.pi * im_pitch * im_t) * np.sin(math.pi * (im_t / 0.7))
+    signal[impl_mask] += 0.45 * np.sin(2.0 * math.pi * im_pitch * im_t) * np.sin(math.pi * (im_t / 0.8))
 
-    # 7. Comic relief sigh / peaceful major resolve chord (22.5s - 27.5s)
-    res_mask = (t >= 22.5) & (t < 27.5)
-    res_t = t[res_mask] - 22.5
-    res_env = np.minimum(1.0, res_t / 1.0) * np.exp(-0.25 * res_t)
+    # 7. Comic relief sigh / peaceful resolve chord (27.5s - 31.5s)
+    res_mask = (t >= 27.5) & (t < 31.5)
+    res_t = t[res_mask] - 27.5
+    res_env = np.minimum(1.0, res_t / 0.8) * np.exp(-0.35 * res_t)
     res_chord = (
         np.sin(2.0 * math.pi * 261.63 * res_t)
         + 0.8 * np.sin(2.0 * math.pi * 329.63 * res_t)
@@ -787,6 +890,26 @@ def synthesize_directors_cut_audio(output_wav: Path, duration_seconds: float = D
         + 0.5 * np.sin(2.0 * math.pi * 523.25 * res_t)
     ) * 0.20
     signal[res_mask] += res_env * res_chord
+
+    # 8. Self-typing mechanical clicks for 0 / 0 = ? (33.2s, 34.2s, 35.2s, 36.2s)
+    type_clicks = [33.2, 34.2, 35.2, 36.2]
+    for tc in type_clicks:
+        tcm = (t >= tc) & (t < tc + 0.08)
+        tc_t = t[tcm] - tc
+        signal[tcm] += 0.40 * np.exp(-40.0 * tc_t) * np.sin(2.0 * math.pi * 2200.0 * tc_t)
+
+    # 9. Dramatic Cliffhanger Augmented Brass Swell (36.5s - 40.0s)
+    cliff_mask = (t >= 36.5) & (t < 40.0)
+    cf_t = t[cliff_mask] - 36.5
+    cf_env = np.minimum(1.0, cf_t / 1.0) * np.exp(-0.25 * cf_t)
+    chord = (
+        np.sin(2.0 * math.pi * 261.63 * cf_t)
+        + np.sin(2.0 * math.pi * 329.63 * cf_t)
+        + np.sin(2.0 * math.pi * 415.30 * cf_t)
+        + np.sin(2.0 * math.pi * 493.88 * cf_t)
+    ) * 0.25
+    pulse = 0.20 * np.sin(2.0 * math.pi * 3.0 * cf_t)
+    signal[cliff_mask] += cf_env * (chord + pulse)
 
     pcm16 = np.clip(signal * 32767.0, -32768, 32767).astype(np.int16)
     with wave.open(str(output_wav), "wb") as wf:
@@ -815,17 +938,17 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
         zoom = _lerp(1.75, 1.0, zp2)
         focus_x = _lerp(360.0, 540.0, zp2)
         focus_y = _lerp(1050.0, 960.0, zp2)
-    # Beat 3 & 4: Normal wide view showing calculator, hole, jump, and lunge
-    elif t_sec < 22.0:
+    # Beat 3, 4, 5: Normal wide view showing calculator, hole, jump, and lunge
+    elif t_sec < 36.5:
         zoom = 1.0
         focus_x = 540.0
         focus_y = 960.0
-    # Beat 5: Gentle push-in on character and restored calculator (1.0 -> 1.25, focus at x=460, y=1080)
+    # Beat 6: Dramatic close-up on 0 / 0 = ? cliffhanger!
     else:
-        zp5 = _smootherstep(min(1.0, (t_sec - 22.0) / 2.0))
-        zoom = _lerp(1.0, 1.25, zp5)
-        focus_x = _lerp(540.0, 460.0, zp5)
-        focus_y = _lerp(960.0, 1080.0, zp5)
+        zp6 = _smootherstep(min(1.0, (t_sec - 36.5) / 1.5))
+        zoom = _lerp(1.0, 1.65, zp6)
+        focus_x = _lerp(540.0, 640.0, zp6)
+        focus_y = _lerp(960.0, 1020.0, zp6)
 
     # 2. Setup Cairo Canvas
     surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
@@ -853,83 +976,98 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
     ctx.line_to(WIDTH, FLOOR_Y)
     ctx.stroke()
 
-    # Floor black hole hazard (under character original standing pos at x=412, active during 16.6s - 21.7s)
-    if t_sec >= 16.6 and t_sec < 22.0:
-        if t_sec < 17.6:
-            # Opens up as floor cracks
-            hole_p = min(1.0, (t_sec - 16.6) / 1.0)
-        elif t_sec < 21.0:
-            # Fully open swirling danger vortex
+    # Floor black hole hazard (under character original standing pos at x=412, active during 19.8s - 25.9s)
+    if t_sec >= 19.8 and t_sec < 26.0:
+        if t_sec < 20.8:
+            hole_p = min(1.0, (t_sec - 19.8) / 1.0)
+        elif t_sec < 25.2:
             hole_p = 1.0
-        elif t_sec < 21.7:
+        elif t_sec < 25.9:
             # CLEAR BUTTON IMPLOSION! Collapses rapidly into nothing
-            hole_p = max(0.0, 1.0 - (t_sec - 21.0) / 0.7)
+            hole_p = max(0.0, 1.0 - (t_sec - 25.2) / 0.7)
         else:
             hole_p = 0.0
         _draw_floor_black_hole(ctx, cx=412.0, cy=FLOOR_Y + 10.0, width_r=220.0, height_r=55.0, time_sec=t_sec, progress=hole_p)
 
     # Calculator display state logic synchronized with button press contacts
-    if t_sec < 6.30:
+    if t_sec < 6.50:
         calc_expr = ""
         calc_res = ""
-    elif t_sec < 6.65:
+    elif t_sec < 6.90:
         calc_expr = "1"
         calc_res = ""
-    elif t_sec < 7.05:
+    elif t_sec < 7.30:
         calc_expr = "10"
         calc_res = ""
-    elif t_sec < 7.45:
+    elif t_sec < 7.70:
         calc_expr = "10 ÷"
         calc_res = ""
-    elif t_sec < 7.85:
+    elif t_sec < 8.10:
         calc_expr = "10 ÷ 2"
         calc_res = ""
-    elif t_sec < 9.85:
+    elif t_sec < 11.20:
         calc_expr = "10 ÷ 2 ="
         calc_res = "5"
-    elif t_sec < 10.15:
+    elif t_sec < 11.60:
         calc_expr = ""
         calc_res = ""
-    elif t_sec < 10.50:
+    elif t_sec < 12.00:
         calc_expr = "1"
         calc_res = ""
-    elif t_sec < 10.90:
+    elif t_sec < 12.40:
         calc_expr = "10"
         calc_res = ""
-    elif t_sec < 11.30:
+    elif t_sec < 12.80:
         calc_expr = "10 ÷"
         calc_res = ""
-    elif t_sec < 11.70:
+    elif t_sec < 13.20:
         calc_expr = "10 ÷ 1"
         calc_res = ""
-    elif t_sec < 13.80:
+    elif t_sec < 16.50:
         calc_expr = "10 ÷ 1 ="
         calc_res = "10"
-    elif t_sec < 14.10:
+    elif t_sec < 16.90:
         calc_expr = ""
         calc_res = ""
-    elif t_sec < 14.45:
+    elif t_sec < 17.30:
         calc_expr = "1"
         calc_res = ""
-    elif t_sec < 14.85:
+    elif t_sec < 17.70:
         calc_expr = "10"
         calc_res = ""
-    elif t_sec < 15.25:
+    elif t_sec < 18.10:
         calc_expr = "10 ÷"
         calc_res = ""
-    elif t_sec < 16.20:
+    elif t_sec < 19.30:
         calc_expr = "10 ÷ 0"
         calc_res = ""
-    elif t_sec < 16.60:
+    elif t_sec < 19.80:
         calc_expr = "10 ÷ 0 ="
         calc_res = "..."
-    elif t_sec < 21.00:
+    elif t_sec < 25.20:
         calc_expr = "10 ÷ 0 ="
         calc_res = "UNDEFINED"
-    else:
-        # Clear button was pressed at 21.0s! Reset to 0!
+    elif t_sec < 33.20:
+        # Clear button was pressed at 25.2s! Reset to 0!
         calc_expr = ""
         calc_res = "0"
+    elif t_sec < 34.20:
+        calc_expr = "0"
+        calc_res = ""
+    elif t_sec < 35.20:
+        calc_expr = "0 ÷"
+        calc_res = ""
+    elif t_sec < 36.20:
+        calc_expr = "0 ÷ 0"
+        calc_res = ""
+    elif t_sec < 37.20:
+        calc_expr = "0 ÷ 0 ="
+        calc_res = ""
+    else:
+        # Final Cliffhanger: 0 ÷ 0 = ? flashing!
+        calc_expr = "0 ÷ 0 ="
+        blink = (int(t_sec * 4.0) % 2) == 0
+        calc_res = "?" if blink else ""
 
     # LAYER 1: Draw Pedestal Calculator BEFORE character (materializes at t=3.6s)
     calc_visible = t_sec >= 3.6
@@ -954,17 +1092,16 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
         )
 
     # LAYER 2: Draw Option C Protagonist ON TOP of the calculator
-    # Character's arm and hands will now be 100% in front of the calculator, visibly pressing keys!
     char_state = evaluate_directors_cut_character(t_sec, floor_y=FLOOR_Y)
     if char_state is not None:
         draw_option_c_character(ctx, spec, char_state)
 
-    # LAYER 3: Special effects (appearance poof at 3.6s, implosion pop at 21.4s)
+    # LAYER 3: Special effects (appearance poof at 3.6s, implosion pop at 25.5s)
     if 3.6 <= t_sec <= 4.8:
         poof_progress = (t_sec - 3.6) / 1.2
         _draw_poof_effect(ctx, cx=calc_x + 144, cy=calc_y + 300, progress=poof_progress)
-    elif 21.4 <= t_sec <= 22.2:
-        impl_progress = (t_sec - 21.4) / 0.8
+    elif 25.5 <= t_sec <= 26.3:
+        impl_progress = (t_sec - 25.5) / 0.8
         _draw_poof_effect(ctx, cx=412.0, cy=FLOOR_Y, progress=impl_progress)
 
     ctx.restore()  # End camera transformation
@@ -1023,13 +1160,13 @@ def render_directors_cut_preview(out_video: Path, out_sheet: Path) -> Dict[str, 
     # 8 key moments for contact sheet:
     # 1: Walk-in zoom on face (t=2.5s)
     # 2: Poof calculator appearance (t=4.2s)
-    # 3: Sequence 1 proud hold: 10 ÷ 2 = 5 (t=8.8s)
-    # 4: Sequence 2 curious hold: 10 ÷ 1 = 10 (t=12.5s)
-    # 5: Sequence 3 alert: 10 ÷ 0 = UNDEFINED (t=16.8s)
-    # 6: Mid-air comic jump to clear black hole! (t=17.8s)
-    # 7: Heroic forward lunge hitting CLEAR button C! (t=21.1s)
-    # 8: Comedic relief brow wipe next to reset calculator showing 0 (t=23.8s)
-    sample_times = [2.5, 4.2, 8.8, 12.5, 16.8, 17.8, 21.1, 23.8]
+    # 3: Sequence 1 proud hold: 10 ÷ 2 = 5 (t=9.5s)
+    # 4: Sequence 2 curious hold: 10 ÷ 1 = 10 (t=14.5s)
+    # 5: Sequence 3 panic: 10 ÷ 0 = UNDEFINED (t=20.2s)
+    # 6: Mid-air athletic bent-knee jump over black hole (t=21.4s)
+    # 7: Heroic forward lunge hitting CLEAR button C! (t=25.3s)
+    # 8: Cliffhanger tag: 0 ÷ 0 = ? flashing (t=38.5s)
+    sample_times = [2.5, 4.2, 9.5, 14.5, 20.2, 21.4, 25.3, 38.5]
     sample_indices = [int(st * FPS) for st in sample_times]
 
     print(f"Rendering {TOTAL_FRAMES} frames ({DURATION_SECONDS}s @ {FPS}fps) for Episode 001 Director's Cut...")
