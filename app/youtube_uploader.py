@@ -38,7 +38,7 @@ def get_authorization_url() -> str:
         scopes=SCOPES,
     )
     flow.redirect_uri = REDIRECT_URI
-    auth_url, _ = flow.authorization_url(prompt="consent", access_type="offline")
+    auth_url, _ = flow.authorization_url(prompt="select_account consent", access_type="offline")
     VERIFIER_FILE.write_text(flow.code_verifier, encoding="utf-8")
     return auth_url
 
