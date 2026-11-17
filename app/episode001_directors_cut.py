@@ -47,6 +47,169 @@ TOTAL_FRAMES = int(DURATION_SECONDS * FPS)  # 780 frames
 FLOOR_Y = 1520.0
 
 
+def _draw_rounded_rect(ctx: cairo.Context, x: float, y: float, w: float, h: float, r: float) -> None:
+    """Draw a path for a rectangle with rounded corners."""
+    ctx.new_path()
+    ctx.arc(x + w - r, y + r, r, -math.pi / 2, 0)
+    ctx.arc(x + w - r, y + h - r, r, 0, math.pi / 2)
+    ctx.arc(x + r, y + h - r, r, math.pi / 2, math.pi)
+    ctx.arc(x + r, y + r, r, math.pi, 3 * math.pi / 2)
+    ctx.close_path()
+
+
+def _draw_cairo_calculator_prop(
+    ctx: cairo.Context,
+    calc_x: float,
+    calc_y: float,
+    calc_w: float,
+    calc_h: float,
+    floor_y: float,
+    calc_expr: str,
+    calc_res: str,
+) -> None:
+    """Draw high-contrast, readable vector pedestal calculator prop directly in Cairo."""
+    stand_w = 44.0
+    stand_x = calc_x + (calc_w - stand_w) * 0.5
+    stand_top = calc_y + calc_h - 12.0
+
+    ctx.save()
+    # 1. Pedestal Stand
+    pat = cairo.LinearGradient(stand_x, 0, stand_x + stand_w, 0)
+    pat.add_color_stop_rgb(0.0, 0.76, 0.80, 0.86)
+    pat.add_color_stop_rgb(0.5, 0.88, 0.91, 0.95)
+    pat.add_color_stop_rgb(1.0, 0.70, 0.74, 0.80)
+    ctx.set_source(pat)
+    ctx.rectangle(stand_x, stand_top, stand_w, floor_y - stand_top)
+    ctx.fill()
+
+    ctx.set_source_rgb(0.12, 0.15, 0.20)
+    ctx.set_line_width(4.0)
+    ctx.rectangle(stand_x, stand_top, stand_w, floor_y - stand_top)
+    ctx.stroke()
+
+    # Base plate
+    base_w = 170.0
+    base_h = 22.0
+    base_x = calc_x + (calc_w - base_w) * 0.5
+    ctx.set_source_rgb(0.82, 0.85, 0.90)
+    _draw_rounded_rect(ctx, base_x, floor_y - base_h, base_w, base_h, 6.0)
+    ctx.fill()
+    ctx.set_source_rgb(0.12, 0.15, 0.20)
+    ctx.set_line_width(4.0)
+    _draw_rounded_rect(ctx, base_x, floor_y - base_h, base_w, base_h, 6.0)
+    ctx.stroke()
+
+    # 2. Main casing
+    # Drop shadow
+    ctx.set_source_rgba(0.0, 0.0, 0.0, 0.10)
+    _draw_rounded_rect(ctx, calc_x + 8.0, calc_y + 8.0, calc_w, calc_h, 24.0)
+    ctx.fill()
+
+    # Calculator body
+    ctx.set_source_rgb(0.95, 0.96, 0.98)
+    _draw_rounded_rect(ctx, calc_x, calc_y, calc_w, calc_h, 24.0)
+    ctx.fill()
+
+    # Outer Ink Border
+    is_error = calc_res in ("UNDEFINED", "?")
+    if is_error:
+        ctx.set_source_rgb(0.88, 0.16, 0.20)
+        ctx.set_line_width(7.0)
+    else:
+        ctx.set_source_rgb(0.10, 0.12, 0.16)
+        ctx.set_line_width(6.0)
+    _draw_rounded_rect(ctx, calc_x, calc_y, calc_w, calc_h, 24.0)
+    ctx.stroke()
+
+    # 3. LCD Screen
+    scr_pad = 18.0
+    scr_x = calc_x + scr_pad
+    scr_y = calc_y + 22.0
+    scr_w = calc_w - scr_pad * 2.0
+    scr_h = 165.0
+
+    if is_error and calc_res == "UNDEFINED":
+        ctx.set_source_rgb(1.0, 0.93, 0.93)
+    else:
+        ctx.set_source_rgb(1.0, 1.0, 1.0)
+    _draw_rounded_rect(ctx, scr_x, scr_y, scr_w, scr_h, 12.0)
+    ctx.fill()
+
+    ctx.set_source_rgb(0.18, 0.22, 0.28)
+    ctx.set_line_width(3.5)
+    _draw_rounded_rect(ctx, scr_x, scr_y, scr_w, scr_h, 12.0)
+    ctx.stroke()
+
+    # Screen text
+    ctx.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+
+    if calc_expr:
+        ctx.set_font_size(30.0)
+        ctx.set_source_rgb(0.32, 0.38, 0.46)
+        ctx.move_to(scr_x + 18.0, scr_y + 48.0)
+        ctx.show_text(calc_expr)
+
+    if calc_res:
+        ctx.set_font_size(52.0)
+        if is_error:
+            ctx.set_source_rgb(0.92, 0.12, 0.16)
+        else:
+            ctx.set_source_rgb(0.08, 0.42, 0.85)
+        ctx.move_to(scr_x + 18.0, scr_y + 128.0)
+        ctx.show_text(calc_res)
+
+    # 4. Keypad Grid (4x4)
+    kp_top = scr_y + scr_h + 24.0
+    kp_h = calc_y + calc_h - 22.0 - kp_top
+    grid_rows = [
+        ["7", "8", "9", "÷"],
+        ["4", "5", "6", "×"],
+        ["1", "2", "3", "−"],
+        ["C", "0", "=", "+"],
+    ]
+    gap_x = 10.0
+    gap_y = 10.0
+    btn_w = (scr_w - 3.0 * gap_x) / 4.0
+    btn_h = (kp_h - 3.0 * gap_y) / 4.0
+
+    for r_idx, row in enumerate(grid_rows):
+        for c_idx, lbl in enumerate(row):
+            bx = scr_x + c_idx * (btn_w + gap_x)
+            by = kp_top + r_idx * (btn_h + gap_y)
+
+            if lbl == "=":
+                bg_col = (0.20, 0.55, 0.92)
+                txt_col = (1.0, 1.0, 1.0)
+            elif lbl in ("÷", "×", "−", "+"):
+                bg_col = (0.82, 0.88, 0.95)
+                txt_col = (0.10, 0.15, 0.25)
+            elif lbl == "C":
+                bg_col = (0.95, 0.84, 0.84)
+                txt_col = (0.60, 0.12, 0.12)
+            else:
+                bg_col = (0.89, 0.91, 0.94)
+                txt_col = (0.12, 0.15, 0.20)
+
+            ctx.set_source_rgb(*bg_col)
+            _draw_rounded_rect(ctx, bx, by, btn_w, btn_h, 8.0)
+            ctx.fill()
+
+            ctx.set_source_rgb(0.18, 0.22, 0.28)
+            ctx.set_line_width(2.5)
+            _draw_rounded_rect(ctx, bx, by, btn_w, btn_h, 8.0)
+            ctx.stroke()
+
+            ctx.set_font_size(24.0)
+            ctx.set_source_rgb(*txt_col)
+            extents = ctx.text_extents(lbl)
+            tx = bx + (btn_w - extents.width) * 0.5 - extents.x_bearing
+            ty = by + (btn_h - extents.height) * 0.5 - extents.y_bearing
+            ctx.move_to(tx, ty)
+            ctx.show_text(lbl)
+
+    ctx.restore()
+
+
 def _draw_poof_effect(ctx: cairo.Context, cx: float, cy: float, progress: float) -> None:
     """Draw expanding and fading cartoon dust poof clouds."""
     if progress <= 0.0 or progress >= 1.0:
@@ -65,10 +228,10 @@ def _draw_poof_effect(ctx: cairo.Context, cx: float, cy: float, progress: float)
         cur_r = base_r * (0.4 + 1.2 * progress)
         cur_x = cx + px * (0.5 + 1.5 * progress)
         cur_y = cy + py * (0.5 + 1.5 * progress)
-        ctx.set_source_rgba(0.95, 0.96, 0.98, alpha * 0.85)
+        ctx.set_source_rgba(0.88, 0.91, 0.95, alpha * 0.90)
         ctx.arc(cur_x, cur_y, cur_r, 0, 2 * math.pi)
         ctx.fill()
-        ctx.set_source_rgba(0.22, 0.74, 0.97, alpha * 0.6)
+        ctx.set_source_rgba(0.20, 0.25, 0.35, alpha * 0.80)
         ctx.set_line_width(4.0)
         ctx.arc(cur_x, cur_y, cur_r, 0, 2 * math.pi)
         ctx.stroke()
@@ -489,13 +652,18 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
     ctx.scale(zoom, zoom)
     ctx.translate(-focus_x, -focus_y)
 
-    # Background: Clean deep slate chalkboard
-    ctx.set_source_rgb(0.04, 0.06, 0.11)
+    # Background: Clean, bright minimalist studio environment (light cartoon backdrop)
+    ctx.set_source_rgb(0.97, 0.98, 0.99)
     ctx.paint()
 
-    # Subtle floor guideline
-    ctx.set_source_rgba(0.22, 0.74, 0.97, 0.4)
-    ctx.set_line_width(3.0)
+    # Floor surface below horizon (light soft grey-blue)
+    ctx.rectangle(0, FLOOR_Y, WIDTH, HEIGHT - FLOOR_Y)
+    ctx.set_source_rgb(0.91, 0.93, 0.96)
+    ctx.fill()
+
+    # Crisp floor horizon line
+    ctx.set_source_rgb(0.72, 0.76, 0.84)
+    ctx.set_line_width(4.0)
     ctx.move_to(0, FLOOR_Y)
     ctx.line_to(WIDTH, FLOOR_Y)
     ctx.stroke()
@@ -507,19 +675,7 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
             hole_p = max(0.0, 1.0 - (t_sec - 17.5) / 0.8)
         _draw_floor_black_hole(ctx, cx=412.0, cy=FLOOR_Y + 10.0, width_r=220.0, height_r=55.0, time_sec=t_sec, progress=hole_p)
 
-    # Draw Option C Protagonist
-    char_state = evaluate_directors_cut_character(t_sec, floor_y=FLOOR_Y)
-    if char_state is not None:
-        draw_option_c_character(ctx, spec, char_state)
-
-    # Draw Pedestal Calculator (Materializes at t=3.6s)
-    calc_visible = t_sec >= 3.6
-    calc_x = 555
-    calc_y = 620
-    calc_w = 288
-    calc_h = 622
-
-    # Calculator display state
+    # Calculator display state logic
     if t_sec < 6.6:
         calc_expr = ""
         calc_res = ""
@@ -553,16 +709,32 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
         blink = (int(t_sec * 4.0) % 2) == 0
         calc_res = "?" if blink else ""
 
-    if calc_visible:
-        # Draw pedestal stand
-        ctx.set_source_rgb(0.12, 0.16, 0.24)
-        ctx.rectangle(calc_x + 90, calc_y + calc_h, 108, FLOOR_Y - (calc_y + calc_h))
-        ctx.fill()
-        ctx.set_source_rgba(0.22, 0.74, 0.97, 0.6)
-        ctx.set_line_width(4.0)
-        ctx.stroke()
+    # LAYER 1: Draw Pedestal Calculator BEFORE character (materializes at t=3.6s)
+    calc_visible = t_sec >= 3.6
+    calc_x = 555.0
+    calc_y = 620.0
+    calc_w = 288.0
+    calc_h = 622.0
 
-    # Draw poof effect around calculator appearance (3.6s - 4.8s)
+    if calc_visible:
+        _draw_cairo_calculator_prop(
+            ctx,
+            calc_x=calc_x,
+            calc_y=calc_y,
+            calc_w=calc_w,
+            calc_h=calc_h,
+            floor_y=FLOOR_Y,
+            calc_expr=calc_expr,
+            calc_res=calc_res,
+        )
+
+    # LAYER 2: Draw Option C Protagonist ON TOP of the calculator
+    # Character's arm and hands will now be 100% in front of the calculator, visibly pressing keys!
+    char_state = evaluate_directors_cut_character(t_sec, floor_y=FLOOR_Y)
+    if char_state is not None:
+        draw_option_c_character(ctx, spec, char_state)
+
+    # LAYER 3: Draw poof effect around calculator appearance (3.6s - 4.8s)
     if 3.6 <= t_sec <= 4.8:
         poof_progress = (t_sec - 3.6) / 1.2
         _draw_poof_effect(ctx, cx=calc_x + 144, cy=calc_y + 300, progress=poof_progress)
@@ -572,56 +744,6 @@ def render_directors_cut_frame(frame_idx: int, spec: OptionCCharacterSpec) -> Im
     # Convert Cairo surface to PIL Image
     buf = surf.get_data()
     img = Image.frombuffer("RGBA", (WIDTH, HEIGHT), buf, "raw", "BGRA", 0, 1).convert("RGB")
-
-    # If calculator is visible, draw high-contrast readable keypad and screen via PIL
-    if calc_visible:
-        # We transform calc coordinates by current camera zoom to match
-        # Zoom formula: pt_screen = (pt - focus) * zoom + focus
-        cx1_s = (calc_x - focus_x) * zoom + focus_x
-        cy1_s = (calc_y - focus_y) * zoom + focus_y
-        cx2_s = (calc_x + calc_w - focus_x) * zoom + focus_x
-        cy2_s = (calc_y + calc_h - focus_y) * zoom + focus_y
-
-        draw = ImageDraw.Draw(img)
-        # Calculator body
-        draw.rectangle([cx1_s, cy1_s, cx2_s, cy2_s], fill=(18, 26, 44), outline=(56, 189, 248), width=max(2, int(4 * zoom)))
-
-        # Display screen
-        screen_h = (cy2_s - cy1_s) * 0.32
-        draw.rectangle([cx1_s + 10 * zoom, cy1_s + 12 * zoom, cx2_s - 10 * zoom, cy1_s + screen_h], fill=(8, 12, 22), outline=(30, 41, 59), width=max(1, int(2 * zoom)))
-
-        # Screen text
-        font_expr = load_math_font(max(12, int(26 * zoom)))
-        font_res = load_math_font(max(16, int(44 * zoom)))
-
-        if calc_expr:
-            draw.text((cx1_s + 20 * zoom, cy1_s + 20 * zoom), calc_expr, fill=(148, 163, 184), font=font_expr)
-
-        if calc_res:
-            res_color = (239, 68, 68) if calc_res in ("UNDEFINED", "?") else (56, 189, 248)
-            draw.text((cx1_s + 20 * zoom, cy1_s + 65 * zoom), calc_res, fill=res_color, font=font_res)
-
-        # Draw simplified keypad grid
-        kp_top = cy1_s + screen_h + 15 * zoom
-        key_w = (cx2_s - cx1_s - 30 * zoom) / 4.0
-        key_h = (cy2_s - kp_top - 20 * zoom) / 4.0
-        key_font = load_math_font(max(10, int(18 * zoom)))
-
-        labels = [
-            ["7", "8", "9", "÷"],
-            ["4", "5", "6", "×"],
-            ["1", "2", "3", "−"],
-            ["C", "0", "=", "+"],
-        ]
-        for r_idx, row in enumerate(labels):
-            for c_idx, lbl in enumerate(row):
-                kx1 = cx1_s + 15 * zoom + c_idx * key_w
-                ky1 = kp_top + r_idx * key_h
-                kx2 = kx1 + key_w - 4 * zoom
-                ky2 = ky1 + key_h - 4 * zoom
-                draw.rectangle([kx1, ky1, kx2, ky2], fill=(28, 38, 60), outline=(56, 189, 248, 120), width=1)
-                draw.text((kx1 + 6 * zoom, ky1 + 4 * zoom), lbl, fill=(248, 250, 252), font=key_font)
-
     return img
 
 
@@ -709,7 +831,7 @@ def render_directors_cut_preview(out_video: Path, out_sheet: Path) -> Dict[str, 
     draw_sheet = ImageDraw.Draw(sheet)
     title_font = load_math_font(28)
     draw_sheet.rectangle([0, 0, sheet_w, 64], fill=(15, 23, 42))
-    draw_sheet.text((32, 16), "MATH MAYHEM — EPISODE 001 DIRECTOR'S CUT (CURIOUS ZOOM • POOF • FLOOR VOID • JUMP • SELF-TYPING 0/0)", fill=(248, 250, 252), font=title_font)
+    draw_sheet.text((32, 16), "MATH MISHAPS — EPISODE 001 DIRECTOR'S CUT (CURIOUS ZOOM • POOF • FLOOR VOID • JUMP • SELF-TYPING 0/0)", fill=(248, 250, 252), font=title_font)
 
     captions = [
         "1. Curious Walk-in Zoom",
