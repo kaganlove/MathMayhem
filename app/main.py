@@ -469,6 +469,51 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
                     )
         return resp
 
+    @app.get("/director", response_class=HTMLResponse)
+    async def director_dashboard(request: Request) -> Response:
+        return templates.TemplateResponse(request, "director.html", {})
+
+    @app.get("/api/metrics/live")
+    async def api_live_metrics() -> Dict[str, Any]:
+        stats: Dict[str, Any] = {
+            "channel": {"title": "Math Mishaps", "subscribers": 0, "views": 0, "videos": 1},
+            "videos": []
+        }
+        token_file = Path("token.json")
+        if token_file.exists():
+            try:
+                from google.oauth2.credentials import Credentials
+                from googleapiclient.discovery import build
+                from app.youtube_uploader import SCOPES
+                creds = Credentials.from_authorized_user_file(str(token_file), SCOPES)
+                youtube = build("youtube", "v3", credentials=creds)
+
+                ch_res = youtube.channels().list(part="snippet,statistics", mine=True).execute()
+                if ch_res.get("items"):
+                    ch = ch_res["items"][0]
+                    stats["channel"] = {
+                        "title": ch["snippet"]["title"],
+                        "subscribers": int(ch["statistics"].get("subscriberCount", 0)),
+                        "views": int(ch["statistics"].get("viewCount", 0)),
+                        "videos": int(ch["statistics"].get("videoCount", 0)),
+                    }
+
+                vid_res = youtube.videos().list(part="snippet,statistics", id="TNtPECGhBQg").execute()
+                if vid_res.get("items"):
+                    v = vid_res["items"][0]
+                    stats["videos"].append({
+                        "id": v["id"],
+                        "title": v["snippet"]["title"],
+                        "shorts_url": f"https://youtube.com/shorts/{v['id']}",
+                        "views": int(v["statistics"].get("viewCount", 0)),
+                        "likes": int(v["statistics"].get("likeCount", 0)),
+                        "comments": int(v["statistics"].get("commentCount", 0)),
+                        "status": "Public",
+                    })
+            except Exception as e:
+                stats["error"] = str(e)
+        return stats
+
     @app.get("/api/phone/pair")
     async def get_pairing_info(request: Request) -> Dict[str, Any]:
         token = PairingManager.generate_pairing_token()
@@ -643,6 +688,7 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     @app.get("/api/phone/video/{filename}")
     async def api_phone_stream_video(filename: str, request: Request) -> Response:
         candidates = [
+            cfg.MM_RENDERS_DIR / "episodes" / filename,
             cfg.MM_RENDERS_DIR / "packages" / "EP001_RELEASE_MASTER" / filename,
             cfg.MM_RENDERS_DIR / "packages" / "EP001_RELEASE_MASTER" / "video" / filename,
             cfg.MM_RENDERS_DIR / "previews" / filename,
