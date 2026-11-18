@@ -288,11 +288,21 @@
   </div>
 
   <div class="card">
+    <!-- Episode Selector Tabs -->
+    <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+      <button id="ep-btn-2" class="btn btn-sheet" style="flex:1; border-color:var(--accent-blue); background:rgba(56,189,248,0.15);" onclick="selectEpisode(2)">
+        ✨ EP002: 90° Twist (NEW)
+      </button>
+      <button id="ep-btn-1" class="btn btn-sheet" style="flex:1;" onclick="selectEpisode(1)">
+        🎬 EP001: Master Cut
+      </button>
+    </div>
+
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
       <div>
-        <strong style="font-size:1.05rem;">Episode 001 Director's Cut</strong>
-        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.15rem;">
-          40.0s @ 30 FPS • 1080×1920 • Cairo 2D Rig • SymPy Verified
+        <strong style="font-size:1.05rem;" id="ep-title">Episode 002: The 90-Degree Twist (First Pass)</strong>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.15rem;" id="ep-specs">
+          7.5s Preview • 1080×1920 @ 30 FPS • Option A Mix • SymPy Verified
         </div>
       </div>
     </div>
@@ -300,7 +310,7 @@
     <!-- Mobile-Optimized Vertical Video Player -->
     <div class="video-container">
       <video id="review-player" controls playsinline preload="metadata">
-        <source src="/api/phone/video/ep001_directors_cut_master_1080x1920.mp4" type="video/mp4" />
+        <source src="/api/phone/video/ep002_preview_v2.mp4" type="video/mp4" />
         Your browser does not support HTML5 video.
       </video>
     </div>
@@ -308,17 +318,17 @@
     <!-- Direct Approval & Revision Controls -->
     <div class="btn-grid">
       <button class="btn btn-approve" id="approve-btn" onclick="approveMaster()">
-        ✅ Approve Master Cut
+        ✅ Approve This Cut
       </button>
       <button class="btn btn-revise" onclick="openRevisionModal()">
         ✏️ Request Revision
       </button>
       <button class="btn btn-sheet" onclick="toggleContactSheet()">
-        🖼️ 8-Panel Storyboard
+        🖼️ Storyboard Sheet
       </button>
     </div>
 
-    <img id="sheet-preview" src="/api/phone/video/ep001_directors_cut_8panel_contact_sheet.png" alt="8-Panel Contact Sheet" />
+    <img id="sheet-preview" src="/api/phone/video/ep002_contact_sheet_v2.png" alt="Storyboard Contact Sheet" />
   </div>
 
   <!-- SECTION 3: DIRECT REVISION MODAL -->
@@ -337,6 +347,45 @@
   </div>
 
   <script>
+    const episodes = {
+      2: {
+        title: "Episode 002: The 90-Degree Twist (First Pass)",
+        specs: "7.5s Preview • 1080×1920 @ 30 FPS • Option A Mix • SymPy Verified",
+        video: "/api/phone/video/ep002_preview_v2.mp4",
+        sheet: "/api/phone/video/ep002_contact_sheet_v2.png",
+        id: 2
+      },
+      1: {
+        title: "Episode 001 Director's Cut Master",
+        specs: "40.0s @ 30 FPS • 1080×1920 • Cairo 2D Rig • SymPy Verified",
+        video: "/api/phone/video/ep001_directors_cut_master_1080x1920.mp4",
+        sheet: "/api/phone/video/ep001_directors_cut_8panel_contact_sheet.png",
+        id: 1
+      }
+    };
+    let currentEp = 2;
+
+    function selectEpisode(num) {
+      currentEp = num;
+      const ep = episodes[num];
+      document.getElementById('ep-title').innerText = ep.title;
+      document.getElementById('ep-specs').innerText = ep.specs;
+      const player = document.getElementById('review-player');
+      player.src = ep.video;
+      player.load();
+      document.getElementById('sheet-preview').src = ep.sheet;
+
+      document.getElementById('ep-btn-1').style.borderColor = num === 1 ? 'var(--accent-blue)' : 'var(--card-border)';
+      document.getElementById('ep-btn-1').style.background = num === 1 ? 'rgba(56,189,248,0.15)' : '#1e293b';
+      document.getElementById('ep-btn-2').style.borderColor = num === 2 ? 'var(--accent-blue)' : 'var(--card-border)';
+      document.getElementById('ep-btn-2').style.background = num === 2 ? 'rgba(56,189,248,0.15)' : '#1e293b';
+
+      const btn = document.getElementById('approve-btn');
+      btn.innerText = `✅ Approve EP00${num} Cut`;
+      btn.style.background = '#10b981';
+      btn.disabled = false;
+    }
+
     async function loadMetrics() {
       try {
         const res = await fetch('/api/metrics/live');
